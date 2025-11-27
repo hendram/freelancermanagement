@@ -1,0 +1,168 @@
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  background: #f3f4f7;
+}
+
+.container {
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: flex-start;
+ width: 100vw;
+ height: 100vh;
+ gap: 1vh;
+}
+
+.title {
+  font-size: 26px;
+  margin-bottom: 25px;
+  font-weight: 700;
+}
+
+.special-menu-card {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-self: center;
+  width: 100vw;
+  height: 10vh;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.menu-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-self: center;
+  width: 80vw;
+  height: 10vh;
+  gap: 20px;
+}
+
+.menu-btn-wrapper {
+  position: relative; /* for absolute submenu */
+}
+
+.menu-btn {
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: none;
+  background: #ddd;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.menu-btn:hover {
+  background: #ccc;
+}
+
+/* Submenu hidden by default, shown on hover */
+.menu-btn-wrapper .submenu {
+  display: none;
+  position: absolute;
+  top: 100%; /* directly below button */
+  left: 0;
+  background: #444;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  min-width: 150px;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 100;
+}
+
+.menu-btn-wrapper:hover .submenu {
+  display: flex;
+}
+
+.menu-btn-wrapper .submenu p {
+  margin: 0;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.menu-btn-wrapper .submenu p:hover {
+  background: #555;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 98vw;
+  height: 100vh;
+  gap: 1vw;
+}
+
+.card {
+ display: flex;
+ flex-direction: row;
+ align-items: center;
+ justify-content: center;
+ width: 96vw;
+ height: 20vh;
+ gap: 1vw;
+ background: white;
+ padding: 18px;
+ border-radius: 12px;
+ box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+}
+
+.photo {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+}
+
+.info {
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ justify-content: center;
+ width: 20vw;
+ height: 10vh;
+}
+
+.name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.skills {
+  margin: 5px 0 0;
+  color: #666;
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 40vw;
+  height: 8vh;
+  gap: 1vw;
+}
+
+.btn_resume, .btn_rep {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12vw;
+  height: 8vh;
+  border-radius: 10vw;
+  border: 1px solid #00
+}
+
+.add-resume-panel {
+  width: 95%;
+  margin: 10px auto;
+  background: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}

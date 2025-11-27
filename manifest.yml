@@ -1,0 +1,33 @@
+modules:
+  jira:globalPage:
+    - key: freelancermanagement-hello-world-page
+      resource: main
+      resolver:
+        function: resume
+      title: freelancermanagement
+  function:
+    - key: resume
+      handler: index.handler
+    - key: runSchemaMigration
+      handler: index.runSchemaMigration
+
+  trigger:
+    - key: post-install-schema-migration
+      function: runSchemaMigration
+      events:
+        - avi:forge:installed:app
+
+  sql:
+    - key: main
+      engine: mysql
+
+resources:
+  - key: main
+    path: static/freelancemanagement/build
+
+app:
+  runtime:
+    name: nodejs22.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/8867a7c4-8881-4185-8a86-e1f9f137c7d5
