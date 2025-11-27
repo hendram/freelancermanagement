@@ -1,58 +1,257 @@
+/* ============================= */
+/* CONTAINER */
+/* ============================= */
+
 .container-addresume {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-self: center;
   width: 100vw;
-  height: 100vh;
+  height: auto;
+  min-height: 100vh;
   font-family: Arial, sans-serif;
 }
 
-h2 {
+/* Section titles */
+.container-addresume h2 {
   margin-bottom: 20px;
-  text-align: center;
-  font-size: 22px;
-  font-weight: bold;
-  color: #333;
 }
 
-.inputbox,
-textarea {
-  width: 100%;
-  padding: 12px;
-  margin-top: 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 15px;
-  outline: none;
-  box-sizing: border-box;
-  resize: vertical;
+.container-addresume h3 {
+  margin-top: 25px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 4px;
 }
 
-.inputbox:focus,
-textarea:focus {
-  border-color: #007bff;
+/* BIO spans */
+.firstnamespan,
+.lastnamespan,
+.birthspan,
+.pobspan,
+.addressspan,
+.religionspan,
+.contactnumberspan,
+.emailspan,
+.nationalityspan,
+.githubspan,
+
+/* EXPERIENCE spans */
+.companyspan,
+.positionspan,
+.workingperiodspan,
+.jobdescspan,
+
+/* SKILLS spans */
+.skillsspan {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  align-self: flex-start;
+  width: auto;
+  height: 5vh;
 }
 
-input[type="file"] {
-  margin-top: 12px;
-  font-size: 14px;
+.input_firstname,
+.input_lastname,
+.input_dob,
+.input_pob,
+.input_address,
+.input_religion,
+.input_contact,
+.input_email,
+.input_nationality,
+.input_github,
+
+/* EXPERIENCE */
+.input_company,
+.input_position,
+.input_workingperiod,
+.input_jobdesc,
+
+/* SKILLS */
+.input_skills {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  align-self: flex-start;
+  width: 98vw;
+  height: 5vh;
+  border-radius: 0.5vw;
+  border: 1px solid black;
 }
 
-.btn_resume {
-  width: 100%;
-  margin-top: 20px;
-  padding: 12px;
-  background: #007bff;
-  color: white;
-  font-size: 16px;
-  border: none;
-  border-radius: 8px;
+.input_firstname,
+.input_lastname {
+  width: 48vw;
+}
+
+.input_jobdesc {
+  height: 20vh;
+  resize: none;              /* Disable user resize */
+  overflow-y: auto;          /* Show vertical bar only when needed */
+  overflow-x: hidden;        /* Never horizontal bar */
+  white-space: pre-wrap;     /* Auto wrap */
+  word-wrap: break-word;     /* Force wrap long words */
+  box-sizing: border-box;    /* Prevent weird expansion due to padding */
+}
+
+/* ============================= */
+/* FIRST + LAST NAME */
+/* ============================= */
+
+.firstlastname_div {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100vw;
+  height: 12vh;
+  gap: 2vw;
+}
+
+.firstname_div,
+.lastname_div {
+   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 48vw;
+  height: 10vh;
+  gap: 1vh;
+}
+
+/* ============================= */
+/* BIO FIELDS */
+/* ============================= */
+
+.birth_div,
+.placebirth_div,
+.address_div,
+.religion_div,
+.contactnumber_div,
+.email_div,
+.nationality_div,
+.github_div {
+    display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 98vw;
+  height: 12vh;
+  gap: 1vh;
+}
+
+/* ============================= */
+/* EXPERIENCE BLOCK */
+/* ============================= */
+
+.experience_block_div {
+      display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 98vw;
+  height: 68vh;
+  gap: 1vh;
+}
+
+.company_div,
+.position_div,
+.workingperiod_div,
+.jobdesc_div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 98vw;
+  height: 10vh;
+  gap: 1vh;
+}
+
+.jobdesc_div {
+  height: 25vh;
+}
+
+/* Add experience button */
+.addremoveexperiencebtn_div {
+  display: flex;
+ flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  width: 98vw;
+  height: 8vh;
+  gap: 2vw;
+}  
+
+
+.addexperience_btn,
+.removeexperience_btn {
+ display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  align-self: flex-end;
+  width: 20vw;
+  height: 6vh;
+  gap: 1vw;
+  font-size: 13px;
+  background-color: #1868db;
+  border: 1px solid black;
+  border-radius: 18vw;
   cursor: pointer;
-  font-weight: bold;
-  transition: 0.25s;
+  color: white;
 }
 
-.btn_resume:hover {
-  background: #005fcc;
+/* ============================= */
+/* SKILLS */
+/* ============================= */
+
+.skills_div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-self: center;
+  width: 98vw;
+  height: 12vh;
+  gap: 1vh;
+}
+
+/* ============================= */
+/* BUTTON GROUPS */
+/* ============================= */
+
+.submitresetclose_div {
+ display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 98vw;
+  height: 10vh;
+  gap: 1vw;
+ }
+
+.submitresume_btn,
+.resetresume_btn,
+.closeresume_btn {
+ display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 12vw;
+  height: 6vh;
+  font-size: 14px;
+   background-color: #1868db;
+  cursor: pointer;
+  border-radius: 8vw;
+  border: 1px solid black;
+  color: white;
+}
+
+.closeresume_btn {
+  width: 6vw;
+  border-radius: 4vw;
 }
