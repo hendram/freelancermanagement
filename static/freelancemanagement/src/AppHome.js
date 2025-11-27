@@ -1,131 +1,145 @@
-import React, { useState } from "react";
-import AddResume from "./AddResume"; // should only include the form/content
+import React, { useRef, useReducer } from "react";
+import AddResume from "./AddResume";
 import UpdateResume from "./UpdateResume";
+import AddReputation from "./AddReputation";
+import UpdateReputation from "./UpdateReputation";
+import AddReferrer from "./AddReferrer";
+import UpdateReferrer from "./UpdateReferrer";
 import "./AppHome.css";
 
-const freelancers = [
-  { id: 1, name: "John Smith", photo: "./photos/johnsmith.png", skills: "React, Node.js", reputation: 4.8, referrer: "Alice" },
-  { id: 2, name: "Maria Tan", photo: "./photos/mariatan.png", skills: "Python, FastAPI", reputation: 4.6, referrer: "Kevin" },
-  { id: 3, name: "Ahmed Noor", photo: "./photos/ahmednoor.png", skills: "Golang, DevOps", reputation: 4.9, referrer: "Sarah" },
-];
+// forceUpdate helper
+function useForceUpdate() {
+  return useReducer(() => ({}), {})[1];
+}
 
 export default function AppHome() {
-  const [submenuResumeVisible, setSubmenuResumeVisible] = useState(false);
-  const [showAddResume, setShowAddResume] = useState(false);
-  const [showUpdateResume, setShowUpdateResume] = useState(false);
-const [submenuRepVisible, setSubmenuRepVisible] = useState(false);
-const [submenuRefVisible, setSubmenuRefVisible] = useState(false);
+  const forceUpdate = useForceUpdate();
 
-  const handleAddResume = () => setShowAddResume(true);
-  const handleUpdateResume = () => setShowUpdateResume(true);
-  
-  const handleCloseAddResume = () => setShowAddResume(false);
-  const handleCloseUpdateResume = () => setShowUpdateResume(false);
+  // ---------------------------
+  // PAGE STATE USING ONLY useRef
+  // ---------------------------
+  const pages = useRef({
+    main: true,
+    addResume: false,
+    updateResume: false,
+    addReputation: false,
+    updateReputation: false,
+    addReferrer: false,
+    updateReferrer: false,
+  });
 
+  const switchPage = (page) => {
+    Object.keys(pages.current).forEach((k) => {
+      pages.current[k] = false;
+    });
+    pages.current[page] = true;
+    forceUpdate();
+  };
 
-return (
-  <div className="container">
-    <h1 className="title">Freelancer Candidates</h1>
+  // ---------------------------
+  // SAMPLE DATA
+  // ---------------------------
+  const freelancers = [
+    { id: 1, name: "John Smith", photo: "./photos/johnsmith.png", skills: "React, Node.js", reputation: 4.8, referrer: "Alice" },
+    { id: 2, name: "Maria Tan", photo: "./photos/mariatan.png", skills: "Python, FastAPI", reputation: 4.6, referrer: "Kevin" },
+    { id: 3, name: "Ahmed Noor", photo: "./photos/ahmednoor.png", skills: "Golang, DevOps", reputation: 4.9, referrer: "Sarah" },
+  ];
 
-    {/* 🔥 Top Menu */}
-    <div className="top-menu">
-      <div className="menu-row">
+  // ---------------------------
+  // MAIN PAGE UI (HIDDEN when another page shows)
+  // ---------------------------
+  const MainPage = () => (
+    <div className="container">
+      <h1 className="title">Freelancer Candidates</h1>
 
-        {/* --- Resume Menu --- */}
-        <div
-          className="menu-btn-wrapper"
-          onMouseEnter={() => setSubmenuResumeVisible(true)}
-          onMouseLeave={() => setSubmenuResumeVisible(false)}
-        >
-          <button className="resume-btn">Resume</button>
+      {/* ----------------- TOP MENU ----------------- */}
+      <div className="top-menu">
+        <div className="menu-row">
 
-          {submenuResumeVisible && (
+          {/* RESUME */}
+          <div className="menu-btn-wrapper">
+            <button className="resume-btn">Resume ▼</button>
             <div className="submenu">
-              <button className="add-resume-btn" onClick={handleAddResume} >
-                Add Resume
+              <button onClick={() => switchPage("addResume")}>Add Resume</button>
+              <button onClick={() => switchPage("updateResume")}>Update Resume</button>
+            </div>
+          </div>
+
+          {/* REPUTATION */}
+          <div className="menu-btn-wrapper">
+            <button className="menu-btn">Reputation ▼</button>
+            <div className="submenu">
+              <button onClick={() => switchPage("addReputation")}>Add Reputation</button>
+              <button onClick={() => switchPage("updateReputation")}>Update Reputation</button>
+            </div>
+          </div>
+
+          {/* REFERRER */}
+          <div className="menu-btn-wrapper">
+            <button className="menu-btn">Referrer ▼</button>
+            <div className="submenu">
+              <button onClick={() => switchPage("addReferrer")}>Add Referrer</button>
+              <button onClick={() => switchPage("updateReferrer")}>Update Referrer</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* FREELANCER CARDS */}
+      <div className="list">
+        {freelancers.map((item) => (
+          <div key={item.id} className="card">
+            <img src={item.photo} className="photo" alt="avatar" />
+            <div className="info">
+              <h2>{item.name}</h2>
+              <p>{item.skills}</p>
+            </div>
+            <div className="actions">
+              <button className="btn_resume" onClick={() => switchPage("updateResume")}>Resume</button>
+              <button className="btn_rep" onClick={() => switchPage("updateReputation")}>
+                Reputation ({item.reputation})
               </button>
-              <button className="update-resume-btn" onClick={handleUpdateResume} >
-                Update Resume
+              <button className="btn_ref" onClick={() => switchPage("updateReferrer")}>
+                Referrer: {item.referrer}
               </button>
             </div>
-          )}
-        </div>
-
-        {/* --- Reputation Menu --- */}
-        <div
-          className="menu-btn-wrapper"
-          onMouseEnter={() => setSubmenuRepVisible(true)}
-          onMouseLeave={() => setSubmenuRepVisible(false)}
-        >
-          <button className="menu-btn">Reputation</button>
-
-          {submenuRepVisible && (
-            <div className="submenu">
-              <button className="add-rep-btn">
-                Add Reputation
-              </button>
-              <button className="update-rep-btn">
-                Update Reputation
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* --- Referrer Menu --- */}
-        <div
-          className="menu-btn-wrapper"
-          onMouseEnter={() => setSubmenuRefVisible(true)}
-          onMouseLeave={() => setSubmenuRefVisible(false)}
-        >
-          <button className="menu-btn">Referrer</button>
-
-          {submenuRefVisible && (
-            <div className="submenu">
-              <button className="ref-points-btn">
-                Referrer Points
-              </button>
-              <button className="ref-profile-btn">
-                Referrer Profile
-              </button>
-            </div>
-          )}
-        </div>
-
+          </div>
+        ))}
       </div>
     </div>
+  );
 
-    {/* AddResume Panel inside same page */}
-    {showAddResume && (
-      <div className="add-resume-panel">
-        <AddResume goBack={handleCloseAddResume} />
-      </div>
-    )}
+  // ---------------------------
+  // PAGE RENDER LOGIC
+  // ---------------------------
+  return (
+    <>
+      {pages.current.main && <MainPage />}
 
-  {showUpdateResume && (
-      <div className="add-resume-panel">
-        <UpdateResume goBackU={handleCloseUpdateResume} />
-      </div>
-    )}
+      {pages.current.addResume && (
+        <AddResume goBack={() => switchPage("main")} />
+      )}
 
+      {pages.current.updateResume && (
+        <UpdateResume goBackU={() => switchPage("main")} />
+      )}
 
-    {/* Freelancer Cards */}
-    <div className="list">
-      {freelancers.map((item) => (
-        <div key={item.id} className="card">
-          <img src={item.photo} className="photo" alt="avatar" />
-          <div className="info">
-            <h2 className="name">{item.name}</h2>
-            <p className="skills">{item.skills}</p>
-          </div>
-          <div className="actions">
-            <button className="btn_resume">Resume</button>
-            <button className="btn_rep">Reputation ({item.reputation})</button>
-            <button className="btn_ref">Referrer: {item.referrer}</button>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+      {pages.current.addReputation && (
+        <AddReputation goBack={() => switchPage("main")} />
+      )}
 
+      {pages.current.updateReputation && (
+        <UpdateReputation goBack={() => switchPage("main")} />
+      )}
+
+      {pages.current.addReferrer && (
+        <AddReferrer goBack={() => switchPage("main")} />
+      )}
+
+      {pages.current.updateReferrer && (
+        <UpdateReferrer goBack={() => switchPage("main")} />
+      )}
+    </>
+  );
 }

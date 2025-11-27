@@ -7,10 +7,8 @@ export default function UpdateResume({ goBackU }) {
 
   const loadResumes = async () => {
     try {
-      const result = await invoke("updateresume"); 
-      // result must be array of resume objects
-
-      setResumes(result || []);
+      const result = await invoke("updateresume");
+      setResumes(Array.isArray(result) ? result : []);
     } catch (err) {
       console.error("ERROR loading resumes:", err);
       alert("Failed to load resume data");
@@ -22,33 +20,59 @@ export default function UpdateResume({ goBackU }) {
   }, []);
 
   return (
-    <div className="update-container">
+    <div className="container-updateresume">
       <h2>Resume List</h2>
 
       {resumes.map((r) => (
-        <div className="resume-box" key={r.freelancerId}>
-          {/* Top section: photo & bio */}
-          <div className="top-row">
-            <div className="photo-box">
-              <img src={r.photoUrl} alt="profile" className="photo" />
-            </div>
+        <div className="resume-box" key={r.id}>
+          {/* BIO SECTION */}
+          <div className="bio-section">
+            <h3 className="name">{r.fullName || "-"}</h3>
 
-            <div className="bio-box">
-              <h3 className="name">{r.fullName}</h3>
-              <p className="bio">{r.bio}</p>
+            <div className="bio-details">
+              <p><strong>Date of Birth:</strong> {r.dateOfBirth || "-"}</p>
+              <p><strong>Place of Birth:</strong> {r.placeOfBirth || "-"}</p>
+              <p><strong>Address:</strong> {r.address || "-"}</p>
+              <p><strong>Religion:</strong> {r.religion || "-"}</p>
+              <p><strong>Contact:</strong> {r.contact || "-"}</p>
+              <p><strong>Email:</strong> {r.email || "-"}</p>
+              <p><strong>Nationality:</strong> {r.nationality || "-"}</p>
+
+              {r.github && (
+                <p>
+                  <strong>GitHub:</strong>{" "}
+                  <a href={r.github} target="_blank" rel="noopener noreferrer">
+                    {r.github}
+                  </a>
+                </p>
+              )}
             </div>
           </div>
 
-          {/* Experience */}
+          {/* EXPERIENCE LIST */}
           <div className="section">
             <h4 className="section-title">Experience</h4>
-            <p className="section-content">{r.experience}</p>
+
+            {Array.isArray(r.experience) && r.experience.length > 0 ? (
+              r.experience.map((exp, idx) => (
+                <div className="experience-item" key={idx}>
+                  <p><strong>Company:</strong> {exp.company || "-"}</p>
+                  <p><strong>Position:</strong> {exp.position || "-"}</p>
+                  <p><strong>Period:</strong> {exp.workingPeriod || "-"}</p>
+                  <p><strong>Description:</strong></p>
+                  <p className="job-desc">{exp.jobDescription || "-"}</p>
+                  <hr />
+                </div>
+              ))
+            ) : (
+              <p>-</p>
+            )}
           </div>
 
-          {/* Skills */}
+          {/* SKILLS */}
           <div className="section">
             <h4 className="section-title">Skills</h4>
-            <p className="section-content">{r.skills}</p>
+            <p className="section-content">{r.skills || "-"}</p>
           </div>
         </div>
       ))}

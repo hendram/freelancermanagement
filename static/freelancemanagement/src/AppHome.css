@@ -157,12 +157,3 @@ body {
   border-radius: 10vw;
   border: 1px solid #00
 }
-
-.add-resume-panel {
-  width: 95%;
-  margin: 10px auto;
-  background: #fff;
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
