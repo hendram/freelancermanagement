@@ -4,50 +4,37 @@ import crypto from 'crypto';
 
 const resolver = new Resolver();
 
-/**
- * ADD RESUME
- * --------------------------------
- * Accepts:
- *  fullName, dateOfBirth, placeOfBirth, address, religion,
- *  contact, email, nationality, github,
- *  skills,
- *  experiences: [ { company, position, workingPeriod, jobDescription } ]
- */
 resolver.define('addresume', async ({ payload }) => {
-  const {
-    fullName, dateOfBirth, placeOfBirth, address, religion,
-    contact, email, nationality, github,
-    skills,
-    experiences    // array of experience objects
-  } = payload;
+  const { bio, experience, skills } = payload;
 
   const resumeId = crypto.randomUUID();
 
   try {
-    // INSERT MAIN BIO ROW
+    // INSERT BIO
     await sql.prepare(`
       INSERT INTO resumes
-      (id, full_name, date_of_birth, place_of_birth, address, religion,
-       contact, email, nationality, github, skills)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (id, first_name, last_name, date_of_birth, place_of_birth, address,
+       religion, contact, email, nationality, github, skills)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
     .bindParams(
       resumeId,
-      fullName,
-      dateOfBirth,
-      placeOfBirth,
-      address,
-      religion,
-      contact,
-      email,
-      nationality,
-      github,
+      bio.firstName,
+      bio.lastName,
+      bio.dateOfBirth,
+      bio.placeOfBirth,
+      bio.address,
+      bio.religion,
+      bio.contact,
+      bio.email,
+      bio.nationality,
+      bio.github,
       skills
     )
     .execute();
 
-    // INSERT ALL EXPERIENCE ROWS
-    for (const exp of experiences) {
+    // INSERT EXPERIENCE ROWS
+    for (const exp of experience) {
       await sql.prepare(`
         INSERT INTO experiences
         (id, resume_id, company, position, working_period, job_description)
@@ -72,18 +59,22 @@ resolver.define('addresume', async ({ payload }) => {
   }
 });
 
-
-
-/**
- * FETCH LAST 10 RESUMES + EXPERIENCES
- * ------------------------------------
- */
 resolver.define('updateresume', async () => {
   try {
+    // 1) Total count for dropdown options
+    const countQuery = await sql.prepare(`
+      SELECT COUNT(*) AS total
+      FROM resumes
+    `).execute();
+
+    const totalCount = countQuery.rows?.[0]?.total || 0;
+
+    // 2) Fetch first 10 resumes (initial load)
     const resumeQuery = await sql.prepare(`
       SELECT
         id,
-        full_name,
+        first_name,
+        last_name,
         date_of_birth,
         place_of_birth,
         address,
@@ -102,6 +93,7 @@ resolver.define('updateresume', async () => {
     const resumes = resumeQuery.rows || [];
     const finalList = [];
 
+    // 3) Build final resume list with experiences included
     for (const r of resumes) {
       const expQuery = await sql.prepare(`
         SELECT
@@ -120,7 +112,8 @@ resolver.define('updateresume', async () => {
 
       finalList.push({
         id: r.id,
-        fullName: r.full_name,
+        firstName: r.first_name,
+        lastName: r.last_name,
         dateOfBirth: r.date_of_birth,
         placeOfBirth: r.place_of_birth,
         address: r.address,
@@ -135,14 +128,20 @@ resolver.define('updateresume', async () => {
       });
     }
 
-    return finalList;
+    // 4) Final output
+    return {
+      totalCount,
+      resumes: finalList
+    };
 
   } catch (err) {
     console.error(">>> SQL ERROR STACK (updateresume):", err.stack);
-    return [];
+    return {
+      totalCount: 0,
+      resumes: []
+    };
   }
 });
-
 
 // REQUIRED EXPORT FOR FORGE
 export const handler = resolver.getDefinitions();

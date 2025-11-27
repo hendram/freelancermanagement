@@ -1,17 +1,10 @@
 import { migrationRunner } from '@forge/sql';
 
-export const DROP_OLD_TABLES = `
-  -- drop child tables first to avoid FK constraint issues
-  DROP TABLE IF EXISTS experiences;
-  DROP TABLE IF EXISTS referrers;
-  DROP TABLE IF EXISTS reputations;
-  DROP TABLE IF EXISTS resumes;
-`;
-
 export const CREATE_RESUME_TABLE = `
   CREATE TABLE IF NOT EXISTS resumes (
     id VARCHAR(64) PRIMARY KEY,
-    full_name TEXT,
+    first_name TEXT,
+    last_name TEXT,
     date_of_birth TEXT,
     place_of_birth TEXT,
     address TEXT,
@@ -25,7 +18,7 @@ export const CREATE_RESUME_TABLE = `
   );
 `;
 
-export const CREATE_EXPERIENCE_TABLE = `
+const CREATE_EXPERIENCE_TABLE_ONLY = `
   CREATE TABLE IF NOT EXISTS experiences (
     id VARCHAR(64) PRIMARY KEY,
     resume_id VARCHAR(64) NOT NULL,
@@ -34,15 +27,18 @@ export const CREATE_EXPERIENCE_TABLE = `
     working_period TEXT,
     job_description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_resume
-      FOREIGN KEY (resume_id)
+    CONSTRAINT fk_resume FOREIGN KEY (resume_id)
       REFERENCES resumes(id)
       ON DELETE CASCADE
   );
-  CREATE INDEX IF NOT EXISTS idx_experiences_resume_id ON experiences(resume_id);
 `;
 
-export const CREATE_REFERRER_TABLE = `
+const INDEX_EXPERIENCES = `
+  CREATE INDEX IF NOT EXISTS idx_experiences_resume_id 
+  ON experiences(resume_id);
+`;
+
+const CREATE_REFERRER_TABLE_ONLY = `
   CREATE TABLE IF NOT EXISTS referrers (
     id VARCHAR(64) PRIMARY KEY,
     resume_id VARCHAR(64) NOT NULL,
@@ -50,15 +46,18 @@ export const CREATE_REFERRER_TABLE = `
     referrer_contact TEXT,
     note TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_referrer_resume
-      FOREIGN KEY (resume_id)
+    CONSTRAINT fk_referrer_resume FOREIGN KEY (resume_id)
       REFERENCES resumes(id)
       ON DELETE CASCADE
   );
-  CREATE INDEX IF NOT EXISTS idx_referrers_resume_id ON referrers(resume_id);
 `;
 
-export const CREATE_REPUTATION_TABLE = `
+const INDEX_REFERRERS = `
+  CREATE INDEX IF NOT EXISTS idx_referrers_resume_id 
+  ON referrers(resume_id);
+`;
+
+const CREATE_REPUTATION_TABLE_ONLY = `
   CREATE TABLE IF NOT EXISTS reputations (
     id VARCHAR(64) PRIMARY KEY,
     resume_id VARCHAR(64) NOT NULL,
@@ -66,20 +65,28 @@ export const CREATE_REPUTATION_TABLE = `
     source TEXT,
     note TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_reputation_resume
-      FOREIGN KEY (resume_id)
+    CONSTRAINT fk_reputation_resume FOREIGN KEY (resume_id)
       REFERENCES resumes(id)
       ON DELETE CASCADE
   );
-  CREATE INDEX IF NOT EXISTS idx_reputations_resume_id ON reputations(resume_id);
+`;
+
+const INDEX_REPUTATIONS = `
+  CREATE INDEX IF NOT EXISTS idx_reputations_resume_id 
+  ON reputations(resume_id);
 `;
 
 const migrations = migrationRunner
-  .enqueue('v_drop_old_tables', DROP_OLD_TABLES)
   .enqueue('v_create_resumes', CREATE_RESUME_TABLE)
-  .enqueue('v_create_experiences', CREATE_EXPERIENCE_TABLE)
-  .enqueue('v_create_referrers', CREATE_REFERRER_TABLE)
-  .enqueue('v_create_reputations', CREATE_REPUTATION_TABLE);
+
+  .enqueue('v_create_experiences', CREATE_EXPERIENCE_TABLE_ONLY)
+  .enqueue('v_index_experiences', INDEX_EXPERIENCES)
+
+  .enqueue('v_create_referrers', CREATE_REFERRER_TABLE_ONLY)
+  .enqueue('v_index_referrers', INDEX_REFERRERS)
+
+  .enqueue('v_create_reputations', CREATE_REPUTATION_TABLE_ONLY)
+  .enqueue('v_index_reputations', INDEX_REPUTATIONS);
 
 export const runSchemaMigration = async () => {
   try {
