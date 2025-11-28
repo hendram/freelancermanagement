@@ -76,6 +76,48 @@ const INDEX_REPUTATIONS = `
   ON reputations(resume_id);
 `;
 
+// ------------------------- REPUTATION CATALOG TABLE -------------------------
+const CREATE_REPUTATION_CATALOG_TABLE = `
+  CREATE TABLE IF NOT EXISTS reputationcatalog (
+    id VARCHAR(64) PRIMARY KEY,
+    range_lower INTEGER NOT NULL,
+    range_upper INTEGER NOT NULL,
+    positive_id INTEGER,
+    positive_definition TEXT,
+    positive_value INTEGER,
+    negative_id INTEGER,
+    negative_definition TEXT,
+    negative_value INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+`;
+
+const INDEX_REPUTATION_CATALOG = `
+  CREATE INDEX IF NOT EXISTS idx_reputationcatalog_id 
+  ON reputationcatalog(id);
+`;
+
+// ------------------------- ASSIGN REPUTATION TABLE -------------------------
+const CREATE_ASSIGN_REPUTATION_TABLE = `
+  CREATE TABLE IF NOT EXISTS assignreputation (
+    id VARCHAR(64) PRIMARY KEY,
+    resume_id VARCHAR(64) NOT NULL,
+    fullname TEXT,
+    total_reputation_value INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_assignreputation_resume FOREIGN KEY (resume_id)
+      REFERENCES resumes(id)
+      ON DELETE CASCADE
+  );
+`;
+
+const INDEX_ASSIGN_REPUTATION = `
+  CREATE INDEX IF NOT EXISTS idx_assignreputation_resume_id 
+  ON assignreputation(resume_id);
+`;
+
+
+
 const migrations = migrationRunner
   .enqueue('v_create_resumes', CREATE_RESUME_TABLE)
 
@@ -86,7 +128,12 @@ const migrations = migrationRunner
   .enqueue('v_index_referrers', INDEX_REFERRERS)
 
   .enqueue('v_create_reputations', CREATE_REPUTATION_TABLE_ONLY)
-  .enqueue('v_index_reputations', INDEX_REPUTATIONS);
+  .enqueue('v_index_reputations', INDEX_REPUTATIONS)
+  .enqueue('v_create_reputationcatalog', CREATE_REPUTATION_CATALOG_TABLE)
+  .enqueue('v_index_reputationcatalog', INDEX_REPUTATION_CATALOG)
+  .enqueue('v_create_assignreputation', CREATE_ASSIGN_REPUTATION_TABLE)
+  .enqueue('v_index_assignreputation', INDEX_ASSIGN_REPUTATION);
+
 
 export const runSchemaMigration = async () => {
   try {

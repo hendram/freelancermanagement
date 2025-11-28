@@ -283,4 +283,93 @@ resolver.define('deleteresume', async ({ payload }) => {
 });
 
 
+resolver.define('reputationcatalog', async () => {
+  try {
+    const result = await sql.query(`
+      SELECT *
+      FROM reputationcatalog
+      ORDER BY id ASC
+    `);
+
+    // Map results to a clean array
+    const catalog = result.map(row => ({
+      id: row.id,
+      rangeLower: row.range_lower,
+      rangeUpper: row.range_upper,
+      positiveId: row.positive_id,
+      positiveDefinition: row.positive_definition,
+      positiveValue: row.positive_value,
+      negativeId: row.negative_id,
+      negativeDefinition: row.negative_definition,
+      negativeValue: row.negative_value
+    }));
+
+    return { success: true, catalog };
+  } catch (err) {
+    console.error("Failed to fetch reputation catalog:", err.stack);
+    return { success: false, error: "SQL select error" };
+  }
+});
+
+resolver.define('reputationcatalogsave', async ({ payload }) => {
+  const { positiveReps = [], negativeReps = [], posRange = {}, negRange = {} } = payload;
+
+  try {
+    // Delete all existing records
+    await sql.prepare(`DELETE FROM reputationcatalog`).execute();
+
+    // Insert positive reputations
+    for (const rep of positiveReps) {
+      await sql.prepare(`
+        INSERT INTO reputationcatalog (
+          id,
+          range_lower,
+          range_upper,
+          positive_id,
+          positive_definition,
+          positive_value
+        ) VALUES (?, ?, ?, ?, ?, ?)
+      `)
+      .bindParams(
+        rep.id,
+        posRange.from,
+        posRange.to,
+        rep.id,
+        rep.description,
+        rep.value
+      )
+      .execute();
+    }
+
+    // Insert negative reputations
+    for (const rep of negativeReps) {
+      await sql.prepare(`
+        INSERT INTO reputationcatalog (
+          id,
+          range_lower,
+          range_upper,
+          negative_id,
+          negative_definition,
+          negative_value
+        ) VALUES (?, ?, ?, ?, ?, ?)
+      `)
+      .bindParams(
+        rep.id,
+        negRange.from,
+        negRange.to,
+        rep.id,
+        rep.description,
+        rep.value
+      )
+      .execute();
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error("Failed to save reputation catalog:", err.stack);
+    return { success: false, error: "SQL insert error" };
+  }
+});
+
+
 export const handler = resolver.getDefinitions();

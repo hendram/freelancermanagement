@@ -2,8 +2,8 @@ import React, { useRef, useReducer } from "react";
 import AddResume from "./AddResume";
 import UpdateResume from "./UpdateResume";
 import UpdateAction from "./UpdateAction";
-import AddReputation from "./AddReputation";
-import UpdateReputation from "./UpdateReputation";
+import ReputationCatalog from "./ReputationCatalog";
+import AssignReputation from "./AssignReputation";
 import AddReferrer from "./AddReferrer";
 import UpdateReferrer from "./UpdateReferrer";
 import "./AppHome.css";
@@ -24,8 +24,8 @@ export default function AppHome() {
     addResume: false,
     updateResume: false,
     updateAction: false, // added
-    addReputation: false,
-    updateReputation: false,
+    reputationCatalog: false,
+    assignReputation: false,
     addReferrer: false,
     updateReferrer: false,
   });
@@ -81,8 +81,8 @@ export default function AppHome() {
           <div className="menu-btn-wrapper">
             <button className="menu-btn">Reputation ▼</button>
             <div className="submenu">
-              <button onClick={() => switchPage("addReputation")}>Add Reputation</button>
-              <button onClick={() => switchPage("updateReputation")}>Update Reputation</button>
+              <button onClick={() => switchPage("reputationcatalog")}> Reputation Catalog</button>
+              <button onClick={() => switchPage("assignreputation")}>Assign Reputation</button>
             </div>
           </div>
 
@@ -115,7 +115,7 @@ export default function AppHome() {
                 Resume
               </button>
 
-              <button className="btn_rep" onClick={() => switchPage("updateReputation")}>
+              <button className="btn_rep" onClick={() => switchPage("assignReputation")}>
                 Reputation ({item.reputation})
               </button>
 
@@ -157,12 +157,12 @@ export default function AppHome() {
         />
       )}
 
-      {pages.current.addReputation && (
-        <AddReputation goBack={() => switchPage("main")} />
+      {pages.current.reputationCatalog && (
+        <ReputationCatalog goBackRC={() => switchPage("main")} />
       )}
 
-      {pages.current.updateReputation && (
-        <UpdateReputation goBack={() => switchPage("main")} />
+      {pages.current.assignReputation && (
+        <AssignReputation goBackAR={() => switchPage("main")} />
       )}
 
       {pages.current.addReferrer && (
