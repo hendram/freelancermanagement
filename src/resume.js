@@ -282,16 +282,26 @@ resolver.define('deleteresume', async ({ payload }) => {
   }
 });
 
-
 resolver.define('reputationcatalog', async () => {
   try {
-    const result = await sql.query(`
-      SELECT *
+    const result = await sql.prepare(`
+      SELECT
+        id,
+        range_lowerpositive,
+        range_upperpositive,
+        positive_id,
+        positive_definition,
+        positive_value,
+        range_lowernegative,
+        range_uppernegative,
+        negative_id,
+        negative_definition,
+        negative_value
       FROM reputationcatalog
       ORDER BY id ASC
-    `);
+    `).execute();
 
-    const catalog = result.map(row => ({
+    const catalog = (result.rows || []).map(row => ({
       id: row.id,
       rangeLowerpositive: row.range_lowerpositive,
       rangeUpperpositive: row.range_upperpositive,
@@ -313,11 +323,11 @@ resolver.define('reputationcatalog', async () => {
   }
 });
 
-
 resolver.define('reputationcatalogsave', async ({ payload }) => {
   const { positiveReps = [], negativeReps = [], posRange = {}, negRange = {} } = payload;
 
   try {
+    // CLEAR TABLE
     await sql.prepare(`DELETE FROM reputationcatalog`).execute();
 
     const count = Math.max(positiveReps.length, negativeReps.length);
@@ -363,6 +373,145 @@ resolver.define('reputationcatalogsave', async ({ payload }) => {
     return { success: false, error: "SQL insert error" };
   }
 });
+
+resolver.define('getreputation', async () => {
+  try {
+    // 1) Fetch all freelancers
+    const resumeStmt = await sql.prepare(`
+      SELECT id AS resume_id, fullName
+      FROM resumes
+      ORDER BY fullName ASC
+    `);
+
+    const resumeResult = await resumeStmt.execute();
+
+    // 2) Fetch all assigned reputations
+    const repStmt = await sql.prepare(`
+      SELECT resume_id, total_reputation_value
+      FROM assignreputation
+    `);
+
+    const repResult = await repStmt.execute();
+
+    // Build map for quick lookup
+    const repMap = {};
+    repResult.rows.forEach(r => {
+      repMap[r.resume_id] = r.total_reputation_value;
+    });
+
+    // 3) Final combined list
+    const finalList = resumeResult.rows.map(r => ({
+      resume_id: r.resume_id,
+      fullName: r.fullName,
+      total_reputation_value: repMap[r.resume_id] || 0
+    }));
+
+    return { success: true, list: finalList };
+
+  } catch (err) {
+    console.error("getreputation failed:", err.stack);
+    return { success: false, error: "SQL select error" };
+  }
+});
+
+resolver.define('assignreputation', async ({ payload }) => {
+  const { resume_id, fullName, posId, negId } = payload;
+
+  if (!resume_id || !fullName) {
+    return { success: false, error: "Missing resume_id or fullName" };
+  }
+
+  try {
+    // ----------- Positive lookup ----------
+    let positiveValue = 0;
+    if (posId && posId > 0) {
+      const stmt = await sql.prepare(`
+        SELECT positive_value
+        FROM reputationcatalog
+        WHERE positive_id = ?
+        LIMIT 1
+      `);
+      const res = await stmt.bindParams(posId).execute();
+      if (res.rows.length) positiveValue = res.rows[0].positive_value;
+    }
+
+    // ----------- Negative lookup ----------
+    let negativeValue = 0;
+    if (negId && negId > 0) {
+      const stmt = await sql.prepare(`
+        SELECT negative_value
+        FROM reputationcatalog
+        WHERE negative_id = ?
+        LIMIT 1
+      `);
+      const res = await stmt.bindParams(negId).execute();
+      if (res.rows.length) negativeValue = res.rows[0].negative_value;
+    }
+
+    // ----------- Check existing row ----------
+    let currentValue = 0;
+    let existingId = null;
+
+    const check = await sql.prepare(`
+      SELECT id, total_reputation_value
+      FROM assignreputation
+      WHERE resume_id = ?
+      LIMIT 1
+    `);
+
+    const found = await check.bindParams(resume_id).execute();
+
+    if (found.rows.length > 0) {
+      existingId = found.rows[0].id;
+      currentValue = found.rows[0].total_reputation_value;
+    }
+
+    // ----------- Final total ----------
+    const newTotal = currentValue + positiveValue + negativeValue;
+
+    // ----------- UPDATE ----------
+    if (existingId) {
+      const updateStmt = await sql.prepare(`
+        UPDATE assignreputation
+        SET total_reputation_value = ?, fullname = ?
+        WHERE id = ?
+      `);
+      await updateStmt.bindParams(newTotal, fullName, existingId).execute();
+    }
+
+    // ----------- INSERT (AUTO_RANDOM ID) ----------
+    else {
+      const insertStmt = await sql.prepare(`
+        INSERT INTO assignreputation (
+          resume_id,
+          fullname,
+          total_reputation_value
+        )
+        VALUES (?, ?, ?)
+      `);
+
+      await insertStmt.bindParams(
+        resume_id,
+        fullName,
+        newTotal
+      ).execute();
+    }
+
+    return {
+      success: true,
+      resume_id,
+      fullName,
+      appliedPositive: positiveValue,
+      appliedNegative: negativeValue,
+      finalTotal: newTotal
+    };
+
+  } catch (err) {
+    console.error("assignreputation error:", err.stack);
+    return { success: false, error: "SQL error while assigning reputation" };
+  }
+});
+
 
 
 export const handler = resolver.getDefinitions();

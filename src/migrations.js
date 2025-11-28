@@ -61,7 +61,7 @@ const INDEX_REFERRERS = `
 // ------------------------- REPUTATION CATALOG TABLE -------------------------
 const CREATE_REPUTATION_CATALOG_TABLE = `
   CREATE TABLE IF NOT EXISTS reputationcatalog (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id BIGINT PRIMARY KEY AUTO_RANDOM,
     range_lowerpositive INTEGER,
     range_upperpositive INTEGER,
     positive_id INTEGER,
@@ -84,7 +84,7 @@ const INDEX_REPUTATION_CATALOG = `
 // ------------------------- ASSIGN REPUTATION TABLE -------------------------
 const CREATE_ASSIGN_REPUTATION_TABLE = `
   CREATE TABLE IF NOT EXISTS assignreputation (
-    id VARCHAR(64) PRIMARY KEY,
+    id BIGINT PRIMARY KEY AUTO_RANDOM,
     resume_id VARCHAR(64) NOT NULL,
     fullname TEXT,
     total_reputation_value INTEGER DEFAULT 0,

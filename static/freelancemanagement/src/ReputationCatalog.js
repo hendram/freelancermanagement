@@ -9,44 +9,54 @@ export default function ReputationCatalog({ goBackRC }) {
   const [positiveReps, setPositiveReps] = useState([]);
   const [negativeReps, setNegativeReps] = useState([]);
 
-  // -------------------------
-  // Load catalog from database on mount
-  // -------------------------
+  // -------------------------------------------------------
+  // LOAD REPUTATION CATALOG FROM DB
+  // -------------------------------------------------------
   useEffect(() => {
     const loadCatalog = async () => {
       try {
         const res = await invoke("reputationcatalog");
-        if (res.success && res.catalog) {
-          // Separate positive and negative from fetched data
-          const pos = res.catalog
-            .filter(r => r.positiveId)
-            .map(r => ({
-              id: r.positiveId,
-              description: r.positiveDefinition || "",
-              value: r.positiveValue || "",
-            }));
 
-          const neg = res.catalog
-            .filter(r => r.negativeId)
-            .map(r => ({
-              id: r.negativeId,
-              description: r.negativeDefinition || "",
-              value: r.negativeValue || "",
-            }));
+        if (!res.success || !res.catalog) return;
 
-          setPositiveReps(pos.length ? pos : []);
-          setNegativeReps(neg.length ? neg : []);
+        const catalog = res.catalog;
 
-          // Set ranges if available
-          if (res.catalog.length) {
-            const posRangeLower = Math.min(...pos.map(r => Number(r.value) || 1));
-            const posRangeUpper = Math.max(...pos.map(r => Number(r.value) || 10));
-            setPosRange({ from: posRangeLower || 1, to: posRangeUpper || 10 });
+// Extract positive rows
+const pos = catalog
+  .filter(r => r.positiveId)
+  .map(r => ({
+    id: r.positiveId,
+    description: r.positiveDefinition || "",
+    value: Number(r.positiveValue || 0),
+  }))
+  .sort((a, b) => a.id - b.id);   // ADD THIS
 
-            const negRangeLower = Math.min(...neg.map(r => Number(r.value) || 1));
-            const negRangeUpper = Math.max(...neg.map(r => Number(r.value) || 10));
-            setNegRange({ from: negRangeLower || 1, to: negRangeUpper || 10 });
-          }
+// Extract negative rows
+const neg = catalog
+  .filter(r => r.negativeId)
+  .map(r => ({
+    id: r.negativeId,
+    description: r.negativeDefinition || "",
+    value: Number(r.negativeValue || 0),
+  }))
+  .sort((a, b) => a.id - b.id);   // ADD THIS
+
+setPositiveReps(pos);
+setNegativeReps(neg);
+
+        // Ranges
+        if (catalog.length > 0) {
+          // Positive Range
+          const pl = catalog[0].rangeLowerpositive;
+          const pu = catalog[0].rangeUpperpositive;
+          if (pl !== undefined && pu !== undefined)
+            setPosRange({ from: Number(pl), to: Number(pu) });
+
+          // Negative Range
+          const nl = catalog[0].rangeLowernegative;
+          const nu = catalog[0].rangeUppernegative;
+          if (nl !== undefined && nu !== undefined)
+            setNegRange({ from: Number(nl), to: Number(nu) });
         }
       } catch (err) {
         console.error("Failed to load reputation catalog:", err);
@@ -56,45 +66,89 @@ export default function ReputationCatalog({ goBackRC }) {
     loadCatalog();
   }, []);
 
-  // -------------------------
-  // Add / Remove reputation items
-  // -------------------------
-  const addPositive = () =>
-    setPositiveReps(prev => [...prev, { id: prev.length + 1, description: "", value: "" }]);
-  const removePositive = () => setPositiveReps(prev => prev.slice(0, -1));
-  const addNegative = () =>
-    setNegativeReps(prev => [...prev, { id: prev.length + 1, description: "", value: "" }]);
-  const removeNegative = () => setNegativeReps(prev => prev.slice(0, -1));
+  // -------------------------------------------------------
+  // ADD / REMOVE ITEMS
+  // -------------------------------------------------------
+  const addPositive = () => {
+    setPositiveReps(prev => [
+      ...prev,
+      {
+        id: prev.length ? prev[prev.length - 1].id + 1 : 1,
+        description: "",
+        value: "",
+      },
+    ]);
+  };
 
-  // -------------------------
-  // Update functions
-  // -------------------------
+  const removePositive = () =>
+    setPositiveReps(prev => prev.slice(0, -1));
+
+  const addNegative = () => {
+    setNegativeReps(prev => [
+      ...prev,
+      {
+        id: prev.length ? prev[prev.length - 1].id + 1 : 1,
+        description: "",
+        value: "",
+      },
+    ]);
+  };
+
+  const removeNegative = () =>
+    setNegativeReps(prev => prev.slice(0, -1));
+
+  // -------------------------------------------------------
+  // UPDATE ITEMS
+  // -------------------------------------------------------
   const updatePositive = (idx, key, val) =>
-    setPositiveReps(prev => prev.map((rep, i) => (i === idx ? { ...rep, [key]: val } : rep)));
-  const updateNegative = (idx, key, val) =>
-    setNegativeReps(prev => prev.map((rep, i) => (i === idx ? { ...rep, [key]: val } : rep)));
+    setPositiveReps(prev =>
+      prev.map((item, i) =>
+        i === idx ? { ...item, [key]: val } : item
+      )
+    );
 
-  // -------------------------
-  // Submit Catalog
-  // -------------------------
+  const updateNegative = (idx, key, val) =>
+    setNegativeReps(prev =>
+      prev.map((item, i) =>
+        i === idx ? { ...item, [key]: val } : item
+      )
+    );
+
+  // -------------------------------------------------------
+  // SUBMIT TO BACKEND
+  // -------------------------------------------------------
   const submit = async () => {
     const payload = {
       positiveReps,
       negativeReps,
-      posRange,
-      negRange,
+      posRange: {
+        from: Number(posRange.from),
+        to: Number(posRange.to),
+      },
+      negRange: {
+        from: Number(negRange.from),
+        to: Number(negRange.to),
+      },
     };
 
     try {
-      await invoke("reputationcatalogsave", payload); // save resolver
-      alert("Reputation catalog saved successfully!");
-      if (goBackRC) goBackRC();
+      const res = await invoke("reputationcatalogsave", payload);
+
+      if (res.success) {
+        alert("Reputation catalog saved successfully!");
+        if (goBackRC) goBackRC();
+      } else {
+        alert("Failed to save catalog");
+      }
     } catch (err) {
       console.error(err);
       alert("Failed to save catalog");
     }
   };
 
+  // -------------------------------------------------------
+  // RENDER
+  // -------------------------------------------------------
   return (
     <div className="container-rc">
       <h2>Reputation Catalog</h2>
@@ -102,16 +156,21 @@ export default function ReputationCatalog({ goBackRC }) {
       {/* ---------------- POSITIVE REPUTATION ---------------- */}
       <div className="rep-section">
         <h3>Positive Reputation Range</h3>
+
         <input
           type="number"
           value={posRange.from}
-          onChange={e => setPosRange({ ...posRange, from: e.target.value })}
+          onChange={e =>
+            setPosRange({ ...posRange, from: Number(e.target.value) })
+          }
           placeholder="From"
         />
         <input
           type="number"
           value={posRange.to}
-          onChange={e => setPosRange({ ...posRange, to: e.target.value })}
+          onChange={e =>
+            setPosRange({ ...posRange, to: Number(e.target.value) })
+          }
           placeholder="To"
         />
 
@@ -120,15 +179,19 @@ export default function ReputationCatalog({ goBackRC }) {
             <span>{rep.id}.</span>
             <input
               type="text"
-              placeholder="Description"
               value={rep.description}
-              onChange={e => updatePositive(idx, "description", e.target.value)}
+              placeholder="Description"
+              onChange={e =>
+                updatePositive(idx, "description", e.target.value)
+              }
             />
             <input
               type="number"
-              placeholder="Value"
               value={rep.value}
-              onChange={e => updatePositive(idx, "value", e.target.value)}
+              placeholder="Value"
+              onChange={e =>
+                updatePositive(idx, "value", Number(e.target.value))
+              }
             />
           </div>
         ))}
@@ -140,16 +203,21 @@ export default function ReputationCatalog({ goBackRC }) {
       {/* ---------------- NEGATIVE REPUTATION ---------------- */}
       <div className="rep-section">
         <h3>Negative Reputation Range</h3>
+
         <input
           type="number"
           value={negRange.from}
-          onChange={e => setNegRange({ ...negRange, from: e.target.value })}
+          onChange={e =>
+            setNegRange({ ...negRange, from: Number(e.target.value) })
+          }
           placeholder="From"
         />
         <input
           type="number"
           value={negRange.to}
-          onChange={e => setNegRange({ ...negRange, to: e.target.value })}
+          onChange={e =>
+            setNegRange({ ...negRange, to: Number(e.target.value) })
+          }
           placeholder="To"
         />
 
@@ -158,15 +226,19 @@ export default function ReputationCatalog({ goBackRC }) {
             <span>{rep.id}.</span>
             <input
               type="text"
-              placeholder="Description"
               value={rep.description}
-              onChange={e => updateNegative(idx, "description", e.target.value)}
+              placeholder="Description"
+              onChange={e =>
+                updateNegative(idx, "description", e.target.value)
+              }
             />
             <input
               type="number"
-              placeholder="Value"
               value={rep.value}
-              onChange={e => updateNegative(idx, "value", e.target.value)}
+              placeholder="Value"
+              onChange={e =>
+                updateNegative(idx, "value", Number(e.target.value))
+              }
             />
           </div>
         ))}

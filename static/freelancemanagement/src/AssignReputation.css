@@ -1,0 +1,44 @@
+.assign-container {
+  padding: 20px;
+}
+
+.assign-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.assign-table th,
+.assign-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+.assign-table input {
+  width: 100%;
+  padding: 6px;
+}
+
+.assign-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-submit {
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+}
+
+.btn-reset {
+  padding: 8px 16px;
+  background: #555;
+  color: white;
+}
+
+.btn-close {
+  padding: 8px 16px;
+  background: #999;
+  color: white;
+}
