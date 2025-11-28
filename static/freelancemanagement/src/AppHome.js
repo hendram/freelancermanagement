@@ -37,6 +37,16 @@ export default function AppHome() {
   };
 
   // ---------------------------
+  // SELECTED RESUME FOR UPDATE
+  // ---------------------------
+  const selectedResumeRef = useRef(null);
+
+  const updateResume = (resumeData) => {
+    selectedResumeRef.current = resumeData; // store selected resume
+    switchPage("updateResume");
+  };
+
+  // ---------------------------
   // SAMPLE DATA
   // ---------------------------
   const freelancers = [
@@ -96,10 +106,17 @@ export default function AppHome() {
               <p>{item.skills}</p>
             </div>
             <div className="actions">
-              <button className="btn_resume" onClick={() => switchPage("updateResume")}>Resume</button>
+              <button
+                className="btn_resume"
+                onClick={() => updateResume(item)}
+              >
+                Resume
+              </button>
+
               <button className="btn_rep" onClick={() => switchPage("updateReputation")}>
                 Reputation ({item.reputation})
               </button>
+
               <button className="btn_ref" onClick={() => switchPage("updateReferrer")}>
                 Referrer: {item.referrer}
               </button>
@@ -122,7 +139,10 @@ export default function AppHome() {
       )}
 
       {pages.current.updateResume && (
-        <UpdateResume goBackU={() => switchPage("main")} />
+        <UpdateResume
+          goBackU={() => switchPage("main")}
+          resumeData={selectedResumeRef.current}
+        />
       )}
 
       {pages.current.addReputation && (

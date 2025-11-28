@@ -143,5 +143,138 @@ resolver.define('updateresume', async () => {
   }
 });
 
-// REQUIRED EXPORT FOR FORGE
+resolver.define('updateaction', async (req) => {
+  try {
+    const data = req.payload;
+
+    const {
+      id,
+      firstName,
+      lastName,
+      dateOfBirth,
+      placeOfBirth,
+      address,
+      religion,
+      contact,
+      email,
+      nationality,
+      github,
+      skills
+    } = data;
+
+    // 1) Update the resume
+    const updateQuery = await sql.prepare(`
+      UPDATE resumes
+      SET
+        first_name = ?,
+        last_name = ?,
+        date_of_birth = ?,
+        place_of_birth = ?,
+        address = ?,
+        religion = ?,
+        contact = ?,
+        email = ?,
+        nationality = ?,
+        github = ?,
+        skills = ?
+      WHERE id = ?
+      RETURNING
+        id,
+        first_name,
+        last_name,
+        date_of_birth,
+        place_of_birth,
+        address,
+        religion,
+        contact,
+        email,
+        nationality,
+        github,
+        skills,
+        created_at
+    `)
+    .bindParams(
+      firstName,
+      lastName,
+      dateOfBirth,
+      placeOfBirth,
+      address,
+      religion,
+      contact,
+      email,
+      nationality,
+      github,
+      skills,
+      id
+    )
+    .execute();
+
+    const updatedResume = updateQuery.rows?.[0] || null;
+
+    // 2) Fetch experiences too (same as updateresume structure)
+    let experiences = [];
+    if (updatedResume) {
+      const expQuery = await sql.prepare(`
+        SELECT
+          id,
+          company,
+          position,
+          working_period,
+          job_description,
+          created_at
+        FROM experiences
+        WHERE resume_id = ?
+        ORDER BY created_at DESC
+      `)
+      .bindParams(updatedResume.id)
+      .execute();
+
+      experiences = expQuery.rows || [];
+    }
+
+    // 3) Return final object (same style as updateresume)
+    return {
+      success: true,
+      resume: {
+        ...updatedResume,
+        experiences
+      }
+    };
+
+  } catch (err) {
+    console.error(">>> SQL ERROR STACK (updateaction):", err.stack);
+    return {
+      success: false,
+      resume: null
+    };
+  }
+});
+
+resolver.define("deleteresume", async ({ payload }) => {
+  const { id } = payload;
+
+  if (!id) {
+    return { success: false, error: "Missing resume ID" };
+  }
+
+  try {
+    // Delete experiences first
+    await sql`
+      DELETE FROM experiences
+      WHERE resume_id = ${id}
+    `;
+
+    // Delete bio
+    await sql`
+      DELETE FROM resumes
+      WHERE id = ${id}
+    `;
+
+    return { success: true };
+  } catch (err) {
+    console.error("Delete resume failed:", err);
+    return { success: false, error: "SQL delete error" };
+  }
+});
+
 export const handler = resolver.getDefinitions();
