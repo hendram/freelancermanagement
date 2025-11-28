@@ -1,6 +1,7 @@
 import React, { useRef, useReducer } from "react";
 import AddResume from "./AddResume";
 import UpdateResume from "./UpdateResume";
+import UpdateAction from "./UpdateAction";
 import AddReputation from "./AddReputation";
 import UpdateReputation from "./UpdateReputation";
 import AddReferrer from "./AddReferrer";
@@ -22,6 +23,7 @@ export default function AppHome() {
     main: true,
     addResume: false,
     updateResume: false,
+    updateAction: false, // added
     addReputation: false,
     updateReputation: false,
     addReferrer: false,
@@ -141,6 +143,16 @@ export default function AppHome() {
       {pages.current.updateResume && (
         <UpdateResume
           goBackU={() => switchPage("main")}
+          onSelectResumeForUpdate={(resume) => {
+            selectedResumeRef.current = resume; // store the resume to update
+            switchPage("updateAction");         // switch to UpdateAction page
+          }}
+        />
+      )}
+
+      {pages.current.updateAction && (
+        <UpdateAction
+          goBackUA={() => switchPage("updateResume")}
           resumeData={selectedResumeRef.current}
         />
       )}

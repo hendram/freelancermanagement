@@ -250,7 +250,8 @@ resolver.define('updateaction', async (req) => {
   }
 });
 
-resolver.define("deleteresume", async ({ payload }) => {
+
+resolver.define('deleteresume', async ({ payload }) => {
   const { id } = payload;
 
   if (!id) {
@@ -259,22 +260,27 @@ resolver.define("deleteresume", async ({ payload }) => {
 
   try {
     // Delete experiences first
-    await sql`
+    await sql.prepare(`
       DELETE FROM experiences
-      WHERE resume_id = ${id}
-    `;
+      WHERE resume_id = ?
+    `)
+    .bindParams(id)
+    .execute();
 
-    // Delete bio
-    await sql`
+    // Delete resume
+    await sql.prepare(`
       DELETE FROM resumes
-      WHERE id = ${id}
-    `;
+      WHERE id = ?
+    `)
+    .bindParams(id)
+    .execute();
 
     return { success: true };
   } catch (err) {
-    console.error("Delete resume failed:", err);
+    console.error("Delete resume failed:", err.stack);
     return { success: false, error: "SQL delete error" };
   }
 });
+
 
 export const handler = resolver.getDefinitions();

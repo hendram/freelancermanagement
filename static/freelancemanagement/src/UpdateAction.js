@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { invoke } from "@forge/bridge";
 import "./AddResume.css";
 
-export default function UpdateAction({ goBack, resumeData }) {
+export default function UpdateAction({ goBackUA, resumeData }) {
   const firstNameRef = useRef();
   const lastNameRef = useRef();
 
@@ -45,40 +45,37 @@ export default function UpdateAction({ goBack, resumeData }) {
   // -----------------------------
   // PREFILL DATA WHEN OPEN UPDATE
   // -----------------------------
-  useEffect(() => {
-    if (!resumeData) return;
+useEffect(() => {
+  if (!resumeData) return;
 
-    if (firstNameRef.current)
-      firstNameRef.current.value = resumeData.bio?.firstName || "";
-    if (lastNameRef.current)
-      lastNameRef.current.value = resumeData.bio?.lastName || "";
+  // Prefill first/last name
+  if (firstNameRef.current) firstNameRef.current.value = resumeData.firstName || "";
+  if (lastNameRef.current) lastNameRef.current.value = resumeData.lastName || "";
 
-    setBio({
-      dateOfBirth: resumeData.bio?.dateOfBirth || "",
-      placeOfBirth: resumeData.bio?.placeOfBirth || "",
-      address: resumeData.bio?.address || "",
-      religion: resumeData.bio?.religion || "",
-      contact: resumeData.bio?.contact || "",
-      email: resumeData.bio?.email || "",
-      nationality: resumeData.bio?.nationality || "",
-      github: resumeData.bio?.github || "",
-    });
+  setBio({
+    dateOfBirth: resumeData.dateOfBirth || "",
+    placeOfBirth: resumeData.placeOfBirth || "",
+    address: resumeData.address || "",
+    religion: resumeData.religion || "",
+    contact: resumeData.contact || "",
+    email: resumeData.email || "",
+    nationality: resumeData.nationality || "",
+    github: resumeData.github || "",
+  });
 
-    setExperiences(
-      resumeData.experience?.length
-        ? resumeData.experience
-        : [
-            {
-              company: "",
-              position: "",
-              workingPeriod: "",
-              jobDescription: "",
-            },
-          ]
-    );
+  setExperiences(
+    resumeData.experiences?.map((exp) => ({
+      company: exp.company,
+      position: exp.position,
+      workingPeriod: exp.working_period,
+      jobDescription: exp.job_description,
+    })) || [
+      { company: "", position: "", workingPeriod: "", jobDescription: "" },
+    ]
+  );
 
-    setSkills(resumeData.skills || "");
-  }, [resumeData]);
+  setSkills(resumeData.skills || "");
+}, [resumeData]);
 
   // -----------------------------
   // SUBMIT UPDATED DATA
@@ -98,7 +95,7 @@ export default function UpdateAction({ goBack, resumeData }) {
     try {
       await invoke("updateresume", payload);
       alert("Resume updated successfully!");
-      if (goBack) goBack();
+      if (goBackUA) goBackUA();
     } catch (err) {
       alert("Failed to update resume");
     }
@@ -263,8 +260,8 @@ export default function UpdateAction({ goBack, resumeData }) {
           Update Resume
         </button>
 
-        {goBack && (
-          <button className="closeresume_btn" onClick={goBack}>
+        {goBackUA && (
+          <button className="closeresume_btn" onClick={goBackUA}>
             Close
           </button>
         )}
