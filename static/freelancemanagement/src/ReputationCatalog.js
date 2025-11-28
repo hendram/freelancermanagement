@@ -96,7 +96,7 @@ export default function ReputationCatalog({ goBackRC }) {
   };
 
   return (
-    <div className="container">
+    <div className="container-rc">
       <h2>Reputation Catalog</h2>
 
       {/* ---------------- POSITIVE REPUTATION ---------------- */}

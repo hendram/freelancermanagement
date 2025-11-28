@@ -81,8 +81,8 @@ export default function AppHome() {
           <div className="menu-btn-wrapper">
             <button className="menu-btn">Reputation ▼</button>
             <div className="submenu">
-              <button onClick={() => switchPage("reputationcatalog")}> Reputation Catalog</button>
-              <button onClick={() => switchPage("assignreputation")}>Assign Reputation</button>
+              <button onClick={() => switchPage("reputationCatalog")}> Reputation Catalog</button>
+              <button onClick={() => switchPage("assignReputation")}>Assign Reputation</button>
             </div>
           </div>
 

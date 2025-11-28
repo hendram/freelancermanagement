@@ -1,12 +1,11 @@
 /* ---------------- Container ---------------- */
-.container {
-  max-width: 900px;
-  margin: 20px auto;
-  padding: 20px;
-  background-color: #fdfdfd;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  font-family: Arial, sans-serif;
+.container-rc {
+ display: flex;
+ flex-direction: column;
+ width: 100vw;
+ min-height: 100vh;
+ justify-content: center;
+ align-items: center;  
 }
 
 /* ---------------- Headings ---------------- */
