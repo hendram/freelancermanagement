@@ -86,7 +86,8 @@ const CREATE_ASSIGN_REPUTATION_TABLE = `
   CREATE TABLE IF NOT EXISTS assignreputation (
     id BIGINT PRIMARY KEY AUTO_RANDOM,
     resume_id VARCHAR(64) NOT NULL,
-    fullname TEXT,
+    first_name TEXT,
+    last_name TEXT,
     total_reputation_value INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_assignreputation_resume FOREIGN KEY (resume_id)

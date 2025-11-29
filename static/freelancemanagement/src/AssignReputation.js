@@ -13,14 +13,13 @@ export default function AssignReputation({ goBackAR }) {
     const load = async () => {
       try {
         const res = await invoke("getreputation");
+        console.log("res", res);
 
         if (res.success && res.list) {
           const mapped = res.list.map(r => ({
             resume_id: r.resume_id,
             fullName: r.fullName,
             reputation: r.total_reputation_value || 0,
-            posInput: "",
-            negInput: ""
           }));
 
           setRows(mapped);

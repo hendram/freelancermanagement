@@ -376,33 +376,38 @@ resolver.define('reputationcatalogsave', async ({ payload }) => {
 
 resolver.define('getreputation', async () => {
   try {
-    // 1) Fetch all freelancers
-    const resumeStmt = await sql.prepare(`
-      SELECT id AS resume_id, fullName
+    // 1) Fetch all active freelancers (works reliably)
+    const resumeResult = await sql.prepare(`
+      SELECT id AS resume_id, first_name, last_name
       FROM resumes
-      ORDER BY fullName ASC
-    `);
+      ORDER BY first_name ASC, last_name ASC
+    `).execute();
 
-    const resumeResult = await resumeStmt.execute();
+    const resumeRows = resumeResult.rows || [];
 
-    // 2) Fetch all assigned reputations
-    const repStmt = await sql.prepare(`
+    // Fast lookup for valid resumes
+    const validResumeIds = new Set(resumeRows.map(r => r.resume_id));
+
+    // 2) Fetch all reputation entries (raw)
+    const repResult = await sql.prepare(`
       SELECT resume_id, total_reputation_value
       FROM assignreputation
-    `);
+    `).execute();
 
-    const repResult = await repStmt.execute();
+    const repRows = repResult.rows || [];
 
-    // Build map for quick lookup
+    // 3) Build repMap but only for VALID resume ids
     const repMap = {};
-    repResult.rows.forEach(r => {
-      repMap[r.resume_id] = r.total_reputation_value;
+    repRows.forEach(r => {
+      if (validResumeIds.has(r.resume_id)) {
+        repMap[r.resume_id] = r.total_reputation_value;
+      }
     });
 
-    // 3) Final combined list
-    const finalList = resumeResult.rows.map(r => ({
+    // 4) Final combined list (every resume is shown)
+    const finalList = resumeRows.map(r => ({
       resume_id: r.resume_id,
-      fullName: r.fullName,
+      fullName: `${r.first_name} ${r.last_name}`.trim(),
       total_reputation_value: repMap[r.resume_id] || 0
     }));
 
@@ -415,92 +420,88 @@ resolver.define('getreputation', async () => {
 });
 
 resolver.define('assignreputation', async ({ payload }) => {
-  const { resume_id, fullName, posId, negId } = payload;
-
-  if (!resume_id || !fullName) {
-    return { success: false, error: "Missing resume_id or fullName" };
-  }
-
   try {
-    // ----------- Positive lookup ----------
+    const { resume_id, fullName, posId, negId } = payload;
+
+    if (!resume_id || !fullName) {
+      return { success: false, error: "Missing resume_id or fullName" };
+    }
+
+    // Split fullName → store always for audit/history
+    const parts = fullName.trim().split(" ");
+    const first_name = parts[0] || "";
+    const last_name = parts.slice(1).join(" ") || "";
+
+    // ----------- Get positive value -----------
     let positiveValue = 0;
     if (posId && posId > 0) {
-      const stmt = await sql.prepare(`
+      const posResult = await sql.prepare(`
         SELECT positive_value
         FROM reputationcatalog
         WHERE positive_id = ?
-        LIMIT 1
-      `);
-      const res = await stmt.bindParams(posId).execute();
-      if (res.rows.length) positiveValue = res.rows[0].positive_value;
+      `).bindParams(posId).execute();
+
+      if (posResult.rows.length > 0) {
+        positiveValue = posResult.rows[0].positive_value;
+      }
     }
 
-    // ----------- Negative lookup ----------
+    // ----------- Get negative value -----------
     let negativeValue = 0;
     if (negId && negId > 0) {
-      const stmt = await sql.prepare(`
+      const negResult = await sql.prepare(`
         SELECT negative_value
         FROM reputationcatalog
         WHERE negative_id = ?
-        LIMIT 1
-      `);
-      const res = await stmt.bindParams(negId).execute();
-      if (res.rows.length) negativeValue = res.rows[0].negative_value;
+      `).bindParams(negId).execute();
+
+      if (negResult.rows.length > 0) {
+        negativeValue = negResult.rows[0].negative_value;
+      }
     }
 
-    // ----------- Check existing row ----------
-    let currentValue = 0;
-    let existingId = null;
-
-    const check = await sql.prepare(`
+    // ----------- Check existing reputation row -----------
+    const checkResult = await sql.prepare(`
       SELECT id, total_reputation_value
       FROM assignreputation
       WHERE resume_id = ?
       LIMIT 1
-    `);
+    `).bindParams(resume_id).execute();
 
-    const found = await check.bindParams(resume_id).execute();
+    let newTotal = positiveValue + negativeValue;
 
-    if (found.rows.length > 0) {
-      existingId = found.rows[0].id;
-      currentValue = found.rows[0].total_reputation_value;
-    }
+    // ----------- Update -----------
+    if (checkResult.rows.length > 0) {
+      const existingId = checkResult.rows[0].id;
+      const currentValue = checkResult.rows[0].total_reputation_value;
 
-    // ----------- Final total ----------
-    const newTotal = currentValue + positiveValue + negativeValue;
+      newTotal = currentValue + positiveValue + negativeValue;
 
-    // ----------- UPDATE ----------
-    if (existingId) {
-      const updateStmt = await sql.prepare(`
+      await sql.prepare(`
         UPDATE assignreputation
-        SET total_reputation_value = ?, fullname = ?
+        SET total_reputation_value = ?, first_name = ?, last_name = ?
         WHERE id = ?
-      `);
-      await updateStmt.bindParams(newTotal, fullName, existingId).execute();
+      `).bindParams(newTotal, first_name, last_name, existingId).execute();
     }
 
-    // ----------- INSERT (AUTO_RANDOM ID) ----------
+    // ----------- Insert -----------
     else {
-      const insertStmt = await sql.prepare(`
+      await sql.prepare(`
         INSERT INTO assignreputation (
           resume_id,
-          fullname,
+          first_name,
+          last_name,
           total_reputation_value
         )
-        VALUES (?, ?, ?)
-      `);
-
-      await insertStmt.bindParams(
-        resume_id,
-        fullName,
-        newTotal
-      ).execute();
+        VALUES (?, ?, ?, ?)
+      `).bindParams(resume_id, first_name, last_name, newTotal).execute();
     }
 
     return {
       success: true,
       resume_id,
-      fullName,
+      first_name,
+      last_name,
       appliedPositive: positiveValue,
       appliedNegative: negativeValue,
       finalTotal: newTotal
