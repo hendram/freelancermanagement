@@ -166,11 +166,11 @@ export default function AppHome() {
       )}
 
       {pages.current.addReferrer && (
-        <AddReferrer goBack={() => switchPage("main")} />
+        <AddReferrer goBackAR={() => switchPage("main")} />
       )}
 
       {pages.current.updateReferrer && (
-        <UpdateReferrer goBack={() => switchPage("main")} />
+        <UpdateReferrer goBackUR={() => switchPage("main")} />
       )}
     </>
   );

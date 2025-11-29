@@ -1,0 +1,108 @@
+/* --------------------------- */
+/* AddReferrer Container       */
+/* --------------------------- */
+.addreferrer-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+}
+
+.addreferrer-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* --------------------------- */
+/* Table Styling               */
+/* --------------------------- */
+.addreferrer-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.addreferrer-table th,
+.addreferrer-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.addreferrer-table th {
+  background-color: #f4f4f4;
+  color: #333;
+  font-weight: bold;
+}
+
+.addreferrer-table tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.addreferrer-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* --------------------------- */
+/* Inputs and Selects          */
+/* --------------------------- */
+.addreferrer-table input,
+.addreferrer-table select {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.addreferrer-table select {
+  background-color: #fff;
+}
+
+/* --------------------------- */
+/* Buttons                     */
+/* --------------------------- */
+.addreferrer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.addreferrer-actions button,
+.addreferrer-table button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.addreferrer-actions button:hover,
+.addreferrer-table button:hover {
+  background-color: #0056b3;
+}
+
+/* Plus button inside table */
+.addreferrer-table button {
+  padding: 4px 8px;
+  font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .addreferrer-table th,
+  .addreferrer-table td {
+    font-size: 12px;
+    padding: 6px;
+  }
+
+  .addreferrer-actions button {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+}

@@ -1,3 +1,7 @@
+permissions:
+  scopes:
+    - read:jira-work
+
 modules:
   jira:globalPage:
     - key: freelancermanagement-hello-world-page

@@ -1,6 +1,7 @@
 import Resolver from '@forge/resolver';
 import { sql } from '@forge/sql';
 import crypto from 'crypto';
+import { requestJira } from "@forge/api";
 
 const resolver = new Resolver();
 
@@ -411,6 +412,7 @@ resolver.define('getreputation', async () => {
       total_reputation_value: repMap[r.resume_id] || 0
     }));
 
+    console.log("finalList", finalList);
     return { success: true, list: finalList };
 
   } catch (err) {
@@ -418,6 +420,7 @@ resolver.define('getreputation', async () => {
     return { success: false, error: "SQL select error" };
   }
 });
+
 
 resolver.define('assignreputation', async ({ payload }) => {
   try {
@@ -435,66 +438,60 @@ resolver.define('assignreputation', async ({ payload }) => {
     // ----------- Get positive value -----------
     let positiveValue = 0;
     if (posId && posId > 0) {
-      const posResult = await sql.prepare(`
-        SELECT positive_value
-        FROM reputationcatalog
-        WHERE positive_id = ?
-      `).bindParams(posId).execute();
+      const posResult = await sql.prepare(
+        `SELECT positive_value FROM reputationcatalog WHERE positive_id = ?`
+      ).bindParams(posId).execute();
 
       if (posResult.rows.length > 0) {
-        positiveValue = posResult.rows[0].positive_value;
+        positiveValue = posResult.rows[0].positive_value || 0;
       }
     }
 
     // ----------- Get negative value -----------
     let negativeValue = 0;
-    if (negId && negId > 0) {
-      const negResult = await sql.prepare(`
-        SELECT negative_value
-        FROM reputationcatalog
-        WHERE negative_id = ?
-      `).bindParams(negId).execute();
+    if (negId && negId > 0) {  // <-- only apply if negative
+      const negResult = await sql.prepare(
+        `SELECT negative_value FROM reputationcatalog WHERE negative_id = ?`
+      ).bindParams(negId).execute();
 
       if (negResult.rows.length > 0) {
-        negativeValue = negResult.rows[0].negative_value;
+        negativeValue = negResult.rows[0].negative_value || 0; // already negative
       }
     }
 
     // ----------- Check existing reputation row -----------
-    const checkResult = await sql.prepare(`
-      SELECT id, total_reputation_value
-      FROM assignreputation
-      WHERE resume_id = ?
-      LIMIT 1
-    `).bindParams(resume_id).execute();
+    const checkResult = await sql.prepare(
+      `SELECT id, total_reputation_value FROM assignreputation WHERE resume_id = ? LIMIT 1`
+    ).bindParams(resume_id).execute();
 
-    let newTotal = positiveValue + negativeValue;
+    console.log("checkResult", checkResult);
+    // ----------- Calculate new total -----------
+    let newTotal = positiveValue + negativeValue; // just add, negative works automatically
 
-    // ----------- Update -----------
     if (checkResult.rows.length > 0) {
       const existingId = checkResult.rows[0].id;
-      const currentValue = checkResult.rows[0].total_reputation_value;
+      const currentValue = checkResult.rows[0].total_reputation_value || 0;
 
       newTotal = currentValue + positiveValue + negativeValue;
+      console.log("newTotal", newTotal);
+      // ----------- Update existing row -----------
+  await sql.prepare(
+  `UPDATE assignreputation
+   SET total_reputation_value = ?, first_name = ?, last_name = ?
+   WHERE id = ?`
+   ).bindParams(newTotal, first_name, last_name, existingId).execute();
 
-      await sql.prepare(`
-        UPDATE assignreputation
-        SET total_reputation_value = ?, first_name = ?, last_name = ?
-        WHERE id = ?
-      `).bindParams(newTotal, first_name, last_name, existingId).execute();
-    }
-
-    // ----------- Insert -----------
+  } 
+    // ----------- Insert new row -----------
     else {
-      await sql.prepare(`
-        INSERT INTO assignreputation (
+      await sql.prepare(
+        `INSERT INTO assignreputation (
           resume_id,
           first_name,
           last_name,
           total_reputation_value
-        )
-        VALUES (?, ?, ?, ?)
-      `).bindParams(resume_id, first_name, last_name, newTotal).execute();
+        ) VALUES (?, ?, ?, ?)`
+      ).bindParams(resume_id, first_name, last_name, newTotal).execute();
     }
 
     return {
@@ -513,6 +510,68 @@ resolver.define('assignreputation', async ({ payload }) => {
   }
 });
 
+resolver.define('getuserstories', async () => {
+  try {
+    console.log("Starting getuserstories resolver...");
+
+    // -----------------------------
+    // 1. Get resumes from DB
+    // -----------------------------
+    const resumesResult = await sql.prepare(
+      `SELECT id, first_name, last_name FROM resumes`
+    ).execute();
+
+    console.log("DB resumesResult:", resumesResult);
+
+    const resumes = resumesResult.rows.map(r => ({
+      resume_id: r.id,
+      fullName: `${r.first_name} ${r.last_name}`.trim()
+    }));
+
+    console.log("Parsed resumes:", resumes);
+
+    // -----------------------------
+    // 2. Get user stories from Jira
+    // -----------------------------
+    const jiraStoriesMap = {};
+
+    for (const r of resumes) {
+      const jql = `assignee="${r.fullName}" AND status!="Done"`;
+      console.log(`Querying Jira for ${r.fullName} with JQL:`, jql);
+
+      const response = await requestJira(`/rest/api/3/search?jql=${encodeURIComponent(jql)}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+      console.log(`Jira response for ${r.fullName}:`, data);
+
+      jiraStoriesMap[r.resume_id] = data.issues?.map(i => i.fields.summary) || [];
+      console.log(`Mapped user stories for ${r.fullName}:`, jiraStoriesMap[r.resume_id]);
+    }
+
+    // -----------------------------
+    // 3. Combine data
+    // -----------------------------
+    const finalList = resumes.map(r => ({
+      resume_id: r.resume_id,
+      fullName: r.fullName,
+      referrer: "",          // initially empty
+      userStory: jiraStoriesMap[r.resume_id] || []
+    }));
+
+    console.log("Final combined list:", finalList);
+
+    return { success: true, list: finalList };
+
+  } catch (err) {
+    console.error('getuserstories error:', err.stack);
+    return { success: false, error: 'Failed to fetch user stories' };
+  }
+});
 
 
 export const handler = resolver.getDefinitions();

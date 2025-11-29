@@ -61,7 +61,7 @@ const INDEX_REFERRERS = `
 // ------------------------- REPUTATION CATALOG TABLE -------------------------
 const CREATE_REPUTATION_CATALOG_TABLE = `
   CREATE TABLE IF NOT EXISTS reputationcatalog (
-    id BIGINT PRIMARY KEY AUTO_RANDOM,
+    id INT PRIMARY KEY AUTO_INCREMENT,
     range_lowerpositive INTEGER,
     range_upperpositive INTEGER,
     positive_id INTEGER,
@@ -84,15 +84,15 @@ const INDEX_REPUTATION_CATALOG = `
 // ------------------------- ASSIGN REPUTATION TABLE -------------------------
 const CREATE_ASSIGN_REPUTATION_TABLE = `
   CREATE TABLE IF NOT EXISTS assignreputation (
-    id BIGINT PRIMARY KEY AUTO_RANDOM,
-    resume_id VARCHAR(64) NOT NULL,
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    resume_id VARCHAR(64),
     first_name TEXT,
     last_name TEXT,
     total_reputation_value INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_assignreputation_resume FOREIGN KEY (resume_id)
       REFERENCES resumes(id)
-      ON DELETE CASCADE
+      ON DELETE SET NULL
   );
 `;
 
