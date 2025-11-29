@@ -4,7 +4,6 @@ import "./AddReferrer.css";
 
 export default function AddReferrer({ goBackAR }) {
   const [rows, setRows] = useState([]);
-  const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // -------------------------------
@@ -13,46 +12,62 @@ export default function AddReferrer({ goBackAR }) {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const res = await invoke("getuserstories"); // contains fullName, referrers[], userStories[]
-        if (res.success && res.list) {
-          setRows(res.list.map(r => ({
+        const res = await invoke("getuserstories");
+
+        if (!res.success || !res.list) {
+          setLoading(false);
+          return;
+        }
+
+        setRows(
+          res.list.map(r => ({
             resume_id: r.resume_id,
             fullName: r.fullName,
-            referrers: r.referrers.length > 0
+
+            referrers: r.referrers.length
               ? r.referrers.map(ref => ({
-                  referrer: ref.referrer || "",
-                  userStories: ref.userStories || [],
-                  isFixed: !!ref.referrer // cannot edit if already exists
+                  referrer: `${ref.referrer_first_name || ""} ${
+                    ref.referrer_last_name || ""
+                  }`.trim(),
+                  userStory: ref.userStories?.[0] || "", // fixed: only 1 story per row
+                  isFixed: ref.isFixed === true,
                 }))
-              : [{ referrer: "", userStories: [], isFixed: false }],
-            userStoriesOptions: r.userStories || [] // select options
-          })));
-        }
-        // Flatten all user stories for select dropdown (optional)
-        const allStories = res.list.flatMap(r => r.userStories || []);
-        setStories(allStories);
+              : [
+                  {
+                    referrer: "",
+                    userStory: "",
+                    isFixed: false,
+                  }
+                ],
+
+            referrerOptions: r.availableReferrers,
+            storyOptions: r.availableStories
+          }))
+        );
       } catch (err) {
         console.error("Failed to load data:", err);
       }
+
       setLoading(false);
     };
+
     loadData();
   }, []);
 
   // -------------------------------
-  // UPDATE REFERRER OR USER STORIES
+  // UPDATE SINGLE FIELD
   // -------------------------------
   const updateInput = (rowIdx, refIdx, field, value) => {
     setRows(prev =>
       prev.map((row, i) =>
-        i === rowIdx
-          ? {
+        i !== rowIdx
+          ? row
+          : {
               ...row,
               referrers: row.referrers.map((r, j) =>
                 j === refIdx ? { ...r, [field]: value } : r
-              )
+              ),
             }
-          : row
       )
     );
   };
@@ -60,28 +75,19 @@ export default function AddReferrer({ goBackAR }) {
   // -------------------------------
   // ADD NEW REFERRER ROW
   // -------------------------------
-  const addReferrerRow = (rowIdx) => {
+  const addReferrerRow = rowIdx => {
     setRows(prev =>
       prev.map((row, i) =>
         i === rowIdx
           ? {
               ...row,
-              referrers: [...row.referrers, { referrer: "", userStories: [], isFixed: false }]
+              referrers: [
+                ...row.referrers,
+                { referrer: "", userStory: "", isFixed: false },
+              ],
             }
           : row
       )
-    );
-  };
-
-  // -------------------------------
-  // RESET & CANCEL
-  // -------------------------------
-  const reset = () => {
-    setRows(prev =>
-      prev.map(row => ({
-        ...row,
-        referrers: row.referrers.filter(r => r.isFixed) // keep only fixed
-      }))
     );
   };
 
@@ -92,16 +98,18 @@ export default function AddReferrer({ goBackAR }) {
     try {
       for (const r of rows) {
         for (const ref of r.referrers) {
-          if (!ref.referrer || !ref.userStories.length) continue; // ignore invalid
-          await invoke("addReferrer", {
-            resume_id: r.resume_id,
-            referrer: ref.referrer,
-            userStories: ref.userStories
-          });
+          if (!ref.isFixed && ref.referrer && ref.userStory) {
+            await invoke("addreferrer", {
+              resume_id: r.resume_id,
+              referrer: ref.referrer,
+              userStories: [ref.userStory], // now single item
+            });
+          }
         }
       }
+
       alert("Referrers assigned successfully!");
-      if (goBackAR) goBackAR();
+      goBackAR && goBackAR();
     } catch (err) {
       console.error("addReferrer failed:", err);
       alert("Error assigning referrers.");
@@ -113,6 +121,7 @@ export default function AddReferrer({ goBackAR }) {
   return (
     <div className="addreferrer-container">
       <h2>Add Referrer</h2>
+
       <table className="addreferrer-table">
         <thead>
           <tr>
@@ -122,51 +131,65 @@ export default function AddReferrer({ goBackAR }) {
             <th></th>
           </tr>
         </thead>
+
         <tbody>
           {rows.map((row, rowIdx) =>
             row.referrers.map((ref, refIdx) => (
               <tr key={`${row.resume_id}-${refIdx}`}>
-                {refIdx === 0 && <td rowSpan={row.referrers.length}>{row.fullName}</td>}
+                {refIdx === 0 && (
+                  <td rowSpan={row.referrers.length}>{row.fullName}</td>
+                )}
 
+                {/* ---------------- REFERRER ---------------- */}
                 <td>
                   {ref.isFixed ? (
                     <span>{ref.referrer}</span>
                   ) : (
                     <select
                       value={ref.referrer}
-                      onChange={e => updateInput(rowIdx, refIdx, "referrer", e.target.value)}
-                    >
-                      <option value="">Select Referrer</option>
-                      {rows.filter(x => x.resume_id !== row.resume_id).map(x => (
-                        <option key={x.resume_id} value={x.fullName}>{x.fullName}</option>
-                      ))}
-                    </select>
-                  )}
-                </td>
-
-                <td>
-                  {ref.isFixed ? (
-                    <span>{ref.userStories.join(", ")}</span>
-                  ) : (
-                    <select
-                      multiple
-                      value={ref.userStories}
                       onChange={e =>
-                        updateInput(rowIdx, refIdx, "userStories",
-                          Array.from(e.target.selectedOptions, o => o.value))
+                        updateInput(rowIdx, refIdx, "referrer", e.target.value)
                       }
                     >
-                      {row.userStoriesOptions.map(s => (
-                        <option key={s.id} value={s.id}>{s.summary}</option>
+                      <option value="">Select Referrer</option>
+                      {row.referrerOptions
+                        .filter(x => x.resume_id !== row.resume_id)
+                        .map(opt => (
+                          <option key={opt.resume_id} value={opt.fullName}>
+                            {opt.fullName}
+                          </option>
+                        ))}
+                    </select>
+                  )}
+                </td>
+
+                {/* ---------------- USER STORY (single select) ---------------- */}
+                <td>
+                  {ref.isFixed ? (
+                    <span>{ref.userStory}</span>
+                  ) : (
+                    <select
+                      value={ref.userStory}
+                      onChange={e =>
+                        updateInput(rowIdx, refIdx, "userStory", e.target.value)
+                      }
+                    >
+                      <option value="">Select Story</option>
+                      {row.storyOptions.map(s => (
+                        <option key={s.id} value={s.id}>
+                          {s.summary}
+                        </option>
                       ))}
                     </select>
                   )}
                 </td>
 
+                {/* ---------------- ADD BUTTON ---------------- */}
                 <td>
-                  {!ref.isFixed && refIdx === row.referrers.length - 1 && (
-                    <button type="button" onClick={() => addReferrerRow(rowIdx)}>+</button>
-                  )}
+                  {!ref.isFixed &&
+                    refIdx === row.referrers.length - 1 && (
+                      <button onClick={() => addReferrerRow(rowIdx)}>+</button>
+                    )}
                 </td>
               </tr>
             ))
@@ -175,9 +198,8 @@ export default function AddReferrer({ goBackAR }) {
       </table>
 
       <div className="addreferrer-actions">
-        <button className="btn-submit" onClick={submit}>Submit</button>
-        <button className="btn-reset" onClick={reset}>Cancel</button>
-        {goBackAR && <button className="btn-close" onClick={goBackAR}>Close</button>}
+        <button onClick={submit}>Submit</button>
+        <button onClick={goBackAR}>Close</button>
       </div>
     </div>
   );
