@@ -1,7 +1,7 @@
 import Resolver from '@forge/resolver';
 import { sql } from '@forge/sql';
 import crypto from 'crypto';
-import { requestJira } from "@forge/api";
+import { route } from "@forge/api";
 
 const resolver = new Resolver();
 
@@ -510,68 +510,109 @@ resolver.define('assignreputation', async ({ payload }) => {
   }
 });
 
-resolver.define('getuserstories', async () => {
+resolver.define("getuserstories", async () => {
   try {
-    console.log("Starting getuserstories resolver...");
+    console.log("getuserstories: start");
 
-    // -----------------------------
-    // 1. Get resumes from DB
-    // -----------------------------
-    const resumesResult = await sql.prepare(
+    // --------------------------------------
+    // 1. Load all freelancers (resumes)
+    // --------------------------------------
+    const resumesRes = await sql.prepare(
       `SELECT id, first_name, last_name FROM resumes`
     ).execute();
 
-    console.log("DB resumesResult:", resumesResult);
-
-    const resumes = resumesResult.rows.map(r => ({
+    const resumes = resumesRes.rows.map(r => ({
       resume_id: r.id,
-      fullName: `${r.first_name} ${r.last_name}`.trim()
+      first_name: r.first_name ?? "",
+      last_name: r.last_name ?? "",
+      fullName: `${(r.first_name ?? "").trim()} ${(r.last_name ?? "").trim()}`.trim()
     }));
 
-    console.log("Parsed resumes:", resumes);
+    console.log("resumes count =", resumes.length);
 
-    // -----------------------------
-    // 2. Get user stories from Jira
-    // -----------------------------
-    const jiraStoriesMap = {};
 
-    for (const r of resumes) {
-      const jql = `assignee="${r.fullName}" AND status!="Done"`;
-      console.log(`Querying Jira for ${r.fullName} with JQL:`, jql);
+    // --------------------------------------
+    // 2. Load all referrer rows
+    // --------------------------------------
+    const refRes = await sql.prepare(
+      `SELECT resume_id, referrer_first_name, referrer_last_name, user_story
+       FROM referrers`
+    ).execute();
 
-      const response = await requestJira(`/rest/api/3/search?jql=${encodeURIComponent(jql)}`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json'
-        }
+    console.log("referrers rows =", refRes.rows.length);
+
+    const refMap = {};
+    for (const row of refRes.rows) {
+      if (!refMap[row.resume_id]) refMap[row.resume_id] = [];
+
+      refMap[row.resume_id].push({
+        referrer_first_name: row.referrer_first_name ?? "",
+        referrer_last_name: row.referrer_last_name ?? "",
+        userStories: row.user_story ? [row.user_story] : [],
+        isFixed: true // existing entries cannot be changed
       });
-
-      const data = await response.json();
-      console.log(`Jira response for ${r.fullName}:`, data);
-
-      jiraStoriesMap[r.resume_id] = data.issues?.map(i => i.fields.summary) || [];
-      console.log(`Mapped user stories for ${r.fullName}:`, jiraStoriesMap[r.resume_id]);
     }
 
-    // -----------------------------
-    // 3. Combine data
-    // -----------------------------
-    const finalList = resumes.map(r => ({
-      resume_id: r.resume_id,
-      fullName: r.fullName,
-      referrer: "",          // initially empty
-      userStory: jiraStoriesMap[r.resume_id] || []
-    }));
 
-    console.log("Final combined list:", finalList);
+    // --------------------------------------
+    // 3. Fetch Jira user stories via Forge route
+    // --------------------------------------
+    const jiraResp = await api.asApp().requestJira(
+      route`/rest/api/3/search?jql=status!="Done"&fields=summary`
+    );
+
+    if (!jiraResp.ok) {
+      console.error("Jira request failed:", jiraResp.status, await jiraResp.text());
+      return { success: false, error: "Jira API failed" };
+    }
+
+    const jiraJson = await jiraResp.json();
+
+    const allStories =
+      jiraJson.issues?.map(i => ({
+        id: i.key,
+        summary: i.fields.summary
+      })) || [];
+
+    console.log("jira stories count =", allStories.length);
+
+
+    // --------------------------------------
+    // 4. Build final output
+    // --------------------------------------
+    const finalList = resumes.map(resume => {
+      const existing = refMap[resume.resume_id] || [];
+
+      const referrers =
+        existing.length > 0
+          ? existing
+          : [{
+              referrer_first_name: "",
+              referrer_last_name: "",
+              userStories: [],
+              isFixed: false // new row, editable
+            }];
+
+      return {
+        resume_id: resume.resume_id,
+        first_name: resume.first_name,
+        last_name: resume.last_name,
+        fullName: resume.fullName,
+
+        referrers,
+        availableReferrers: resumes,
+        availableStories: allStories
+      };
+    });
+
+    console.log("final count =", finalList.length);
 
     return { success: true, list: finalList };
 
   } catch (err) {
-    console.error('getuserstories error:', err.stack);
-    return { success: false, error: 'Failed to fetch user stories' };
+    console.error("getuserstories error:", err);
+    return { success: false, error: "Failed to fetch user stories" };
   }
 });
-
 
 export const handler = resolver.getDefinitions();

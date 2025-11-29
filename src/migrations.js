@@ -40,15 +40,17 @@ const INDEX_EXPERIENCES = `
 
 const CREATE_REFERRER_TABLE_ONLY = `
   CREATE TABLE IF NOT EXISTS referrers (
-    id VARCHAR(64) PRIMARY KEY,
-    resume_id VARCHAR(64) NOT NULL,
-    referrer_name TEXT,
-    referrer_contact TEXT,
-    note TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_referrer_resume FOREIGN KEY (resume_id)
-      REFERENCES resumes(id)
-      ON DELETE CASCADE
+    id INT PRIMARY KEY AUTO_INCREMENT,
+  resume_id VARCHAR(64) NOT NULL,      
+  first_name TEXT,                     
+  last_name TEXT,                      
+  referrer_first_name TEXT,
+  referrer_last_name TEXT,            
+  user_story VARCHAR(128),             
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_referrer_resume FOREIGN KEY (resume_id)
+    REFERENCES resumes(id)
+    ON DELETE CASCADE
   );
 `;
 
