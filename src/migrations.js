@@ -46,7 +46,7 @@ const CREATE_REFERRER_TABLE_ONLY = `
   last_name TEXT,                      
   referrer_first_name TEXT,
   referrer_last_name TEXT,            
-  user_story VARCHAR(128),             
+  user_story TEXT,             
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_referrer_resume FOREIGN KEY (resume_id)
     REFERENCES resumes(id)

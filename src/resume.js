@@ -530,7 +530,6 @@ resolver.define("getuserstories", async () => {
 
     console.log("resumes:", resumes.length);
 
-
     // --------------------------------------------------
     // 2. Load referrer rows
     // --------------------------------------------------
@@ -559,9 +558,8 @@ resolver.define("getuserstories", async () => {
       });
     }
 
-
     // --------------------------------------------------
-    // 3. Jira Stories (key + summary)
+    // 3. Jira Stories (only label)
     // --------------------------------------------------
     const jqlBody = {
       jql: `issuetype in ("Story", "Task", "Sub-task", "Bug") AND status != "Done"`,
@@ -590,13 +588,10 @@ resolver.define("getuserstories", async () => {
     const jiraJson = await jiraResp.json();
 
     const allStories = jiraJson.issues?.map(i => ({
-      id: i.key,
-      summary: i.fields.summary,
-      label: `${i.key} ${i.fields.summary}`
+      label: `${i.key} ${i.fields.summary}` // only pass label
     })) || [];
 
     console.log("stories:", allStories.length);
-
 
     // --------------------------------------------------
     // 4. Build final list for frontend
@@ -607,16 +602,7 @@ resolver.define("getuserstories", async () => {
       const referrers = existing.length
         ? existing.map(e => ({
             referrer: `${e.referrer_first_name} ${e.referrer_last_name}`.trim(),
-
-            // RETURN key + summary from DB (match format)
-            userStories: e.rawStory
-              ? [{
-                  id: e.rawStory,
-                  summary: allStories.find(s => s.id === e.rawStory)?.summary || "",
-                  label: `${e.rawStory} ${allStories.find(s => s.id === e.rawStory)?.summary || ""}`
-                }]
-              : [],
-
+            userStories: e.rawStory ? [e.rawStory] : [], // pass only raw story
             isFixed: true
           }))
         : [
@@ -638,7 +624,7 @@ resolver.define("getuserstories", async () => {
           resume_id: r.resume_id
         })),
 
-        availableStories: allStories
+        availableStories: allStories // labels only
       };
     });
 
@@ -651,7 +637,6 @@ resolver.define("getuserstories", async () => {
   }
 });
 
-
 resolver.define("addreferrer", async ({ payload }) => {
   try {
     const { resume_id, referrer, userStories } = payload;
@@ -661,12 +646,13 @@ resolver.define("addreferrer", async ({ payload }) => {
     }
 
     // -----------------------------------------------------
-    // Extract freelancer name from resumes table
-    // (like assignreputation did — always get canonical name)
+    // Get canonical freelancer name from resumes table
     // -----------------------------------------------------
     const resumeRow = await sql.prepare(
       `SELECT first_name, last_name FROM resumes WHERE id = ? LIMIT 1`
-    ).bindParams(resume_id).execute();
+    )
+    .bindParams(resume_id)
+    .execute();
 
     if (!resumeRow.rows.length) {
       return { success: false, error: "resume_id not found" };
@@ -683,18 +669,19 @@ resolver.define("addreferrer", async ({ payload }) => {
     const ref_last_name  = parts.slice(1).join(" ") || "";
 
     // -----------------------------------------------------
-    // Insert one row per story
+    // Insert one row per story, only if it does NOT already exist
     // -----------------------------------------------------
     for (const story of userStories) {
-      await sql.prepare(
-        `INSERT INTO referrers (
-          resume_id,
-          first_name,
-          last_name,
-          referrer_first_name,
-          referrer_last_name,
-          user_story
-        ) VALUES (?, ?, ?, ?, ?, ?)`
+      // check if already exists
+      const existing = await sql.prepare(
+        `SELECT 1 FROM referrers
+         WHERE resume_id = ?
+           AND first_name = ?
+           AND last_name = ?
+           AND referrer_first_name = ?
+           AND referrer_last_name = ?
+           AND user_story = ?
+         LIMIT 1`
       )
       .bindParams(
         resume_id,
@@ -705,6 +692,29 @@ resolver.define("addreferrer", async ({ payload }) => {
         story
       )
       .execute();
+
+      if (existing.rows.length === 0) {
+        // not exists, insert
+        await sql.prepare(
+          `INSERT INTO referrers (
+            resume_id,
+            first_name,
+            last_name,
+            referrer_first_name,
+            referrer_last_name,
+            user_story
+          ) VALUES (?, ?, ?, ?, ?, ?)`
+        )
+        .bindParams(
+          resume_id,
+          first_name,
+          last_name,
+          ref_first_name,
+          ref_last_name,
+          story
+        )
+        .execute();
+      }
     }
 
     return { success: true };
