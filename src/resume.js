@@ -510,7 +510,6 @@ resolver.define('assignreputation', async ({ payload }) => {
   }
 });
 
-
 resolver.define("getuserstories", async () => {
   try {
     console.log("getuserstories: start");
@@ -533,7 +532,7 @@ resolver.define("getuserstories", async () => {
 
 
     // --------------------------------------------------
-    // 2. Load all referrer rows
+    // 2. Load referrer rows
     // --------------------------------------------------
     const refRes = await sql
       .prepare(
@@ -546,9 +545,8 @@ resolver.define("getuserstories", async () => {
       )
       .execute();
 
-    console.log("referrer rows:", refRes.rows.length);
+    console.log("referrers rows:", refRes.rows.length);
 
-    // Group rows by resume_id
     const refMap = {};
     for (const row of refRes.rows) {
       if (!refMap[row.resume_id]) refMap[row.resume_id] = [];
@@ -556,86 +554,93 @@ resolver.define("getuserstories", async () => {
       refMap[row.resume_id].push({
         referrer_first_name: row.referrer_first_name ?? "",
         referrer_last_name: row.referrer_last_name ?? "",
-        userStories: row.user_story ? [row.user_story] : [],
-        isFixed: true // existing rows must NOT be editable
+        rawStory: row.user_story || "",
+        isFixed: true
       });
     }
 
 
     // --------------------------------------------------
-    // 3. Jira Stories using NEW API (/search/jql)
+    // 3. Jira Stories (key + summary)
     // --------------------------------------------------
-const jqlBody = {
-  jql: `issuetype in ("Story", "Task", "Sub-task", "Bug") AND status != "Done"`,
-  fields: ["summary"],
-  maxResults: 1000
-};
+    const jqlBody = {
+      jql: `issuetype in ("Story", "Task", "Sub-task", "Bug") AND status != "Done"`,
+      fields: ["summary"],
+      maxResults: 1000
+    };
 
-const jiraResp = await api.asApp().requestJira(
-  route`/rest/api/3/search/jql`,
-  {
-    method: "POST",
-    headers: {
-      "Accept": "application/json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(jqlBody)
-  }
-);
+    const jiraResp = await api.asApp().requestJira(
+      route`/rest/api/3/search/jql`,
+      {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(jqlBody)
+      }
+    );
 
-if (!jiraResp.ok) {
-  const txt = await jiraResp.text();
-  console.log("Jira ERROR BODY:", txt);
-  throw new Error("Jira API failed: " + jiraResp.status);
-}
+    if (!jiraResp.ok) {
+      const txt = await jiraResp.text();
+      console.log("Jira ERROR BODY:", txt);
+      throw new Error("Jira API failed: " + jiraResp.status);
+    }
 
-const jiraJson = await jiraResp.json();
+    const jiraJson = await jiraResp.json();
 
-const allStories = jiraJson.issues?.map(i => ({
-  id: i.key,
-  summary: i.fields.summary
-})) || [];
+    const allStories = jiraJson.issues?.map(i => ({
+      id: i.key,
+      summary: i.fields.summary,
+      label: `${i.key} ${i.fields.summary}`
+    })) || [];
 
-console.log("stories:", allStories.length);
+    console.log("stories:", allStories.length);
+
 
     // --------------------------------------------------
     // 4. Build final list for frontend
     // --------------------------------------------------
-   const finalList = resumes.map(resume => {
-  const existing = refMap[resume.resume_id] || [];
+    const finalList = resumes.map(resume => {
+      const existing = refMap[resume.resume_id] || [];
 
-  // Convert existing DB rows → frontend format
-  const referrers = existing.length
-    ? existing.map(e => ({
-        referrer:
-          `${e.referrer_first_name} ${e.referrer_last_name}`.trim(),
-        userStories: e.userStories || [],
-        isFixed: true
-      }))
-    : [
-        {
-          referrer: "",
-          userStories: [],
-          isFixed: false
-        }
-      ];
+      const referrers = existing.length
+        ? existing.map(e => ({
+            referrer: `${e.referrer_first_name} ${e.referrer_last_name}`.trim(),
 
-  return {
-    resume_id: resume.resume_id,
-    fullName: resume.fullName,
+            // RETURN key + summary from DB (match format)
+            userStories: e.rawStory
+              ? [{
+                  id: e.rawStory,
+                  summary: allStories.find(s => s.id === e.rawStory)?.summary || "",
+                  label: `${e.rawStory} ${allStories.find(s => s.id === e.rawStory)?.summary || ""}`
+                }]
+              : [],
 
-    // Must match frontend
-    referrers,
+            isFixed: true
+          }))
+        : [
+            {
+              referrer: "",
+              userStories: [],
+              isFixed: false
+            }
+          ];
 
-    // Must match frontend
-    availableReferrers: resumes.map(r => ({
-      fullName: r.fullName,
-      resume_id: r.resume_id
-    })),
+      return {
+        resume_id: resume.resume_id,
+        fullName: resume.fullName,
 
-    availableStories: allStories
-  };
-});
+        referrers,
+
+        availableReferrers: resumes.map(r => ({
+          fullName: r.fullName,
+          resume_id: r.resume_id
+        })),
+
+        availableStories: allStories
+      };
+    });
 
     console.log("final rows:", finalList.length);
 
@@ -645,5 +650,70 @@ console.log("stories:", allStories.length);
     return { success: false, error: "Failed to fetch user stories" };
   }
 });
+
+
+resolver.define("addreferrer", async ({ payload }) => {
+  try {
+    const { resume_id, referrer, userStories } = payload;
+
+    if (!resume_id || !referrer || !userStories?.length) {
+      return { success: false, error: "Missing data" };
+    }
+
+    // -----------------------------------------------------
+    // Extract freelancer name from resumes table
+    // (like assignreputation did — always get canonical name)
+    // -----------------------------------------------------
+    const resumeRow = await sql.prepare(
+      `SELECT first_name, last_name FROM resumes WHERE id = ? LIMIT 1`
+    ).bindParams(resume_id).execute();
+
+    if (!resumeRow.rows.length) {
+      return { success: false, error: "resume_id not found" };
+    }
+
+    const first_name = resumeRow.rows[0].first_name || "";
+    const last_name  = resumeRow.rows[0].last_name  || "";
+
+    // -----------------------------------------------------
+    // Split referrer name
+    // -----------------------------------------------------
+    const parts = referrer.trim().split(" ");
+    const ref_first_name = parts[0] || "";
+    const ref_last_name  = parts.slice(1).join(" ") || "";
+
+    // -----------------------------------------------------
+    // Insert one row per story
+    // -----------------------------------------------------
+    for (const story of userStories) {
+      await sql.prepare(
+        `INSERT INTO referrers (
+          resume_id,
+          first_name,
+          last_name,
+          referrer_first_name,
+          referrer_last_name,
+          user_story
+        ) VALUES (?, ?, ?, ?, ?, ?)`
+      )
+      .bindParams(
+        resume_id,
+        first_name,
+        last_name,
+        ref_first_name,
+        ref_last_name,
+        story
+      )
+      .execute();
+    }
+
+    return { success: true };
+
+  } catch (err) {
+    console.error("addreferrer error:", err.stack);
+    return { success: false, error: "SQL error while adding referrer" };
+  }
+});
+
 
 export const handler = resolver.getDefinitions();
