@@ -129,7 +129,9 @@ export default function AddReferrer({ goBackAR }) {
   const submit = async () => {
     try {
       for (const row of rows) {
+       console.log("row", row);
         for (const block of row.blocks) {
+            console.log("block", block);
           const refName = block[0].referrer?.trim();
           const stories = block.map(c => c.userStory).filter(s => s);
            console.log("stories", stories);
@@ -139,7 +141,7 @@ export default function AddReferrer({ goBackAR }) {
           await invoke("addreferrer", {
             resume_id: row.resume_id,
             referrer: refName,
-            userStories: stories
+            userStories: stories.label
           });
         }
       }
