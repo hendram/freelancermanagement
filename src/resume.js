@@ -53,7 +53,7 @@ resolver.define("assignreputation", async (args) =>
 );
 
 resolver.define("getuserstories", async (args) =>
-  getuserstories({ sql, api })
+  getuserstories({ sql, api, route })
 );
 
 resolver.define("addreferrer", async (args) =>

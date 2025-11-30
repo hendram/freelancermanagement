@@ -1,4 +1,4 @@
-export default async function getuserstories({ sql, api }) {
+export default async function getuserstories({ sql, api, route }) {
   try {
     const resumesRes = await sql.prepare(
       `SELECT id, first_name, last_name FROM resumes`
