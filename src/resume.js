@@ -17,8 +17,8 @@ import getreputation from './resolvers/getreputation.js';
 import assignreputation from './resolvers/assignreputation.js';
 import getuserstories from './resolvers/getuserstories.js';
 import addreferrer from './resolvers/addreferrer.js';
-
-
+import getcurrentissue from "./resolvers/getcurrentissue.js";
+import findcandidates from "./resolvers/findcandidates.js";
 
 resolver.define("addresume", async (args) =>
   addresume({ ...args, sql })
@@ -58,6 +58,15 @@ resolver.define("getuserstories", async (args) =>
 
 resolver.define("addreferrer", async (args) =>
   addreferrer({ ...args, sql })
+);
+
+resolver.define("getcurrentissue", async (args) =>
+  getcurrentissue({ ...args, context: args.context })
+);
+
+
+resolver.define("findcandidates", async (args) =>
+  findcandidates({ ...args, sql })
 );
 
 

@@ -1,0 +1,83 @@
+.fb-wrapper {
+  font-family: Arial, sans-serif;
+  padding: 10px;
+}
+
+/* ==== ISSUE ROW (TOP LEVEL) ==== */
+.fb-issue-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  background: #f4f5f7;
+  border: 1px solid #dfe1e6;
+  border-radius: 3px;
+  margin-bottom: 12px;
+}
+
+.fb-issue-left {
+  display: flex;
+  gap: 10px;
+}
+
+.fb-issue-key {
+  font-weight: bold;
+  color: #0052cc;
+}
+
+.fb-issue-summary {
+  font-size: 14px;
+  color: #344563;
+}
+
+.fb-issue-right {
+  display: flex;
+  gap: 8px;
+}
+
+.fb-skill-input {
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+}
+
+.fb-submit-btn {
+  padding: 4px 12px;
+  background: #0052cc;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+/* ==== CANDIDATE ROWS (2ND LEVEL) ==== */
+.fb-candidate-block {
+  margin-left: 30px; /* indent like FUT-7, FUT-9, FUT-10 */
+}
+
+.fb-candidate-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  margin-top: 8px;
+  background: #fff;
+  border: 1px solid #dfe1e6;
+  border-radius: 3px;
+}
+
+.fb-c-name {
+  font-weight: bold;
+}
+
+.fb-open-resume {
+  margin-left: 10px;
+  padding: 3px 8px;
+  background: #00875a;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.fb-error {
+  margin-top: 8px;
+  color: red;
+}

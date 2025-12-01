@@ -4,11 +4,19 @@ permissions:
 
 modules:
   jira:globalPage:
-    - key: freelancermanagement-hello-world-page
+    - key: freelancermanagement-page
       resource: main
       resolver:
         function: resume
       title: freelancermanagement
+  jira:issuePanel:
+    - key: freelancerbidding-panel
+      title: Freelancer Bidding
+      resource: bidder-frontend
+      icon: "issues"
+      resolver:
+        function: resume
+
   function:
     - key: resume
       handler: index.handler
@@ -28,10 +36,13 @@ modules:
 resources:
   - key: main
     path: static/freelancemanagement/build
+  - key: bidder-frontend
+    path: static/freelancerbidding/build
 
 app:
   runtime:
     name: nodejs22.x
     memoryMB: 256
     architecture: arm64
-  id: ari:cloud:ecosystem::app/8867a7c4-8881-4185-8a86-e1f9f137c7d5
+  id: ari:cloud:ecosystem::app/31af772d-638f-4d73-9366-1c590d4604bc
+
