@@ -151,13 +151,13 @@ setNegativeReps(neg);
   // -------------------------------------------------------
   return (
     <div className="container-rc">
-      <h2>Reputation Catalog</h2>
-
       {/* ---------------- POSITIVE REPUTATION ---------------- */}
-      <div className="rep-section">
+      <div className="positive-section">
         <h3>Positive Reputation Range</h3>
-
+        <div className="positiveinputbut-div">
+        <label className="definedpositiverangelabel"> Define positive range: </label>
         <input
+          className="lowerposnumberinput"
           type="number"
           value={posRange.from}
           onChange={e =>
@@ -165,7 +165,9 @@ setNegativeReps(neg);
           }
           placeholder="From"
         />
+        <div className="To"> To: </div> 
         <input
+          className="higherposnumberinput"
           type="number"
           value={posRange.to}
           onChange={e =>
@@ -173,11 +175,14 @@ setNegativeReps(neg);
           }
           placeholder="To"
         />
+  </div>
+
 
         {positiveReps.map((rep, idx) => (
           <div key={rep.id} className="rep-item">
             <span>{rep.id}.</span>
             <input
+              className="descriptioninput"
               type="text"
               value={rep.description}
               placeholder="Description"
@@ -186,6 +191,7 @@ setNegativeReps(neg);
               }
             />
             <input
+              className="numberinput"
               type="number"
               value={rep.value}
               placeholder="Value"
@@ -196,12 +202,14 @@ setNegativeReps(neg);
           </div>
         ))}
 
-        <button onClick={addPositive}>+ Add Positive</button>
-        <button onClick={removePositive}>- Remove Positive</button>
+<div className="addremovepositivebut-div">
+        <button className="addpositivebut" onClick={addPositive}>+ Add Positive</button>
+        <button className="removepositivebut" onClick={removePositive}>- Remove Positive</button>
+</div>
       </div>
-
+        
       {/* ---------------- NEGATIVE REPUTATION ---------------- */}
-      <div className="rep-section">
+      <div className="negative-section">
         <h3>Negative Reputation Range</h3>
 
         <input

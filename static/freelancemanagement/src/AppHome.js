@@ -8,7 +8,9 @@ import AddReferrer from "./AddReferrer";
 import UpdateReferrer from "./UpdateReferrer";
 import "./AppHome.css";
 
-// forceUpdate helper
+// --------------------------------------
+// FORCE RE-RENDER USING useRef ONLY
+// --------------------------------------
 function useForceUpdate() {
   return useReducer(() => ({}), {})[1];
 }
@@ -16,14 +18,14 @@ function useForceUpdate() {
 export default function AppHome() {
   const forceUpdate = useForceUpdate();
 
-  // ---------------------------
-  // PAGE STATE USING ONLY useRef
-  // ---------------------------
+  // --------------------------------------
+  // PAGE STATE (NO useState)
+  // --------------------------------------
   const pages = useRef({
     main: true,
     addResume: false,
     updateResume: false,
-    updateAction: false, // added
+    updateAction: false,
     reputationCatalog: false,
     assignReputation: false,
     addReferrer: false,
@@ -31,95 +33,115 @@ export default function AppHome() {
   });
 
   const switchPage = (page) => {
-    Object.keys(pages.current).forEach((k) => {
-      pages.current[k] = false;
-    });
+    Object.keys(pages.current).forEach((k) => (pages.current[k] = false));
     pages.current[page] = true;
     forceUpdate();
   };
 
-  // ---------------------------
-  // SELECTED RESUME FOR UPDATE
-  // ---------------------------
+  // --------------------------------------
+  // SELECTED RESUME STATE
+  // --------------------------------------
   const selectedResumeRef = useRef(null);
 
   const updateResume = (resumeData) => {
-    selectedResumeRef.current = resumeData; // store selected resume
+    selectedResumeRef.current = resumeData;
     switchPage("updateResume");
   };
 
-  // ---------------------------
+  // --------------------------------------
   // SAMPLE DATA
-  // ---------------------------
+  // --------------------------------------
   const freelancers = [
-    { id: 1, name: "John Smith", photo: "./photos/johnsmith.png", skills: "React, Node.js", reputation: 4.8, referrer: "Alice" },
-    { id: 2, name: "Maria Tan", photo: "./photos/mariatan.png", skills: "Python, FastAPI", reputation: 4.6, referrer: "Kevin" },
-    { id: 3, name: "Ahmed Noor", photo: "./photos/ahmednoor.png", skills: "Golang, DevOps", reputation: 4.9, referrer: "Sarah" },
+    {
+      id: 1,
+      name: "John Smith",
+      photo: "./photos/johnsmith.png",
+      skills: "React, Node.js",
+      reputation: 4.8,
+      referrer: "Alice",
+    },
+    {
+      id: 2,
+      name: "Maria Tan",
+      photo: "./photos/mariatan.png",
+      skills: "Python, FastAPI",
+      reputation: 4.6,
+      referrer: "Kevin",
+    },
+    {
+      id: 3,
+      name: "Ahmed Noor",
+      photo: "./photos/ahmednoor.png",
+      skills: "Golang, DevOps",
+      reputation: 4.9,
+      referrer: "Sarah",
+    },
   ];
 
-  // ---------------------------
-  // MAIN PAGE UI (HIDDEN when another page shows)
-  // ---------------------------
+  // --------------------------------------
+  // MAIN PAGE UI
+  // --------------------------------------
   const MainPage = () => (
-    <div className="container">
-      <h1 className="title">Freelancer Candidates</h1>
+    <div className="homecontainer">
+      <h1 className="hometitle">Freelancer Candidates</h1>
 
-      {/* ----------------- TOP MENU ----------------- */}
-      <div className="top-menu">
-        <div className="menu-row">
-
+      {/* TOP MENU */}
+      <div className="hometop-menu">
+        <div className="homemenu-row">
           {/* RESUME */}
-          <div className="menu-btn-wrapper">
-            <button className="resume-btn">Resume ▼</button>
-            <div className="submenu">
+          <div className="homemenu-btn-wrapper">
+            <button className="homemenu-btn">Resume ▼</button>
+            <div className="homesubmenu">
               <button onClick={() => switchPage("addResume")}>Add Resume</button>
               <button onClick={() => switchPage("updateResume")}>Update Resume</button>
             </div>
           </div>
 
           {/* REPUTATION */}
-          <div className="menu-btn-wrapper">
-            <button className="menu-btn">Reputation ▼</button>
-            <div className="submenu">
-              <button onClick={() => switchPage("reputationCatalog")}> Reputation Catalog</button>
-              <button onClick={() => switchPage("assignReputation")}>Assign Reputation</button>
+          <div className="homemenu-btn-wrapper">
+            <button className="homemenu-btn">Reputation ▼</button>
+            <div className="homesubmenu">
+              <button onClick={() => switchPage("reputationCatalog")}>
+                Reputation Catalog
+              </button>
+              <button onClick={() => switchPage("assignReputation")}>
+                Assign Reputation
+              </button>
             </div>
           </div>
 
           {/* REFERRER */}
-          <div className="menu-btn-wrapper">
-            <button className="menu-btn">Referrer ▼</button>
-            <div className="submenu">
+          <div className="homemenu-btn-wrapper">
+            <button className="homemenu-btn">Referrer ▼</button>
+            <div className="homesubmenu">
               <button onClick={() => switchPage("addReferrer")}>Add Referrer</button>
               <button onClick={() => switchPage("updateReferrer")}>Update Referrer</button>
             </div>
           </div>
-
         </div>
       </div>
 
-      {/* FREELANCER CARDS */}
-      <div className="list">
+      {/* FREELANCER LIST */}
+      <div className="homelist">
         {freelancers.map((item) => (
-          <div key={item.id} className="card">
-            <img src={item.photo} className="photo" alt="avatar" />
-            <div className="info">
+          <div key={item.id} className="homecard">
+            <img src={item.photo} className="homephoto" alt="avatar" />
+
+            <div className="homeinfo">
               <h2>{item.name}</h2>
               <p>{item.skills}</p>
             </div>
-            <div className="actions">
-              <button
-                className="btn_resume"
-                onClick={() => updateResume(item)}
-              >
+
+            <div className="homeactions">
+              <button className="homebtn_resume" onClick={() => updateResume(item)}>
                 Resume
               </button>
 
-              <button className="btn_rep" onClick={() => switchPage("assignReputation")}>
+              <button className="homebtn_rep" onClick={() => switchPage("assignReputation")}>
                 Reputation ({item.reputation})
               </button>
 
-              <button className="btn_ref" onClick={() => switchPage("updateReferrer")}>
+              <button className="homebtn_ref" onClick={() => switchPage("updateReferrer")}>
                 Referrer: {item.referrer}
               </button>
             </div>
@@ -129,9 +151,9 @@ export default function AppHome() {
     </div>
   );
 
-  // ---------------------------
-  // PAGE RENDER LOGIC
-  // ---------------------------
+  // --------------------------------------
+  // PAGE ROUTER
+  // --------------------------------------
   return (
     <>
       {pages.current.main && <MainPage />}
@@ -144,8 +166,8 @@ export default function AppHome() {
         <UpdateResume
           goBackU={() => switchPage("main")}
           onSelectResumeForUpdate={(resume) => {
-            selectedResumeRef.current = resume; // store the resume to update
-            switchPage("updateAction");         // switch to UpdateAction page
+            selectedResumeRef.current = resume;
+            switchPage("updateAction");
           }}
         />
       )}

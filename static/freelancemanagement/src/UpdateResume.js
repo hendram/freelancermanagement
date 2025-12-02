@@ -167,7 +167,7 @@ export default function UpdateResume({ goBackU, onSelectResumeForUpdate }) {
 
 </div>
 
-   <div className="bottomselectdiv">
+   <div className="buttonselect-div">
         <select className="range-select" value={pageRange} onChange={handleRangeChange}>
           {Array.from({ length: Math.ceil(totalCount / 10) }, (_, i) => {
             const start = i * 10 + 1;

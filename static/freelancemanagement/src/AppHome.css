@@ -4,152 +4,142 @@ body {
   background: #f3f4f7;
 }
 
-.container {
- display: flex;
- flex-direction: column;
- align-items: center;
- justify-content: flex-start;
- width: 100vw;
- height: 100vh;
- gap: 1vh;
-}
-
-.title {
-  font-size: 26px;
-  margin-bottom: 25px;
-  font-weight: 700;
-}
-
-.special-menu-card {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-self: center;
-  width: 100vw;
-  height: 10vh;
-  padding: 15px;
-  margin-bottom: 20px;
-}
-
-.menu-row {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  align-self: center;
-  width: 80vw;
-  height: 10vh;
-  gap: 20px;
-}
-
-.menu-btn-wrapper {
-  position: relative; /* for absolute submenu */
-}
-
-.menu-btn {
-  padding: 10px 20px;
-  border-radius: 20px;
-  border: none;
-  background: #ddd;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.menu-btn:hover {
-  background: #ccc;
-}
-
-/* Submenu hidden by default, shown on hover */
-.menu-btn-wrapper .submenu {
-  display: none;
-  position: absolute;
-  top: 100%; /* directly below button */
-  left: 0;
-  background: #444;
-  color: white;
-  padding: 10px;
-  border-radius: 8px;
-  min-width: 150px;
-  flex-direction: column;
-  gap: 5px;
-  z-index: 100;
-}
-
-.menu-btn-wrapper:hover .submenu {
-  display: flex;
-}
-
-.menu-btn-wrapper .submenu p {
-  margin: 0;
-  padding: 6px 10px;
-  cursor: pointer;
-}
-
-.menu-btn-wrapper .submenu p:hover {
-  background: #555;
-}
-
-.list {
+/* MAIN CONTAINER */
+.homecontainer {
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100vw;
+  min-height: 100vh;
+}
+
+/* TITLE */
+.hometitle {
+  font-size: 26px;
+  margin: 30px 0 20px;
+  font-weight: 700;
+}
+
+/* TOP MENU */
+.hometop-menu {
+  width: 100%;
+  display: flex;
   justify-content: center;
-  width: 98vw;
-  height: 100vh;
-  gap: 1vw;
 }
 
-.card {
- display: flex;
- flex-direction: row;
- align-items: center;
- justify-content: center;
- width: 96vw;
- height: 20vh;
- gap: 1vw;
- background: white;
- padding: 18px;
- border-radius: 12px;
- box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+.homemenu-row {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
 }
 
-.photo {
+/* MENU BUTTON WRAPPER */
+.homemenu-btn-wrapper {
+  position: relative;
+}
+
+/* MAIN MENU BUTTON */
+.homemenu-btn {
+  padding: 10px 20px;
+  background: #ddd;
+  border: none;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.homemenu-btn:hover {
+  background: #ccc;
+}
+
+/* SUBMENU */
+.homesubmenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #333;
+  padding: 10px;
+  border-radius: 8px;
+  min-width: 160px;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 20;
+}
+
+.homemenu-btn-wrapper:hover .homesubmenu {
+  display: flex;
+}
+
+.homesubmenu button {
+  background: transparent;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.homesubmenu button:hover {
+  background: #555;
+}
+
+/* FREELANCER LIST */
+.homelist {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 96vw;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* CARD */
+.homecard {
+  display: flex;
+  align-items: center;
+  width: 96vw;
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+  gap: 20px;
+}
+
+.homephoto {
   width: 70px;
   height: 70px;
   border-radius: 50%;
 }
 
-.info {
- display: flex;
- flex-direction: column;
- align-items: center;
- justify-content: center;
- width: 20vw;
- height: 10vh;
+.homeinfo {
+  display: flex;
+  flex-direction: column;
+  width: 20vw;
 }
 
-.name {
-  margin: 0;
-  font-size: 20px;
+/* ACTION BUTTONS */
+.homeactions {
+  margin-left: auto;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+.homebtn_resume,
+.homebtn_rep,
+.homebtn_ref {
+  padding: 10px 20px;
+  border-radius: 30px;
+  border: none;
+  background: #efefef;
+  cursor: pointer;
   font-weight: 600;
 }
 
-
-.actions {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: 40vw;
-  height: 8vh;
-  gap: 1vw;
-}
-
-.btn_resume, .btn_rep {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 12vw;
-  height: 8vh;
-  border-radius: 10vw;
-  border: 1px solid #00
+.homebtn_resume:hover,
+.homebtn_rep:hover,
+.homebtn_ref:hover {
+  background: #ddd;
 }
