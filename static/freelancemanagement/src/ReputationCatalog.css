@@ -5,7 +5,8 @@
  width: 100vw;
  min-height: 100vh;
  justify-content: center;
- align-items: center;  
+ align-items: center; 
+ background-color: white; 
 }
 
 h3 {
@@ -27,9 +28,10 @@ h3 {
   display:flex;
   flex-direction: row;
    justify-content: flex-start;
-  align-items: flex-start;
+  align-items: center;
   width: 99vw;
-  height: 8vh; 
+  height: 8vh;
+  gap: 2vw; 
 }
 
 .definedpositiverangelabel {
@@ -37,36 +39,54 @@ h3 {
   flex-direction: row;
    justify-content: flex-start;
   align-items: center;
-  width: 15vw;
-  height: 8vh; 
+  width: 20vw;
+  height: 5vh; 
+  font-weight: 600;
+ font-size: 1.5vw;
+  font-family:  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-.lowerposnumberinput {
+
+.lowerposnumberinput-div, .higherposnumberinput-div{
+ display:flex;
+  flex-direction: row;
+   justify-content: center;
+  align-items: center;
+  width: 8vw;
+  height: 5vh;
+  border-radius: 7vw; 
+  border: 1px solid black; 
+  overflow: hidden;
+}
+
+
+.lowerposnumberinput, .higherposnumberinput {
   display:flex;
   flex-direction: row;
-   justify-content: flex-start;
+   justify-content: center;
   align-items: center;
   width: 6vw;
-  height: 8vh; 
+  height: 4vh;
+  background-color: white; 
+  border: none;
+  outline: none;
+  font-weight: 500;
+ font-size: 1.5vw;
+  font-family:  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-.To {
+.topos {
   display:flex;
   flex-direction: row;
-   justify-content: flex-start;
+   justify-content: center;
   align-items: center;
   width: 3vw;
-  height: 8vh; 
+  height: 5vh; 
+  font-weight: 600;
+ font-size: 1.5vw;
+  font-family:  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-.higherposnumberinput {
-  display:flex;
-  flex-direction: row;
-   justify-content: flex-start;
-  align-items: center;
-  width: 6vw;
-  height: 8vh; 
-}
 
 .descriptioninput {
   display:flex;
@@ -86,24 +106,107 @@ h3 {
   height: 8vh; 
 }
 
+.descriptionnumberposblock-div {
+ display:flex;
+  flex-direction: column;
+   justify-content: flex-start;
+  align-items: center;
+  width: 99vw;
+  min-height: 8vh; 
+}
+
+.descriptionnumberposrow-div {
+ display:flex;
+  flex-direction: row;
+   justify-content: center;
+  align-items: center;
+  width: 99vw;
+  height: 8vh;
+  gap: 1vw; 
+}
+
+.descriptionposinput-div{
+ display:flex;
+  flex-direction: row;
+   justify-content: center;
+  align-items: center;
+  width: 92vw;
+  height: 5vh;
+  border-radius: 91vw;
+  border: 1px solid black; 
+  overflow: hidden;
+}
+
+.descriptionposinput {
+ display:flex;
+  flex-direction: row;
+   justify-content: center;
+  align-items: center;
+  width: 87vw;
+  height: 4vh; 
+  border: none;
+  outline: none;
+  font-weight: 500;
+ font-size: 1.5vw;
+  font-family:  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.numberposinput-div{
+ display:flex;
+  flex-direction: row;
+   justify-content: center;
+  align-items: center;
+  width: 8vw;
+  height: 5vh;
+  border-radius: 7vw;
+  border: 1px solid black; 
+  overflow: hidden;
+
+}
+
+.numberposinput {
+ display:flex;
+  flex-direction: row;
+   justify-content: center;
+  align-items: center;
+  width: 6vw;
+  height: 4vh; 
+  border: none;
+  outline: none;
+  font-weight: 500;
+ font-size: 1.5vw;
+  font-family:  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
 .addremovepositivebut-div {
   display:flex;
   flex-direction: row;
    justify-content: flex-end;
   align-items: center;
-  width: 15vw;
+  width: 99vw;
   height: 8vh; 
+  gap: 2vw;
 }
 
-.addpostivebut, .removepostivebut {
+.addpositivebut, .removepositivebut {
   display:flex;
   flex-direction: row;
    justify-content: center;
   align-items: center;
-  width: 8vw;
-  height: 8vh; 
+  width: 12vw;
+  height: 6vh;
+  border-radius: 9vw; 
+  font-weight: 500;
+ font-size: 1.5vw;
+  font-family:  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: #1868db;
+  color: white;
+
 }
 
+.removepositivebut {
+width: 15vw;
+}
 
 /* ---------------- Buttons ---------------- */
 button {
@@ -123,15 +226,7 @@ button:active {
   transform: scale(0.98);
 }
 
-/* Positive / Negative Add-Remove Buttons */
-.rep-section button {
-  background-color: #007bff;
-  color: white;
-}
 
-.rep-section button.btn_remove {
-  background-color: #dc3545;
-}
 
 /* ---------------- Submit / Close ---------------- */
 .submit-div {

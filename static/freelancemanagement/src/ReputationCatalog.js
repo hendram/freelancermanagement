@@ -3,8 +3,8 @@ import { invoke } from "@forge/bridge";
 import "./ReputationCatalog.css";
 
 export default function ReputationCatalog({ goBackRC }) {
-  const [posRange, setPosRange] = useState({ from: 1, to: 10 });
-  const [negRange, setNegRange] = useState({ from: 1, to: 10 });
+  const [posRange, setPosRange] = useState({ from: 1, to: 10000 });
+  const [negRange, setNegRange] = useState({ from: -1, to: -10000 });
 
   const [positiveReps, setPositiveReps] = useState([]);
   const [negativeReps, setNegativeReps] = useState([]);
@@ -156,7 +156,8 @@ setNegativeReps(neg);
         <h3>Positive Reputation Range</h3>
         <div className="positiveinputbut-div">
         <label className="definedpositiverangelabel"> Define positive range: </label>
-        <input
+    <div className="lowerposnumberinput-div">
+  <input
           className="lowerposnumberinput"
           type="number"
           value={posRange.from}
@@ -165,7 +166,9 @@ setNegativeReps(neg);
           }
           placeholder="From"
         />
-        <div className="To"> To: </div> 
+</div>
+        <div className="topos"> To: </div> 
+    <div className="higherposnumberinput-div">
         <input
           className="higherposnumberinput"
           type="number"
@@ -175,14 +178,16 @@ setNegativeReps(neg);
           }
           placeholder="To"
         />
+   </div>
   </div>
 
-
+        <div className="descriptionnumberposblock-div" >
         {positiveReps.map((rep, idx) => (
-          <div key={rep.id} className="rep-item">
+          <div key={rep.id} className="descriptionnumberposrow-div">
             <span>{rep.id}.</span>
-            <input
-              className="descriptioninput"
+    <div className="descriptionposinput-div">
+   <input
+              className="descriptionposinput"
               type="text"
               value={rep.description}
               placeholder="Description"
@@ -190,8 +195,11 @@ setNegativeReps(neg);
                 updatePositive(idx, "description", e.target.value)
               }
             />
+</div>
+    <div className="numberposinput-div">
+
             <input
-              className="numberinput"
+              className="numberposinput"
               type="number"
               value={rep.value}
               placeholder="Value"
@@ -199,9 +207,11 @@ setNegativeReps(neg);
                 updatePositive(idx, "value", Number(e.target.value))
               }
             />
+</div>
           </div>
         ))}
-
+</div>
+        
 <div className="addremovepositivebut-div">
         <button className="addpositivebut" onClick={addPositive}>+ Add Positive</button>
         <button className="removepositivebut" onClick={removePositive}>- Remove Positive</button>
