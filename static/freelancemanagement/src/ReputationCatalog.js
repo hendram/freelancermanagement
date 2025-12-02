@@ -219,59 +219,89 @@ setNegativeReps(neg);
       </div>
         
       {/* ---------------- NEGATIVE REPUTATION ---------------- */}
-      <div className="negative-section">
-        <h3>Negative Reputation Range</h3>
+{/* ---------------- NEGATIVE REPUTATION ---------------- */}
+<div className="negative-section">
+  <h3>Negative Reputation Range</h3>
 
-        <input
-          type="number"
-          value={negRange.from}
-          onChange={e =>
-            setNegRange({ ...negRange, from: Number(e.target.value) })
-          }
-          placeholder="From"
-        />
-        <input
-          type="number"
-          value={negRange.to}
-          onChange={e =>
-            setNegRange({ ...negRange, to: Number(e.target.value) })
-          }
-          placeholder="To"
-        />
+  <div className="negativeinputbut-div">
+    <label className="definednegativerangelabel">Define negative range:</label>
 
-        {negativeReps.map((rep, idx) => (
-          <div key={rep.id} className="rep-item">
-            <span>{rep.id}.</span>
-            <input
-              type="text"
-              value={rep.description}
-              placeholder="Description"
-              onChange={e =>
-                updateNegative(idx, "description", e.target.value)
-              }
-            />
-            <input
-              type="number"
-              value={rep.value}
-              placeholder="Value"
-              onChange={e =>
-                updateNegative(idx, "value", Number(e.target.value))
-              }
-            />
-          </div>
-        ))}
+    <div className="lowernegnumberinput-div">
+      <input
+        className="lowernegnumberinput"
+        type="number"
+        value={negRange.from}
+        onChange={e =>
+          setNegRange({ ...negRange, from: Number(e.target.value) })
+        }
+        placeholder="From"
+      />
+    </div>
 
-        <button onClick={addNegative}>+ Add Negative</button>
-        <button onClick={removeNegative}>- Remove Negative</button>
+    <div className="toneg"> To: </div>
+
+    <div className="highernegnumberinput-div">
+      <input
+        className="highernegnumberinput"
+        type="number"
+        value={negRange.to}
+        onChange={e =>
+          setNegRange({ ...negRange, to: Number(e.target.value) })
+        }
+        placeholder="To"
+      />
+    </div>
+  </div>
+
+  <div className="descriptionnumbernegblock-div">
+    {negativeReps.map((rep, idx) => (
+      <div key={rep.id} className="descriptionnumbernegrow-div">
+        <span>{rep.id}.</span>
+
+        <div className="descriptionneginput-div">
+          <input
+            className="descriptionneginput"
+            type="text"
+            value={rep.description}
+            placeholder="Description"
+            onChange={e =>
+              updateNegative(idx, "description", e.target.value)
+            }
+          />
+        </div>
+
+        <div className="numberneginput-div">
+          <input
+            className="numberneginput"
+            type="number"
+            value={rep.value}
+            placeholder="Value"
+            onChange={e =>
+              updateNegative(idx, "value", Number(e.target.value))
+            }
+          />
+        </div>
       </div>
+    ))}
+  </div>
+
+  <div className="addremovenegativebut-div">
+    <button className="addnegativebut" onClick={addNegative}>
+      + Add Negative
+    </button>
+    <button className="removenegativebut" onClick={removeNegative}>
+      - Remove Negative
+    </button>
+  </div>
+</div>
 
       {/* ---------------- SUBMIT ---------------- */}
-      <div className="submit-div">
-        <button className="btn_submit" onClick={submit}>
+      <div className="submitrc-div">
+        <button className="btn_submitrc" onClick={submit}>
           Submit Catalog
         </button>
         {goBackRC && (
-          <button className="btn_close" onClick={goBackRC}>
+          <button className="btn_closerc" onClick={goBackRC}>
             Close
           </button>
         )}

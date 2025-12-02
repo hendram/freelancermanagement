@@ -91,26 +91,26 @@ export default function AssignReputation({ goBackAR }) {
 
   return (
     <div className="assign-container">
-      <h2>Assign Reputation</h2>
 
-      <table className="assign-table">
-        <thead>
-          <tr>
-            <th>Full Name</th>
-            <th>Total Reputation</th>
-            <th>+ Positive ID</th>
-            <th>- Negative ID</th>
+      <table className="artable">
+        <thead className="arthead">
+          <tr className="artheadtr">
+            <th className="artheadtrthfullname" >Full Name</th>
+            <th className="artheadtrthtotalrep">Total Reputation</th>
+            <th className="artheadtrthpos">+ Positive ID</th>
+            <th className="artheadtrthneg">- Negative ID</th>
           </tr>
         </thead>
 
-        <tbody>
+        <tbody className="artbody">
           {rows.map((r, idx) => (
-            <tr key={r.resume_id}>
-              <td>{r.fullName}</td>
-              <td>{r.reputation}</td>
+            <tr className="artbodytr" key={r.resume_id}>
+              <td className="artbodytrtdfullname"> {r.fullName}</td>
+              <td className="artbodytrtdreputation">{r.reputation}</td>
 
-              <td>
+              <td className="artbodytrtdposinput">
                 <input
+                  className="posinput"
                   type="number"
                   value={r.posInput}
                   onChange={e =>
@@ -120,8 +120,9 @@ export default function AssignReputation({ goBackAR }) {
                 />
               </td>
 
-              <td>
+              <td className="artbodytrtdneginput">
                 <input
+                  className="neginput"
                   type="number"
                   value={r.negInput}
                   onChange={e =>
@@ -135,11 +136,11 @@ export default function AssignReputation({ goBackAR }) {
         </tbody>
       </table>
 
-      <div className="assign-actions">
-        <button className="btn-submit" onClick={submit}>Submit</button>
-        <button className="btn-reset" onClick={reset}>Reset</button>
+      <div className="arbuttons-div">
+        <button className="btn-submitar" onClick={submit}>Submit</button>
+        <button className="btn-resetar" onClick={reset}>Reset</button>
         {goBackAR && (
-          <button className="btn-close" onClick={goBackAR}>Close</button>
+          <button className="btn-closear" onClick={goBackAR}>Close</button>
         )}
       </div>
     </div>

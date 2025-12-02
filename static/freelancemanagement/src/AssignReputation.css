@@ -1,44 +1,206 @@
+/* --------------------------------------------------
+   GLOBAL BASE RESET (explicit, no inheritance)
+-------------------------------------------------- */
 .assign-container {
-  padding: 20px;
-}
+  width: 98vw;
+  min-height: 90vh;
+  padding: 2vh 1vw;
+  box-sizing: border-box;
 
-.assign-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-}
-
-.assign-table th,
-.assign-table td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: left;
-}
-
-.assign-table input {
-  width: 100%;
-  padding: 6px;
-}
-
-.assign-actions {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  gap: 3vh;
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
+    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  background: #fafbfc;
 }
 
-.btn-submit {
-  padding: 8px 16px;
-  background: #007bff;
-  color: white;
+/* --------------------------------------------------
+   TABLE OUTER WRAPPER
+-------------------------------------------------- */
+.artable {
+  width: 98vw;
+  border-collapse: separate;
+  border-spacing: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  background: white;
+  border: 0.2vh solid #d0d7de;
+  border-radius: 1.2vh;
+  overflow: hidden;
 }
 
-.btn-reset {
-  padding: 8px 16px;
-  background: #555;
-  color: white;
+/* --------------------------------------------------
+   TABLE HEAD
+-------------------------------------------------- */
+.arthead {
+  width: 100%;
+  display: flex;
 }
 
-.btn-close {
-  padding: 8px 16px;
-  background: #999;
+.artheadtr {
+  display: flex;
+  width: 100%;
+  background: #f6f8fa;
+  border-bottom: 0.2vh solid #d0d7de;
+}
+
+/* Each column explicitly sized */
+.artheadtrthfullname {
+  width: 35vw;
+  padding: 1.5vh 1vw;
+  text-align: left;
+  font-weight: 600;
+  font-size: 1.9vh;
+}
+
+.artheadtrthtotalrep {
+  width: 15vw;
+  padding: 1.5vh 1vw;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.9vh;
+}
+
+.artheadtrthpos,
+.artheadtrthneg {
+  width: 20vw;
+  padding: 1.5vh 1vw;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.9vh;
+}
+
+/* --------------------------------------------------
+   TABLE BODY
+-------------------------------------------------- */
+.artbody {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.artbodytr {
+  display: flex;
+  width: 100%;
+  border-bottom: 0.15vh solid #e1e4e8;
+  background: white;
+}
+
+/* ---------------------------------------------
+   BODY CELLS
+--------------------------------------------- */
+.artbodytrtdfullname {
+  width: 35vw;
+  padding: 1.2vh 1vw;
+  font-size: 1.8vh;
+  display: flex;
+  align-items: center;
+}
+
+.artbodytrtdreputation {
+  width: 15vw;
+  padding: 1.2vh 1vw;
+  font-size: 1.8vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.artbodytrtdposinput,
+.artbodytrtdneginput {
+  width: 20vw;
+  padding: 1.2vh 1vw;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* --------------------------------------------------
+   INPUT FIELDS (fixed size, NEVER overflow)
+-------------------------------------------------- */
+.posinput,
+.neginput {
+  width: 16vw;        /* safe width */
+  height: 4.2vh;      /* tap-friendly */
+
+  padding: 0 1vw;
+  font-size: 1.8vh;
+  font-family: inherit;
+
+  border: 0.2vh solid #c5ccd3;
+  border-radius: 1vh;
+  background: #ffffff;
+
+  outline: none;
+  box-sizing: border-box;
+
+  /* Prevent number buttons looking ugly */
+  -moz-appearance: textfield;
+}
+.posinput::-webkit-outer-spin-button,
+.posinput::-webkit-inner-spin-button,
+.neginput::-webkit-outer-spin-button,
+.neginput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* --------------------------------------------------
+   BUTTON AREA (bottom)
+-------------------------------------------------- */
+.arbuttons-div {
+  width: 98vw;
+  display: flex;
+  justify-content: center;
+  gap: 2vw;
+  margin-top: 2vh;
+}
+
+/* ---------------------------------------------
+   BUTTONS — Lozenges
+--------------------------------------------- */
+.btn-submitar,
+.btn-resetar,
+.btn-closear {
+  padding: 1.6vh 4vw;
+  font-size: 2vh;
+  font-weight: 600;
+  font-family: inherit;
+
+  border: none;
+  border-radius: 50vh;   /* perfect lozenge */
+  cursor: pointer;
+
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Individual colors */
+.btn-submitar {
+  background: #2da44e;
   color: white;
+}
+.btn-submitar:hover {
+  background: #218838;
+}
+
+.btn-resetar {
+  background: #eac54f;
+  color: #111;
+}
+.btn-resetar:hover {
+  background: #d4b443;
+}
+
+.btn-closear {
+  background: #d73a49;
+  color: white;
+}
+.btn-closear:hover {
+  background: #b92b39;
 }
