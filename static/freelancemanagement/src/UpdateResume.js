@@ -59,15 +59,6 @@ export default function UpdateResume({ goBackU, onSelectResumeForUpdate }) {
 
   return (
     <div className="container-updateresume">
-      <div className="top-bar">
-        <select className="range-select" value={pageRange} onChange={handleRangeChange}>
-          {Array.from({ length: Math.ceil(totalCount / 10) }, (_, i) => {
-            const start = i * 10 + 1;
-            const end = (i + 1) * 10;
-            return <option key={i} value={`${start}-${end}`}>{`${start}-${end}`}</option>;
-          })}
-        </select>
-      </div>
      
       <div className="resume-viewer">
         <div className="arrow-left" onClick={prev}>&lt;</div>
@@ -76,106 +67,122 @@ export default function UpdateResume({ goBackU, onSelectResumeForUpdate }) {
         <div className="photobox">
  { /* will have img later on */ } 
        </div>
-        <div className="biobox">
+<div className="biobox">
   <div className="namediv">
-    <label>Name:</label>
+    <label className="namelabel">Name:</label>
     <div className="name">{(r.firstName || "-") + " " + (r.lastName || "-")}</div>
   </div>
 
   <div className="dobdiv">
-    <label>Date of Birth:</label>
+    <label className="doblabel">Date of Birth:</label>
     <div className="dob">{r.dateOfBirth || "-"}</div>
   </div>
 
   <div className="pobdiv">
-    <label>Place of Birth:</label>
+    <label className="poblabel">Place of Birth:</label>
     <div className="pob">{r.placeOfBirth || "-"}</div>
   </div>
 
   <div className="addressdiv">
-    <label>Address:</label>
+    <label className="addresslabel">Address:</label>
     <div className="address">{r.address || "-"}</div>
   </div>
 
   <div className="religiondiv">
-    <label>Religion:</label>
+    <label className="religionlabel">Religion:</label>
     <div className="religion">{r.religion || "-"}</div>
   </div>
 
   <div className="contactdiv">
-    <label>Contact:</label>
+    <label className="contactlabel">Contact:</label>
     <div className="contact">{r.contact || "-"}</div>
   </div>
 
   <div className="emaildiv">
-    <label>Email:</label>
+    <label className="emaillabel">Email:</label>
     <div className="email">{r.email || "-"}</div>
   </div>
 
   <div className="nationalitydiv">
-    <label>Nationality:</label>
+    <label className="nationalitylabel">Nationality:</label>
     <div className="nationality">{r.nationality || "-"}</div>
   </div>
 
   {r.github && (
     <div className="githubdiv">
-      <label>GitHub:</label>
+      <label className="githublabel">GitHub:</label>
       <div className="github">
         <a href={r.github} target="_blank" rel="noopener noreferrer">{r.github}</a>
       </div>
     </div>
   )}
 </div>
+
   </div>
 
-          {/* EXPERIENCE */}
-          <div className="experience-viewer">
-            <h4 className="section-title">Experience</h4>
-{Array.isArray(r.experiences) && r.experiences.length > 0 ? (
-  r.experiences.map((exp, idx) => (
-    <div className="experience-item" key={idx}>
-      <div className="companydiv">
-        <label>Company:</label>
-        <div className="company">{exp.company || "-"}</div>
-      </div>
+{/* EXPERIENCE */}
+<div className="experience-viewer">
+  <div className="experience-title">Experience</div>
 
-      <div className="positiondiv">
-        <label>Position:</label>
-        <div className="position">{exp.position || "-"}</div>
-      </div>
+  {Array.isArray(r.experiences) && r.experiences.length > 0 ? (
+    r.experiences.map((exp, idx) => (
+      <div className="experience-item" key={idx}>
+        
+        <div className="companydiv">
+          <label className="companylabel">Company:</label>
+          <div className="company">{exp.company || "-"}</div>
+        </div>
 
-      <div className="perioddiv">
-        <label>Period:</label>
-        <div className="period">{exp.working_period || "-"}</div>
-      </div>
+        <div className="positiondiv">
+          <label className="positionlabel">Position:</label>
+          <div className="position">{exp.position || "-"}</div>
+        </div>
 
-      <div className="descriptiondiv">
-        <label>Description:</label>
-        <div className="job-description">{exp.job_description || "-"}</div>
-      </div>
+        <div className="perioddiv">
+          <label className="periodlabel">Period:</label>
+          <div className="period">{exp.working_period || "-"}</div>
+        </div>
 
-      <hr />
-    </div>
-  ))
-) : (
-  <p>-</p>
-)}
-          </div>
+        <div className="descriptiondiv">
+          <label className="descriptionlabel">Job Description:</label>
+          <div className="job-description">{exp.job_description || "-"}</div>
+        </div>
 
-          {/* SKILLS */}
-          <div className="skills-viewer">
-            <h4 className="section-title">Skills</h4>
-     <div className="skillsdiv">
-     <label>Skills:</label>
-        <div className="skills">{r.skills || "-"}</div>
+        <hr />
       </div>
-          </div>
+    ))
+  ) : (
+    <p>-</p>
+  )}
+</div>
+
+{/* SKILLS */}
+<div className="skills-viewer">
+  <div className="skills-title">Skills</div>
+
+  <div className="skillsdiv">
+    <label className="skillslabel">Skills:</label>
+    <div className="skills">{r.skills || "-"}</div>
+  </div>
+
+</div>
+
+   <div className="bottomselectdiv">
+        <select className="range-select" value={pageRange} onChange={handleRangeChange}>
+          {Array.from({ length: Math.ceil(totalCount / 10) }, (_, i) => {
+            const start = i * 10 + 1;
+            const end = (i + 1) * 10;
+            return <option className="options" key={i} value={`${start}-${end}`}>{`${start}-${end}`}</option>;
+          })}
+        </select>
+      </div>
+   
 
           {/* Action buttons */}
           <div className="action-buttons">
             <button className="update-btn" onClick={handleUpdateClick}>Update Resume</button>
             <button className="delete-btn" onClick={() => handleDelete(resumes[index].id)}>Delete</button>
-             {goBackU && <button className="btn_close" onClick={goBackU}>Close</button>}
+             {goBackU && <button className="close-btn" onClick={goBackU}>Close</button>}
           </div>
 </div> {/* closing of resumediv */}
 
