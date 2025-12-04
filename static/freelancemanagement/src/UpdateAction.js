@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { invoke } from "@forge/bridge";
-import "./AddResume.css";
+import "./UpdateAction.css";
 
 export default function UpdateAction({ goBackUA, resumeData }) {
   const firstNameRef = useRef();
