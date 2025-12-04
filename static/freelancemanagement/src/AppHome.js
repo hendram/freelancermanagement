@@ -6,7 +6,9 @@ import ReputationCatalog from "./ReputationCatalog";
 import AssignReputation from "./AssignReputation";
 import AddReferrer from "./AddReferrer";
 import UpdateReferrer from "./UpdateReferrer";
+import MyInvitation from "./MyInvitation";
 import "./AppHome.css";
+
 
 // --------------------------------------
 // FORCE RE-RENDER USING useRef ONLY
@@ -30,6 +32,7 @@ export default function AppHome() {
     assignReputation: false,
     addReferrer: false,
     updateReferrer: false,
+    myInvitation: false
   });
 
   const switchPage = (page) => {
@@ -87,7 +90,6 @@ export default function AppHome() {
 
       {/* TOP MENU */}
       <div className="hometop-menu">
-        <div className="homemenu-row">
           {/* RESUME */}
           <div className="homemenu-btn-wrapper">
             <button className="homemenu-btn">Resume ▼</button>
@@ -118,8 +120,16 @@ export default function AppHome() {
               <button onClick={() => switchPage("updateReferrer")}>Update Referrer</button>
             </div>
           </div>
+
+
+    {/* My Invitation */}
+       <div className="homemenu-btn-wrapper">
+            <button className="homemenu-btn" onClick={() => switchPage("myInvitation")}>
+           My Invitation </button>
         </div>
-      </div>
+
+        </div>
+
 
       {/* FREELANCER LIST */}
       <div className="homelist">
@@ -194,6 +204,11 @@ export default function AppHome() {
       {pages.current.updateReferrer && (
         <UpdateReferrer goBackUR={() => switchPage("main")} />
       )}
+
+      {pages.current.myInvitation && (
+        <MyInvitation goBackMI={() => switchPage("main")} />
+      )}
+
     </>
   );
 }

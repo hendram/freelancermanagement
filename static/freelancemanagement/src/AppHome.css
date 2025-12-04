@@ -22,15 +22,11 @@ body {
 
 /* TOP MENU */
 .hometop-menu {
-  width: 100%;
+  width: 100vh;
   display: flex;
   justify-content: center;
-}
-
-.homemenu-row {
-  display: flex;
-  flex-direction: row;
-  gap: 20px;
+  align-items: center;
+  height: 8vh;
 }
 
 /* MENU BUTTON WRAPPER */
@@ -39,7 +35,7 @@ body {
 }
 
 /* MAIN MENU BUTTON */
-.homemenu-btn {
+.homemenu-btn, .myinvitation-btn {
   padding: 10px 20px;
   background: #ddd;
   border: none;

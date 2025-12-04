@@ -15,7 +15,7 @@ export default function App() {
   useEffect(() => {
     async function loadIssue() {
       try {
-        const data = await invoke("getcurrentissue", {}); 
+        const data = await invoke("getcurrentissue", {});
         if (!data || !data.key) {
           setError("Cannot detect issue context.");
           return;
@@ -44,7 +44,7 @@ export default function App() {
     setLoading(true);
     try {
       const payload = {
-        skills
+        skills,
       };
       const res = await invoke("findcandidates", payload);
 
@@ -62,11 +62,39 @@ export default function App() {
   };
 
   // -----------------------------
+  // 3) CANDIDATE ACTION HANDLERS (New Placeholder Functions)
+  // -----------------------------
+
+  const handleInvite = (candidate) => {
+    console.log(`Inviting freelancer: ${candidate.fullName}`);
+    // **TODO: Implement Forge invoke call to send invitation**
+  };
+
+  const handleRFP = (candidate) => {
+    console.log(`Sending RFP to: ${candidate.fullName}`);
+    // **TODO: Implement Forge invoke call for Request for Proposal**
+  };
+
+  const handlePass = (candidate) => {
+    console.log(`Passing on candidate: ${candidate.fullName}`);
+    // **TODO: Implement logic to mark candidate as 'Passed'**
+  };
+
+  const handleProposal = (candidate) => {
+    console.log(`Viewing proposal for: ${candidate.fullName}`);
+    // **TODO: Implement logic to open/view the candidate's proposal**
+  };
+
+  const handleDeal = (candidate) => {
+    console.log(`Making a deal with: ${candidate.fullName}`);
+    // **TODO: Implement Forge invoke call to finalize the deal**
+  };
+
+  // -----------------------------
   // RENDER
   // -----------------------------
   return (
     <div className="fb-wrapper">
-
       {/* TOP: ISSUE ROW */}
       {issue && (
         <div className="fb-issue-row">
@@ -97,9 +125,29 @@ export default function App() {
         <div className="fb-candidate-block">
           {candidates.map((c, i) => (
             <div className="fb-candidate-row" key={c.resume_id}>
+              {/* UPDATED: Added action buttons next to the candidate name */}
               <div className="fb-c-left">
                 <span className="fb-c-name">{c.fullName}</span>
+                <div className="fb-c-actions">
+                  <button className="fb-action-btn invite-btn" onClick={() => handleInvite(c)}>
+                    Invite
+                  </button>
+                  <button className="fb-action-btn rfp-btn" onClick={() => handleRFP(c)}>
+                    RFP
+                  </button>
+                  <button className="fb-action-btn pass-btn" onClick={() => handlePass(c)}>
+                    Pass
+                  </button>
+                  <button className="fb-action-btn proposal-btn" onClick={() => handleProposal(c)}>
+                    Proposal
+                  </button>
+                  <button className="fb-action-btn deal-btn" onClick={() => handleDeal(c)}>
+                    Deal
+                  </button>
+                </div>
               </div>
+              {/* END OF UPDATED SECTION */}
+              
               <div className="fb-c-right">
                 <div className="fb-c-meta">
                   Skills: {Array.isArray(c.skills) ? c.skills.join(", ") : c.skills}
@@ -121,3 +169,4 @@ export default function App() {
     </div>
   );
 }
+

@@ -81,3 +81,57 @@
   margin-top: 8px;
   color: red;
 }
+
+/* In App.css */
+
+.fb-c-left {
+  display: flex;
+  flex-direction: column; /* Changed from horizontal layout for better stacking */
+  gap: 8px; /* Space between name and buttons */
+}
+
+.fb-c-actions {
+  display: flex;
+  gap: 5px; /* Space between action buttons */
+  flex-wrap: wrap; /* Allows buttons to wrap if space is limited */
+}
+
+.fb-action-btn {
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+  transition: background-color 0.2s;
+}
+
+/* Optional color styling for better visual feedback */
+.invite-btn {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.rfp-btn {
+  background-color: #ffc107;
+  color: #333;
+  border-color: #ffc107;
+}
+
+.pass-btn {
+  background-color: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.proposal-btn {
+  background-color: #17a2b8;
+  color: white;
+  border-color: #17a2b8;
+}
+
+.deal-btn {
+  background-color: #28a745;
+  color: white;
+  border-color: #28a745;
+}

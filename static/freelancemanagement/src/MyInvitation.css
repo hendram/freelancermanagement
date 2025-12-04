@@ -1,0 +1,143 @@
+.my-invitation-card {
+  border: 1px solid #ddd;
+  padding: 20px;
+  margin: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: Arial, sans-serif;
+}
+
+.row {
+  display: flex;
+  margin-bottom: 15px;
+  align-items: center;
+  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+}
+
+.title-row h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5em;
+}
+
+.label-row {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.task-key {
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.task-summary {
+  margin: 0;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.refer-row {
+  justify-content: space-between;
+}
+
+.refer-item {
+  flex: 1;
+}
+
+.referrer-name,
+.referee-name {
+  font-style: italic;
+  font-weight: 600;
+  color: #007bff;
+}
+
+.update-referrer-row {
+  gap: 10px;
+}
+
+.update-btn {
+  background-color: #ffc107;
+  color: #333;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.referrer-select {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.proposal-row {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#proposal-textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Includes padding and border in the element's total width and height */
+}
+
+.price-row {
+  justify-content: flex-start;
+  gap: 15px;
+}
+
+.price-inputs {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.price-amount {
+  width: 80px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.currency {
+  font-weight: bold;
+  color: #008000;
+}
+
+.price-unit-select {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.pass-row {
+  justify-content: flex-end;
+}
+
+.pass-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.pass-btn:hover {
+  background-color: #c82333;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #eee;
+  margin: 10px 0;
+}
+
