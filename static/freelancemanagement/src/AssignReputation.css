@@ -1,148 +1,170 @@
-/* --------------------------------------------------
-   GLOBAL BASE RESET (explicit, no inheritance)
--------------------------------------------------- */
+/* ==========================================
+   CONTAINER — VW/VH ONLY
+========================================== */
 .assign-container {
-  width: 98vw;
-  min-height: 90vh;
-  padding: 2vh 1vw;
-  box-sizing: border-box;
-
+  width: 100vw;
+  min-height: 100vh;
+  background-color: white;
   display: flex;
   flex-direction: column;
   gap: 3vh;
-
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
-    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  background: #fafbfc;
 }
 
-/* --------------------------------------------------
-   TABLE OUTER WRAPPER
--------------------------------------------------- */
+/* ==========================================
+   TABLE (flex-based layout)
+========================================== */
 .artable {
-  width: 98vw;
-  border-collapse: separate;
-  border-spacing: 0;
-
+  width: 100vw;
   display: flex;
   flex-direction: column;
 
   background: white;
-  border: 0.2vh solid #d0d7de;
-  border-radius: 1.2vh;
+  border: 1px solid #d0d7de;
+  border-radius: 1vw;
   overflow: hidden;
 }
 
-/* --------------------------------------------------
+/* ==========================================
    TABLE HEAD
--------------------------------------------------- */
+========================================== */
 .arthead {
-  width: 100%;
+  width: 100vw;
   display: flex;
+  height: 8vh;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
 }
 
 .artheadtr {
+  width: 100vw;
+  height: 8vh;
   display: flex;
-  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
   background: #f6f8fa;
-  border-bottom: 0.2vh solid #d0d7de;
+  border-bottom: 1px solid #d0d7de;
 }
 
-/* Each column explicitly sized */
+/* ---- Header cells ---- */
 .artheadtrthfullname {
-  width: 35vw;
-  padding: 1.5vh 1vw;
-  text-align: left;
+ display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  align-self: flex-start;
+  width: 54vw;
+  height: 8vh;
   font-weight: 600;
-  font-size: 1.9vh;
+  font-size: calc(1.5vw + 0.01vh);
+  margin-left: 1vw;
 }
 
 .artheadtrthtotalrep {
-  width: 15vw;
-  padding: 1.5vh 1vw;
-  text-align: center;
+ display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: 8vh;
+  width: 14vw;
   font-weight: 600;
-  font-size: 1.9vh;
+  font-size: calc(1.5vw + 0.01vh);
 }
 
 .artheadtrthpos,
 .artheadtrthneg {
-  width: 20vw;
-  padding: 1.5vh 1vw;
-  text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: 8vh;
+  width: 16vw;
   font-weight: 600;
-  font-size: 1.9vh;
+  font-size: calc(1.5vw + 0.01vh);
 }
 
-/* --------------------------------------------------
+/* ==========================================
    TABLE BODY
--------------------------------------------------- */
+========================================== */
 .artbody {
-  width: 100%;
   display: flex;
   flex-direction: column;
+  background: white;
+  border: 1px solid #d0d7de;
+  width: 100vw;
+  min-height: 0vh;
 }
 
 .artbodytr {
+  width: 100vw;
   display: flex;
-  width: 100%;
-  border-bottom: 0.15vh solid #e1e4e8;
+  flex-direction: row;
+  height: 8vh;
   background: white;
+  border-bottom: 0.15vw solid #e1e4e8;
 }
 
-/* ---------------------------------------------
-   BODY CELLS
---------------------------------------------- */
 .artbodytrtdfullname {
-  width: 35vw;
-  padding: 1.2vh 1vw;
-  font-size: 1.8vh;
+  width: 54vw;
+  font-size: calc(1.5vw + 0.01vh);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
+  height: 8vh;
+  margin-left: 1vw;
 }
 
 .artbodytrtdreputation {
-  width: 15vw;
-  padding: 1.2vh 1vw;
-  font-size: 1.8vh;
-
+   width: 14vw;
+  font-size: calc(1.5vw + 0.01vh);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 8vh;
 }
 
 .artbodytrtdposinput,
 .artbodytrtdneginput {
-  width: 20vw;
-  padding: 1.2vh 1vw;
-
   display: flex;
+  width: 16vw;
   justify-content: center;
   align-items: center;
+  height: 8vh;
 }
 
-/* --------------------------------------------------
-   INPUT FIELDS (fixed size, NEVER overflow)
--------------------------------------------------- */
+/* ==========================================
+   INPUTS — VW/VH SCALED
+========================================== */
+.posinput-div,
+.neginput-div {
+  display: flex;
+  width: 8vw;
+  justify-content: center;
+  align-items: center;
+  height: 6vh;
+  border-radius: 7vw;
+  border: 1px solid black;
+  overflow: hidden;
+}
+
 .posinput,
 .neginput {
-  width: 16vw;        /* safe width */
-  height: 4.2vh;      /* tap-friendly */
-
-  padding: 0 1vw;
-  font-size: 1.8vh;
-  font-family: inherit;
-
-  border: 0.2vh solid #c5ccd3;
-  border-radius: 1vh;
-  background: #ffffff;
-
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 7vw;
+  height: 4vh;
+  font-size: calc(1.5vw + 0.01vh);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   outline: none;
-  box-sizing: border-box;
-
-  /* Prevent number buttons looking ugly */
+  border: none;
   -moz-appearance: textfield;
 }
+
 .posinput::-webkit-outer-spin-button,
 .posinput::-webkit-inner-spin-button,
 .neginput::-webkit-outer-spin-button,
@@ -151,56 +173,37 @@
   margin: 0;
 }
 
-/* --------------------------------------------------
-   BUTTON AREA (bottom)
--------------------------------------------------- */
+/* ==========================================
+   BUTTON AREA
+========================================== */
 .arbuttons-div {
-  width: 98vw;
+  width: 100vw;
+  height: 8vh;
   display: flex;
+  flex-direction: row;
   justify-content: center;
+  align-items: center;
   gap: 2vw;
-  margin-top: 2vh;
 }
 
-/* ---------------------------------------------
-   BUTTONS — Lozenges
---------------------------------------------- */
+/* ==========================================
+   BUTTONS — VW/VH SCALED
+========================================== */
 .btn-submitar,
 .btn-resetar,
 .btn-closear {
-  padding: 1.6vh 4vw;
-  font-size: 2vh;
-  font-weight: 600;
-  font-family: inherit;
-
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  font-size: calc(1.5vw + 0.01vh);
+  width: 8vw;
+  height: 6vh;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: #1868db;
+  color: white;
   border: none;
-  border-radius: 50vh;   /* perfect lozenge */
+  border-radius: 5vw;
   cursor: pointer;
-
-  transition: background 0.15s ease, box-shadow 0.15s ease;
-}
-
-/* Individual colors */
-.btn-submitar {
-  background: #2da44e;
-  color: white;
-}
-.btn-submitar:hover {
-  background: #218838;
-}
-
-.btn-resetar {
-  background: #eac54f;
-  color: #111;
-}
-.btn-resetar:hover {
-  background: #d4b443;
-}
-
-.btn-closear {
-  background: #d73a49;
-  color: white;
-}
-.btn-closear:hover {
-  background: #b92b39;
 }

@@ -109,6 +109,7 @@ export default function AssignReputation({ goBackAR }) {
               <td className="artbodytrtdreputation">{r.reputation}</td>
 
               <td className="artbodytrtdposinput">
+          <div className="posinput-div" >
                 <input
                   className="posinput"
                   type="number"
@@ -116,20 +117,23 @@ export default function AssignReputation({ goBackAR }) {
                   onChange={e =>
                     updateInput(idx, "posInput", e.target.value)
                   }
-                  placeholder="Positive ID"
+                  placeholder="Pos ID"
                 />
+           </div>
               </td>
 
               <td className="artbodytrtdneginput">
-                <input
+              <div className="neginput-div"> 
+               <input
                   className="neginput"
                   type="number"
                   value={r.negInput}
                   onChange={e =>
                     updateInput(idx, "negInput", e.target.value)
                   }
-                  placeholder="Negative ID"
+                  placeholder="Neg ID"
                 />
+              </div>
               </td>
             </tr>
           ))}

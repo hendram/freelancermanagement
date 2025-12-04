@@ -102,170 +102,219 @@ useEffect(() => {
   };
 
   // UI FORM
-  return (
-    <div className="container-addresume">
-      <h2>Update Resume</h2>
+  return  (
+  <div className="container-addresumeua">
+    <h2 className="sectiontitle-h2ua">Update Resume</h2>
 
-      {/* BIO */}
-      <h3>Bio Information</h3>
+    {/* BIO */}
+    <h3 className="sectiontitle-h3ua">Bio Information</h3>
 
-      <div className="firstlastname_div">
-        <div className="firstname_div">
-          <span className="firstnamespan">First Name:</span>
-          <input ref={firstNameRef} className="input_firstname" />
-        </div>
-
-        <div className="lastname_div">
-          <span className="lastnamespan">Last Name:</span>
-          <input ref={lastNameRef} className="input_lastname" />
+    <div className="firstlastname_divua">
+      <div className="firstname_divua">
+        <label className="firstnamelabelua" htmlFor="ua_input_firstname">First Name:</label>
+        <div className="inputfirstname-divua">
+          <input
+            id="ua_input_firstname"
+            className="input_firstnameua"
+            ref={firstNameRef}
+          />
         </div>
       </div>
 
-      <div className="birth_div">
-        <span className="birthspan"> Date of Birth:</span>
+      <div className="lastname_divua">
+        <label className="lastnamelabelua" htmlFor="ua_input_lastname">Last Name:</label>
+        <div className="inputlastname-divua">
+          <input
+            id="ua_input_lastname"
+            className="input_lastnameua"
+            ref={lastNameRef}
+          />
+        </div>
+      </div>
+    </div>
+
+    <div className="birth_divua">
+      <label className="birthlabelua" htmlFor="ua_input_dob">Date of Birth:</label>
+      <div className="inputdob-divua">
         <input
-          className="input_dob"
+          id="ua_input_dob"
+          className="input_dobua"
           value={bio.dateOfBirth}
           onChange={(e) => updateBio("dateOfBirth", e.target.value)}
         />
       </div>
+    </div>
 
-      <div className="placebirth_div">
-        <span className="pobspan">Place of Birth:</span>
+    <div className="placebirth_divua">
+      <label className="poblabelua" htmlFor="ua_input_pob">Place of Birth:</label>
+      <div className="inputpob-divua">
         <input
-          className="input_pob"
+          id="ua_input_pob"
+          className="input_pobua"
           value={bio.placeOfBirth}
           onChange={(e) => updateBio("placeOfBirth", e.target.value)}
         />
       </div>
+    </div>
 
-      <div className="address_div">
-        <span className="addressspan">Address:</span>
+    <div className="address_divua">
+      <label className="addresslabelua" htmlFor="ua_input_address">Address:</label>
+      <div className="inputaddress-divua">
         <input
-          className="input_address"
+          id="ua_input_address"
+          className="input_addressua"
           value={bio.address}
           onChange={(e) => updateBio("address", e.target.value)}
         />
       </div>
+    </div>
 
-      <div className="religion_div">
-        <span className="religionspan">Religion:</span>
+    <div className="religion_divua">
+      <label className="religionlabelua" htmlFor="ua_input_religion">Religion:</label>
+      <div className="inputreligion-divua">
         <input
-          className="input_religion"
+          id="ua_input_religion"
+          className="input_religionua"
           value={bio.religion}
           onChange={(e) => updateBio("religion", e.target.value)}
         />
       </div>
+    </div>
 
-      <div className="contactnumber_div">
-        <span className="contactnumberspan">Contact Number:</span>
+    <div className="contactnumber_divua">
+      <label className="contactnumberlabelua" htmlFor="ua_input_contact">Contact Number:</label>
+      <div className="inputcontact-divua">
         <input
-          className="input_contact"
+          id="ua_input_contact"
+          className="input_contactua"
           value={bio.contact}
           onChange={(e) => updateBio("contact", e.target.value)}
         />
       </div>
+    </div>
 
-      <div className="email_div">
-        <span className="emailspan">Email:</span>
+    <div className="email_divua">
+      <label className="emaillabelua" htmlFor="ua_input_email">Email:</label>
+      <div className="inputemail-divua">
         <input
-          className="input_email"
+          id="ua_input_email"
+          className="input_email-ua"
           value={bio.email}
           onChange={(e) => updateBio("email", e.target.value)}
         />
       </div>
+    </div>
 
-      <div className="nationality_div">
-        <span className="nationalityspan">Nationality:</span>
+    <div className="nationality_divua">
+      <label className="nationalitylabelua" htmlFor="ua_input_nationality">Nationality:</label>
+      <div className="inputnationality-divua">
         <input
-          className="input_nationality"
+          id="ua_input_nationality"
+          className="input_nationalityua"
           value={bio.nationality}
           onChange={(e) => updateBio("nationality", e.target.value)}
         />
       </div>
+    </div>
 
-      <div className="github_div">
-        <span className="githubspan">GitHub URL:</span>
+    <div className="github_divua">
+      <label className="githublabelua" htmlFor="ua_input_github">GitHub URL:</label>
+      <div className="inputgithub-divua">
         <input
-          className="input_github"
+          id="ua_input_github"
+          className="input_githubua"
           value={bio.github}
           onChange={(e) => updateBio("github", e.target.value)}
         />
       </div>
+    </div>
 
-      {/* EXPERIENCES */}
-      <h3>Experience</h3>
+    {/* EXPERIENCE */}
+    <h3 className="sectiontitle-h3ua">Experience</h3>
 
-      {experiences.map((exp, index) => (
-        <div className="experience_block_div" key={index}>
-          <div className="company_div">
-            <span className="companyspan">Company:</span>
+    {experiences.map((exp, index) => (
+      <div className="experience_block_divua" key={index}>
+
+        <div className="company_divua">
+          <label className="companylabelua" htmlFor={`ua_input_company_${index}`}>Company:</label>
+          <div className="inputcompany-divua">
             <input
-              className="input_company"
+              id={`ua_input_company_${index}`}
+              className="input_companyua"
               value={exp.company}
-              onChange={(e) =>
-                updateExp(index, "company", e.target.value)
-              }
+              onChange={(e) => updateExp(index, "company", e.target.value)}
             />
           </div>
+        </div>
 
-          <div className="position_div">
-            <span className="positionspan">Position:</span>
+        <div className="position_divua">
+          <label className="positionlabelua" htmlFor={`ua_input_position_${index}`}>Position:</label>
+          <div className="inputposition-divua">
             <input
-              className="input_position"
+              id={`ua_input_position_${index}`}
+              className="input_positionua"
               value={exp.position}
-              onChange={(e) =>
-                updateExp(index, "position", e.target.value)
-              }
+              onChange={(e) => updateExp(index, "position", e.target.value)}
             />
           </div>
+        </div>
 
-          <div className="workingperiod_div">
-            <span className="workingperiodspan">Working Period:</span>
+        <div className="workingperiod_divua">
+          <label className="workingperiodlabelua" htmlFor={`ua_input_workperiod_${index}`}>Working Period:</label>
+          <div className="inputworkingperiod-divua">
             <input
-              className="input_workingperiod"
+              id={`ua_input_workperiod_${index}`}
+              className="input_workingperiodua"
               value={exp.workingPeriod}
-              onChange={(e) =>
-                updateExp(index, "workingPeriod", e.target.value)
-              }
+              onChange={(e) => updateExp(index, "workingPeriod", e.target.value)}
             />
           </div>
+        </div>
 
-          <div className="jobdesc_div">
-            <span className="jobdescspan">Job Description:</span>
+        <div className="jobdesc_divua">
+          <label className="jobdesclabelua" htmlFor={`ua_input_jobdesc_${index}`}>Job Description:</label>
+          <div className="inputjobdesc-divua">
             <textarea
-              className="input_jobdesc"
+              id={`ua_input_jobdesc_${index}`}
+              className="input_jobdescua"
               value={exp.jobDescription}
-              onChange={(e) =>
-                updateExp(index, "jobDescription", e.target.value)
-              }
+              onChange={(e) => updateExp(index, "jobDescription", e.target.value)}
             ></textarea>
           </div>
         </div>
-      ))}
+      </div>
+    ))}
 
-      <button onClick={addExperienceBlock}>+ Add Experience</button>
-      <button onClick={removeLastExperienceBlock}>- Remove</button>
+    <div className="addremoveexperiencebtn_divua">
+      <button className="addexperience_btnua" onClick={addExperienceBlock}>+ Add Experience</button>
+      <button className="removeexperience_btnua" onClick={removeLastExperienceBlock}>- Remove</button>
+    </div>
 
-      {/* SKILLS */}
-      <h3>Skills</h3>
-      <input
-        className="input_skills"
-        value={skills}
-        onChange={(e) => setSkills(e.target.value)}
-      />
+    {/* SKILLS */}
+    <h3 className="sectiontitle-h3ua">Skills</h3>
 
-      <div className="submitresetclose_div">
-        <button className="submitresume_btn" onClick={submitUpdate}>
-          Update Resume
-        </button>
-
-        {goBackUA && (
-          <button className="closeresume_btn" onClick={goBackUA}>
-            Close
-          </button>
-        )}
+    <div className="skills_divua">
+      <label className="skillslabelua" htmlFor="ua_input_skills">Skills:</label>
+      <div className="inputskills-divua">
+        <input
+          id="ua_input_skills"
+          className="input_skillsua"
+          value={skills}
+          onChange={(e) => setSkills(e.target.value)}
+        />
       </div>
     </div>
-  );
+
+    <div className="submitresetclose_divua">
+      <button className="submitresume_btnua" onClick={submitUpdate}>Update Resume</button>
+
+      {goBackUA && (
+        <button className="closeresume_btnua" onClick={goBackUA}>
+          Close
+        </button>
+      )}
+    </div>
+  </div>
+);
+
 }

@@ -2,7 +2,7 @@
 /* CONTAINER */
 /* ============================= */
 
-.container-addresume {
+.container-addresumeua {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -11,40 +11,50 @@
   height: auto;
   min-height: 100vh;
   font-family: Arial, sans-serif;
+  background-color: white;
+  gap: 1vh;
 }
 
-/* Section titles */
-.container-addresume h2 {
-  margin-bottom: 20px;
+.sectiontitle-h3ua {
+  display:flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100vw;
+  height: 8vh;
+  font-size: calc(2.2vw + 0.01vh);
+  font-weight: bolder;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: black;
 }
 
-.container-addresume h3 {
-  margin-top: 25px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 4px;
+.section-separatorua {
+  width: 96vw;
+  background-color: grey;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* BIO spans */
-.firstnamespan,
-.lastnamespan,
-.birthspan,
-.pobspan,
-.addressspan,
-.religionspan,
-.contactnumberspan,
-.emailspan,
-.nationalityspan,
-.githubspan,
+/* BIO labels */
+.firstnamelabelua,
+.lastnamelabelua,
+.birthlabelua,
+.poblabelua,
+.addresslabelua,
+.religionlabelua,
+.contactnumberlabelua,
+.emaillabelua,
+.nationalitylabelua,
+.githublabelua,
 
-/* EXPERIENCE spans */
-.companyspan,
-.positionspan,
-.workingperiodspan,
-.jobdescspan,
+/* EXPERIENCE labels */
+.companylabelua,
+.positionlabelua,
+.workingperiodlabelua,
+.jobdesclabelua,
 
-/* SKILLS spans */
-.skillsspan {
+/* SKILLS labels */
+.skillslabelua {
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -52,58 +62,100 @@
   align-self: flex-start;
   width: auto;
   height: 5vh;
+  font-size: calc(1.5vw + 0.01vh);
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-.input_firstname,
-.input_lastname,
-.input_dob,
-.input_pob,
-.input_address,
-.input_religion,
-.input_contact,
-.input_email,
-.input_nationality,
-.input_github,
-
-/* EXPERIENCE */
-.input_company,
-.input_position,
-.input_workingperiod,
-.input_jobdesc,
-
-/* SKILLS */
-.input_skills {
+.inputfirstname-divua,
+.inputlastname-divua,
+.inputdob-divua,
+.inputpob-divua,
+.inputaddress-divua,
+.inputreligion-divua,
+.inputcontact-divua,
+.inputemail-divua,
+.inputnationality-divua,
+.inputgithub-divua,
+.inputcompany-divua,
+.inputposition-divua,
+.inputworkingperiod-divua,
+.inputjobdesc-divua,
+.inputskills-divua {
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
   align-self: flex-start;
   width: 98vw;
-  height: 5vh;
-  border-radius: 0.5vw;
+  height: 6vh;
+  background-color: white;
+  border-radius: 96vw;
   border: 1px solid black;
+  overflow: hidden;
 }
 
-.input_firstname,
-.input_lastname {
+.inputfirstname-divua,
+.inputlastname-divua {
   width: 48vw;
 }
 
-.input_jobdesc {
-  height: 20vh;
-  resize: none;              /* Disable user resize */
-  overflow-y: auto;          /* Show vertical bar only when needed */
-  overflow-x: hidden;        /* Never horizontal bar */
-  white-space: pre-wrap;     /* Auto wrap */
-  word-wrap: break-word;     /* Force wrap long words */
-  box-sizing: border-box;    /* Prevent weird expansion due to padding */
+.inputjobdesc-divua {
+  min-height: 14vh;
+  border-radius: 1vw;
+}
+
+.input_firstnameua,
+.input_lastnameua,
+.input_dobua,
+.input_pobua,
+.input_addressua,
+.input_religionua,
+.input_contactua,
+.input_emailua,
+.input_nationalityua,
+.input_githubua,
+
+/* EXPERIENCE */
+.input_companyua,
+.input_positionua,
+.input_workingperiodua,
+.input_jobdescua,
+
+/* SKILLS */
+.input_skillsua {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  width: 96vw;
+  height: 4vh;
+  border: none;
+  outline: none;
+  font-size: calc(1.5vw + 0.01vh);
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.input_firstnameua,
+.input_lastnameua {
+  width: 47vw;
+}
+
+.input_jobdescua {
+  min-height: 12vh;
+  resize: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 /* ============================= */
 /* FIRST + LAST NAME */
 /* ============================= */
 
-.firstlastname_div {
+.firstlastname_divua {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -113,14 +165,14 @@
   gap: 2vw;
 }
 
-.firstname_div,
-.lastname_div {
-   display: flex;
+.firstname_divua,
+.lastname_divua {
+  display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   width: 48vw;
-  height: 10vh;
+  height: 12vh;
   gap: 1vh;
 }
 
@@ -128,15 +180,15 @@
 /* BIO FIELDS */
 /* ============================= */
 
-.birth_div,
-.placebirth_div,
-.address_div,
-.religion_div,
-.contactnumber_div,
-.email_div,
-.nationality_div,
-.github_div {
-    display: flex;
+.birth_divua,
+.placebirth_divua,
+.address_divua,
+.religion_divua,
+.contactnumber_divua,
+.email_divua,
+.nationality_divua,
+.github_divua {
+  display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -149,8 +201,8 @@
 /* EXPERIENCE BLOCK */
 /* ============================= */
 
-.experience_block_div {
-      display: flex;
+.experience_block_divua {
+  display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -159,38 +211,37 @@
   gap: 1vh;
 }
 
-.company_div,
-.position_div,
-.workingperiod_div,
-.jobdesc_div {
+.company_divua,
+.position_divua,
+.workingperiod_divua,
+.jobdesc_divua {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   width: 98vw;
-  height: 10vh;
+  height: 12vh;
   gap: 1vh;
 }
 
-.jobdesc_div {
+.jobdesc_divua {
   height: 25vh;
 }
 
 /* Add experience button */
-.addremoveexperiencebtn_div {
+.addremoveexperiencebtn_divua {
   display: flex;
- flex-direction: row;
+  flex-direction: row;
   justify-content: flex-end;
   align-items: center;
   width: 98vw;
   height: 8vh;
   gap: 2vw;
-}  
+}
 
-
-.addexperience_btn,
-.removeexperience_btn {
- display: flex;
+.addexperience_btnua,
+.removeexperience_btnua {
+  display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
@@ -198,23 +249,25 @@
   width: 20vw;
   height: 6vh;
   gap: 1vw;
-  font-size: 13px;
   background-color: #1868db;
   border: 1px solid black;
   border-radius: 18vw;
   cursor: pointer;
   color: white;
+  font-size: calc(1.5vw + 0.01vh);
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* ============================= */
 /* SKILLS */
 /* ============================= */
 
-.skills_div {
+.skills_divua {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-self: center;
+  align-items: center;
   width: 98vw;
   height: 12vh;
   gap: 1vh;
@@ -224,34 +277,36 @@
 /* BUTTON GROUPS */
 /* ============================= */
 
-.submitresetclose_div {
- display: flex;
+.submitresetclose_divua {
+  display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
   width: 98vw;
-  height: 10vh;
+  height: 12vh;
   gap: 1vw;
- }
+}
 
-.submitresume_btn,
-.resetresume_btn,
-.closeresume_btn {
- display: flex;
+.submitresume_btnua,
+.resetresume_btnua,
+.closeresume_btnua {
+  display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  width: 12vw;
+  width: 15vw;
   height: 6vh;
-  font-size: 14px;
-   background-color: #1868db;
+  background-color: #1868db;
   cursor: pointer;
   border-radius: 8vw;
   border: 1px solid black;
   color: white;
+  font-size: calc(1.5vw + 0.01vh);
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-.closeresume_btn {
+.closeresume_btnua {
   width: 6vw;
   border-radius: 4vw;
 }

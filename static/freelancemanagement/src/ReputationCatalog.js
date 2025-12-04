@@ -150,162 +150,185 @@ setNegativeReps(neg);
   // RENDER
   // -------------------------------------------------------
   return (
-    <div className="container-rc">
-      {/* ---------------- POSITIVE REPUTATION ---------------- */}
-      <div className="positive-section">
-        <h3>Positive Reputation Range</h3>
-        <div className="positiveinputbut-div">
-        <label className="definedpositiverangelabel"> Define positive range: </label>
-    <div className="lowerposnumberinput-div">
-  <input
-          className="lowerposnumberinput"
-          type="number"
-          value={posRange.from}
-          onChange={e =>
-            setPosRange({ ...posRange, from: Number(e.target.value) })
-          }
-          placeholder="From"
-        />
-</div>
-        <div className="topos"> To: </div> 
-    <div className="higherposnumberinput-div">
-        <input
-          className="higherposnumberinput"
-          type="number"
-          value={posRange.to}
-          onChange={e =>
-            setPosRange({ ...posRange, to: Number(e.target.value) })
-          }
-          placeholder="To"
-        />
-   </div>
-  </div>
+  <div className="container-rc">
+    {/* ---------------- POSITIVE REPUTATION ---------------- */}
+    <div className="positive-section">
+      <h3>Positive Reputation Range</h3>
 
-        <div className="descriptionnumberposblock-div" >
+      <div className="positiveinputbut-div">
+        <label className="definedpositiverangelabel" htmlFor="pos-from">
+          Define positive range:
+        </label>
+
+        <div className="lowerposnumberinput-div">
+          <input
+            id="pos-from"
+            className="lowerposnumberinput"
+            type="number"
+            value={posRange.from}
+            onChange={e =>
+              setPosRange({ ...posRange, from: Number(e.target.value) })
+            }
+            placeholder="From"
+          />
+        </div>
+
+        <label className="toposlabel" htmlFor="pos-to">To:</label>
+
+        <div className="higherposnumberinput-div">
+          <input
+            id="pos-to"
+            className="higherposnumberinput"
+            type="number"
+            value={posRange.to}
+            onChange={e =>
+              setPosRange({ ...posRange, to: Number(e.target.value) })
+            }
+            placeholder="To"
+          />
+        </div>
+      </div>
+
+      <div className="descriptionnumberposblock-div">
         {positiveReps.map((rep, idx) => (
           <div key={rep.id} className="descriptionnumberposrow-div">
-            <span>{rep.id}.</span>
-    <div className="descriptionposinput-div">
-   <input
-              className="descriptionposinput"
-              type="text"
-              value={rep.description}
-              placeholder="Description"
-              onChange={e =>
-                updatePositive(idx, "description", e.target.value)
-              }
-            />
-</div>
-    <div className="numberposinput-div">
+            <label className="posindexlabel" htmlFor={`pos-desc-${idx}`}>
+              {rep.id}.
+            </label>
 
-            <input
-              className="numberposinput"
-              type="number"
-              value={rep.value}
-              placeholder="Value"
-              onChange={e =>
-                updatePositive(idx, "value", Number(e.target.value))
-              }
-            />
-</div>
+            <div className="descriptionposinput-div">
+              <input
+                id={`pos-desc-${idx}`}
+                className="descriptionposinput"
+                type="text"
+                value={rep.description}
+                placeholder="Description"
+                onChange={e =>
+                  updatePositive(idx, "description", e.target.value)
+                }
+              />
+            </div>
+
+            <div className="numberposinput-div">
+              <input
+                className="numberposinput"
+                type="number"
+                value={rep.value}
+                placeholder="Value"
+                onChange={e =>
+                  updatePositive(idx, "value", Number(e.target.value))
+                }
+              />
+            </div>
           </div>
         ))}
-</div>
-        
-<div className="addremovepositivebut-div">
-        <button className="addpositivebut" onClick={addPositive}>+ Add Positive</button>
-        <button className="removepositivebut" onClick={removePositive}>- Remove Positive</button>
-</div>
       </div>
-        
-      {/* ---------------- NEGATIVE REPUTATION ---------------- */}
-{/* ---------------- NEGATIVE REPUTATION ---------------- */}
-<div className="negative-section">
-  <h3>Negative Reputation Range</h3>
 
-  <div className="negativeinputbut-div">
-    <label className="definednegativerangelabel">Define negative range:</label>
-
-    <div className="lowernegnumberinput-div">
-      <input
-        className="lowernegnumberinput"
-        type="number"
-        value={negRange.from}
-        onChange={e =>
-          setNegRange({ ...negRange, from: Number(e.target.value) })
-        }
-        placeholder="From"
-      />
-    </div>
-
-    <div className="toneg"> To: </div>
-
-    <div className="highernegnumberinput-div">
-      <input
-        className="highernegnumberinput"
-        type="number"
-        value={negRange.to}
-        onChange={e =>
-          setNegRange({ ...negRange, to: Number(e.target.value) })
-        }
-        placeholder="To"
-      />
-    </div>
-  </div>
-
-  <div className="descriptionnumbernegblock-div">
-    {negativeReps.map((rep, idx) => (
-      <div key={rep.id} className="descriptionnumbernegrow-div">
-        <span>{rep.id}.</span>
-
-        <div className="descriptionneginput-div">
-          <input
-            className="descriptionneginput"
-            type="text"
-            value={rep.description}
-            placeholder="Description"
-            onChange={e =>
-              updateNegative(idx, "description", e.target.value)
-            }
-          />
-        </div>
-
-        <div className="numberneginput-div">
-          <input
-            className="numberneginput"
-            type="number"
-            value={rep.value}
-            placeholder="Value"
-            onChange={e =>
-              updateNegative(idx, "value", Number(e.target.value))
-            }
-          />
-        </div>
-      </div>
-    ))}
-  </div>
-
-  <div className="addremovenegativebut-div">
-    <button className="addnegativebut" onClick={addNegative}>
-      + Add Negative
-    </button>
-    <button className="removenegativebut" onClick={removeNegative}>
-      - Remove Negative
-    </button>
-  </div>
-</div>
-
-      {/* ---------------- SUBMIT ---------------- */}
-      <div className="submitrc-div">
-        <button className="btn_submitrc" onClick={submit}>
-          Submit Catalog
+      <div className="addremovepositivebut-div">
+        <button className="addpositivebut" onClick={addPositive}>
+          + Add Positive
         </button>
-        {goBackRC && (
-          <button className="btn_closerc" onClick={goBackRC}>
-            Close
-          </button>
-        )}
+        <button className="removepositivebut" onClick={removePositive}>
+          - Remove Positive
+        </button>
       </div>
     </div>
-  );
+
+    {/* ---------------- NEGATIVE REPUTATION ---------------- */}
+    <div className="negative-section">
+      <h3>Negative Reputation Range</h3>
+
+      <div className="negativeinputbut-div">
+        <label className="definednegativerangelabel" htmlFor="neg-from">
+          Define negative range:
+        </label>
+
+        <div className="lowernegnumberinput-div">
+          <input
+            id="neg-from"
+            className="lowernegnumberinput"
+            type="number"
+            value={negRange.from}
+            onChange={e =>
+              setNegRange({ ...negRange, from: Number(e.target.value) })
+            }
+            placeholder="From"
+          />
+        </div>
+
+        <label className="toneglabel" htmlFor="neg-to">To:</label>
+
+        <div className="highernegnumberinput-div">
+          <input
+            id="neg-to"
+            className="highernegnumberinput"
+            type="number"
+            value={negRange.to}
+            onChange={e =>
+              setNegRange({ ...negRange, to: Number(e.target.value) })
+            }
+            placeholder="To"
+          />
+        </div>
+      </div>
+
+      <div className="descriptionnumbernegblock-div">
+        {negativeReps.map((rep, idx) => (
+          <div key={rep.id} className="descriptionnumbernegrow-div">
+            <label className="negindexlabel" htmlFor={`neg-desc-${idx}`}>
+              {rep.id}.
+            </label>
+
+            <div className="descriptionneginput-div">
+              <input
+                id={`neg-desc-${idx}`}
+                className="descriptionneginput"
+                type="text"
+                value={rep.description}
+                placeholder="Description"
+                onChange={e =>
+                  updateNegative(idx, "description", e.target.value)
+                }
+              />
+            </div>
+
+            <div className="numberneginput-div">
+              <input
+                className="numberneginput"
+                type="number"
+                value={rep.value}
+                placeholder="Value"
+                onChange={e =>
+                  updateNegative(idx, "value", Number(e.target.value))
+                }
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="addremovenegativebut-div">
+        <button className="addnegativebut" onClick={addNegative}>
+          + Add Negative
+        </button>
+        <button className="removenegativebut" onClick={removeNegative}>
+          - Remove Negative
+        </button>
+      </div>
+    </div>
+
+    {/* ---------------- SUBMIT ---------------- */}
+    <div className="submitrc-div">
+      <button className="btn_submitrc" onClick={submit}>
+        Submit Catalog
+      </button>
+      {goBackRC && (
+        <button className="btn_closerc" onClick={goBackRC}>
+          Close
+        </button>
+      )}
+    </div>
+  </div>
+)
+
 }
