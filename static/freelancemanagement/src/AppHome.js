@@ -24,9 +24,11 @@ export default function AppHome() {
     const check = async () => {
       try {
         const res = await invoke("checkuser");
+        console.log("res", res);
         userRole.current = res?.role || "user";
       } catch (err) {
         userRole.current = "user";
+        console.log("err", err);
       }
       forceUpdate();
     };
