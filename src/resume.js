@@ -19,6 +19,7 @@ import getuserstories from './resolvers/getuserstories.js';
 import addreferrer from './resolvers/addreferrer.js';
 import getcurrentissue from "./resolvers/getcurrentissue.js";
 import findcandidates from "./resolvers/findcandidates.js";
+import checkuser from "./resolvers/checkuser.js";
 
 resolver.define("addresume", async (args) =>
   addresume({ ...args, sql })
@@ -69,5 +70,8 @@ resolver.define("findcandidates", async (args) =>
   findcandidates({ ...args, sql })
 );
 
+resolver.define("checkuser", async (args) =>
+  checkuser({ context: args.context })
+);
 
 export const handler = resolver.getDefinitions();
