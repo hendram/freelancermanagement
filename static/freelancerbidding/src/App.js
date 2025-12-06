@@ -4,9 +4,11 @@ import "./App.css";
 
 export default function App() {
   const [issue, setIssue] = useState(null);
-  const [skills, setSkills] = useState("");
+  const [skills, setSkills] = useState("");          // original input
+  const [managerSkills, setManagerSkills] = useState(""); // new manager input
   const [loading, setLoading] = useState(false);
   const [candidates, setCandidates] = useState([]);
+  const [managerResults, setManagerResults] = useState([]); // results for manager search
   const [error, setError] = useState("");
 
   // -----------------------------
@@ -32,20 +34,18 @@ export default function App() {
   // -----------------------------
   // 2) SEARCH
   // -----------------------------
-  const search = async () => {
+  const searchCandidates = async (inputSkills, setResultFn) => {
     setError("");
-    setCandidates([]);
+    setResultFn([]);
 
-    if (!skills.trim()) {
+    if (!inputSkills.trim()) {
       setError("Please enter skills to match.");
       return;
     }
 
     setLoading(true);
     try {
-      const payload = {
-        skills,
-      };
+      const payload = { skills: inputSkills };
       const res = await invoke("findcandidates", payload);
 
       if (!res?.success) {
@@ -53,7 +53,7 @@ export default function App() {
         return;
       }
 
-      setCandidates(res.candidates.slice(0, 5));
+      setResultFn(res.candidates.slice(0, 5));
     } catch (err) {
       setError("Search error.");
     } finally {
@@ -62,105 +62,137 @@ export default function App() {
   };
 
   // -----------------------------
-  // 3) CANDIDATE ACTION HANDLERS (New Placeholder Functions)
+  // 3) CANDIDATE ACTION HANDLERS
   // -----------------------------
-
-  const handleInvite = (candidate) => {
-    console.log(`Inviting freelancer: ${candidate.fullName}`);
-    // **TODO: Implement Forge invoke call to send invitation**
-  };
-
-  const handleRFP = (candidate) => {
-    console.log(`Sending RFP to: ${candidate.fullName}`);
-    // **TODO: Implement Forge invoke call for Request for Proposal**
-  };
-
-  const handlePass = (candidate) => {
-    console.log(`Passing on candidate: ${candidate.fullName}`);
-    // **TODO: Implement logic to mark candidate as 'Passed'**
-  };
-
-  const handleProposal = (candidate) => {
-    console.log(`Viewing proposal for: ${candidate.fullName}`);
-    // **TODO: Implement logic to open/view the candidate's proposal**
-  };
-
-  const handleDeal = (candidate) => {
-    console.log(`Making a deal with: ${candidate.fullName}`);
-    // **TODO: Implement Forge invoke call to finalize the deal**
-  };
+  const handleInvite = (candidate) => console.log(`Inviting: ${candidate.fullName}`);
+  const handleRFP = (candidate) => console.log(`RFP: ${candidate.fullName}`);
+  const handlePass = (candidate) => console.log(`Passing: ${candidate.fullName}`);
+  const handleProposal = (candidate) => console.log(`Proposal: ${candidate.fullName}`);
+  const handleDeal = (candidate) => console.log(`Deal: ${candidate.fullName}`);
 
   // -----------------------------
-  // RENDER
+  // 4) RENDER
   // -----------------------------
   return (
     <div className="fb-wrapper">
-      {/* TOP: ISSUE ROW */}
+      {/* USER STORY */}
       {issue && (
         <div className="fb-issue-row">
           <div className="fb-issue-left">
             <div className="fb-issue-key">{issue.key}</div>
             <div className="fb-issue-summary">{issue.summary}</div>
           </div>
-
-          <div className="fb-issue-right">
-            <input
-              className="fb-skill-input"
-              value={skills}
-              onChange={(e) => setSkills(e.target.value)}
-              placeholder="Required skills (e.g. react, api)"
-            />
-
-            <button className="fb-submit-btn" onClick={search} disabled={loading}>
-              {loading ? "Searching…" : "Submit"}
-            </button>
-          </div>
         </div>
       )}
 
       {error && <div className="fb-error">{error}</div>}
 
-      {/* CANDIDATES LIST */}
-      {candidates.length > 0 && (
+      {/* MANAGER SEARCH INPUT */}
+      <div className="fb-manager-search">
+        <label htmlFor="manager-skills">Search skills:</label>
+        <input
+          id="manager-skills"
+          type="text"
+          value={managerSkills}
+          onChange={(e) => setManagerSkills(e.target.value)}
+          placeholder="e.g. react, api"
+        />
+        <button
+          className="fb-pill-btn"
+          onClick={() => searchCandidates(managerSkills, setManagerResults)}
+          disabled={loading}
+        >
+          {loading ? "Searching…" : "Search"}
+        </button>
+      </div>
+
+      {/* MANAGER SEARCH RESULTS */}
+      {managerResults.length > 0 && (
         <div className="fb-candidate-block">
-          {candidates.map((c, i) => (
+          {managerResults.map((c) => (
             <div className="fb-candidate-row" key={c.resume_id}>
-              {/* UPDATED: Added action buttons next to the candidate name */}
               <div className="fb-c-left">
                 <span className="fb-c-name">{c.fullName}</span>
                 <div className="fb-c-actions">
-                  <button className="fb-action-btn invite-btn" onClick={() => handleInvite(c)}>
+                  <button className="fb-pill-btn invite-btn" onClick={() => handleInvite(c)}>
                     Invite
                   </button>
-                  <button className="fb-action-btn rfp-btn" onClick={() => handleRFP(c)}>
+                  <button className="fb-pill-btn rfp-btn" onClick={() => handleRFP(c)}>
                     RFP
                   </button>
-                  <button className="fb-action-btn pass-btn" onClick={() => handlePass(c)}>
+                  <button className="fb-pill-btn pass-btn" onClick={() => handlePass(c)}>
                     Pass
                   </button>
-                  <button className="fb-action-btn proposal-btn" onClick={() => handleProposal(c)}>
+                  <button className="fb-pill-btn proposal-btn" onClick={() => handleProposal(c)}>
                     Proposal
                   </button>
-                  <button className="fb-action-btn deal-btn" onClick={() => handleDeal(c)}>
-                    Deal
-                  </button>
+                  {c.price && (
+                    <button className="fb-pill-btn deal-btn" onClick={() => handleDeal(c)}>
+                      Deal
+                    </button>
+                  )}
                 </div>
               </div>
-              {/* END OF UPDATED SECTION */}
-              
               <div className="fb-c-right">
-                <div className="fb-c-meta">
-                  Skills: {Array.isArray(c.skills) ? c.skills.join(", ") : c.skills}
-                  <br />
-                  Score: {c.score ?? "-"}
-                </div>
+                Skills: {Array.isArray(c.skills) ? c.skills.join(", ") : c.skills}
+                <br />
+                Score: {c.score ?? "-"}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
-                <button
-                  className="fb-open-resume"
-                  onClick={() => window.open(`/resumes/${c.resume_id}`, "_blank")}
-                >
-                  Open
-                </button>
+      {/* ORIGINAL SKILLS INPUT (if you still want to keep it) */}
+      {issue && (
+        <div className="fb-issue-row fb-original-search">
+          <input
+            className="fb-skill-input"
+            value={skills}
+            onChange={(e) => setSkills(e.target.value)}
+            placeholder="Required skills (e.g. react, api)"
+          />
+          <button
+            className="fb-pill-btn"
+            onClick={() => searchCandidates(skills, setCandidates)}
+            disabled={loading}
+          >
+            {loading ? "Searching…" : "Submit"}
+          </button>
+        </div>
+      )}
+
+      {/* ORIGINAL CANDIDATES LIST */}
+      {candidates.length > 0 && (
+        <div className="fb-candidate-block">
+          {candidates.map((c) => (
+            <div className="fb-candidate-row" key={c.resume_id}>
+              <div className="fb-c-left">
+                <span className="fb-c-name">{c.fullName}</span>
+                <div className="fb-c-actions">
+                  <button className="fb-pill-btn invite-btn" onClick={() => handleInvite(c)}>
+                    Invite
+                  </button>
+                  <button className="fb-pill-btn rfp-btn" onClick={() => handleRFP(c)}>
+                    RFP
+                  </button>
+                  <button className="fb-pill-btn pass-btn" onClick={() => handlePass(c)}>
+                    Pass
+                  </button>
+                  <button className="fb-pill-btn proposal-btn" onClick={() => handleProposal(c)}>
+                    Proposal
+                  </button>
+                  {c.price && (
+                    <button className="fb-pill-btn deal-btn" onClick={() => handleDeal(c)}>
+                      Deal
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="fb-c-right">
+                Skills: {Array.isArray(c.skills) ? c.skills.join(", ") : c.skills}
+                <br />
+                Score: {c.score ?? "-"}
               </div>
             </div>
           ))}
@@ -169,4 +201,3 @@ export default function App() {
     </div>
   );
 }
-

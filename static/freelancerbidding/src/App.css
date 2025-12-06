@@ -1,137 +1,175 @@
+/* -----------------------------
+   WRAPPER
+----------------------------- */
 .fb-wrapper {
   font-family: Arial, sans-serif;
-  padding: 10px;
+  margin: 20px;
 }
 
-/* ==== ISSUE ROW (TOP LEVEL) ==== */
+/* -----------------------------
+   ERROR
+----------------------------- */
+.fb-error {
+  color: red;
+  margin: 10px 0;
+  font-weight: bold;
+}
+
+/* -----------------------------
+   ISSUE ROW
+----------------------------- */
 .fb-issue-row {
   display: flex;
   justify-content: space-between;
-  padding: 12px;
-  background: #f4f5f7;
-  border: 1px solid #dfe1e6;
-  border-radius: 3px;
-  margin-bottom: 12px;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
 }
 
 .fb-issue-left {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
 }
 
 .fb-issue-key {
   font-weight: bold;
-  color: #0052cc;
+  font-size: 16px;
+  margin-bottom: 5px;
 }
 
 .fb-issue-summary {
   font-size: 14px;
-  color: #344563;
 }
 
-.fb-issue-right {
+/* -----------------------------
+   INPUTS
+----------------------------- */
+.fb-manager-search,
+.fb-original-search {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
+.fb-manager-search label {
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.fb-manager-search input,
 .fb-skill-input {
-  padding: 4px 6px;
+  padding: 6px 10px;
+  border-radius: 20px;
   border: 1px solid #ccc;
+  width: 200px;
+  outline: none;
 }
 
-.fb-submit-btn {
-  padding: 4px 12px;
-  background: #0052cc;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
+.fb-manager-search input:focus,
+.fb-skill-input:focus {
+  border-color: #0078d4;
+  box-shadow: 0 0 3px rgba(0, 120, 212, 0.5);
 }
 
-/* ==== CANDIDATE ROWS (2ND LEVEL) ==== */
+/* -----------------------------
+   CANDIDATES LIST
+----------------------------- */
 .fb-candidate-block {
-  margin-left: 30px; /* indent like FUT-7, FUT-9, FUT-10 */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
 .fb-candidate-row {
   display: flex;
   justify-content: space-between;
-  padding: 10px;
-  margin-top: 8px;
-  background: #fff;
-  border: 1px solid #dfe1e6;
-  border-radius: 3px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background-color: #f9f9f9;
+}
+
+.fb-c-left {
+  display: flex;
+  flex-direction: column;
 }
 
 .fb-c-name {
   font-weight: bold;
-}
-
-.fb-open-resume {
-  margin-left: 10px;
-  padding: 3px 8px;
-  background: #00875a;
-  color: white;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.fb-error {
-  margin-top: 8px;
-  color: red;
-}
-
-/* In App.css */
-
-.fb-c-left {
-  display: flex;
-  flex-direction: column; /* Changed from horizontal layout for better stacking */
-  gap: 8px; /* Space between name and buttons */
+  margin-bottom: 5px;
 }
 
 .fb-c-actions {
   display: flex;
-  gap: 5px; /* Space between action buttons */
-  flex-wrap: wrap; /* Allows buttons to wrap if space is limited */
+  gap: 5px;
+  flex-wrap: wrap;
 }
 
-.fb-action-btn {
-  padding: 5px 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.fb-c-right {
+  font-size: 13px;
+  color: #555;
+}
+
+/* -----------------------------
+   PILL BUTTONS
+----------------------------- */
+.fb-pill-btn {
+  padding: 5px 12px;
+  border: none;
+  border-radius: 50px;
   cursor: pointer;
-  font-size: 0.85em;
-  transition: background-color 0.2s;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
 }
 
-/* Optional color styling for better visual feedback */
+.fb-pill-btn:hover {
+  opacity: 0.85;
+}
+
+/* COLORS PER ACTION */
 .invite-btn {
-  background-color: #007bff;
+  background-color: #28a745;
   color: white;
-  border-color: #007bff;
 }
 
 .rfp-btn {
-  background-color: #ffc107;
-  color: #333;
-  border-color: #ffc107;
+  background-color: #007bff;
+  color: white;
 }
 
 .pass-btn {
-  background-color: #dc3545;
+  background-color: #6c757d;
   color: white;
-  border-color: #dc3545;
 }
 
 .proposal-btn {
-  background-color: #17a2b8;
+  background-color: #6610f2;
   color: white;
-  border-color: #17a2b8;
 }
 
 .deal-btn {
-  background-color: #28a745;
+  background-color: #fd7e14;
   color: white;
-  border-color: #28a745;
+}
+
+/* OPEN RESUME BUTTON */
+.fb-open-resume {
+  margin-top: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid #0078d4;
+  background-color: white;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.fb-open-resume:hover {
+  background-color: #0078d4;
+  color: white;
 }
