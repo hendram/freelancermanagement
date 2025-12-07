@@ -20,6 +20,8 @@ import addreferrer from './resolvers/addreferrer.js';
 import getcurrentissue from "./resolvers/getcurrentissue.js";
 import findcandidates from "./resolvers/findcandidates.js";
 import checkuser from "./resolvers/checkuser.js";
+import searchskills from "./resolvers/searchskills.js";
+import invitation from "./resolvers/invitation.js";
 
 resolver.define("addresume", async (args) =>
   addresume({ ...args, sql })
@@ -72,6 +74,14 @@ resolver.define("findcandidates", async (args) =>
 
 resolver.define("checkuser", async (args) =>
   checkuser({ context: args.context })
+);
+
+resolver.define("searchskills", async (args) =>
+  searchskills({ ...args, sql })
+);
+
+resolver.define("invitation", async (args) =>
+  invitation({ ...args, sql })
 );
 
 export const handler = resolver.getDefinitions();

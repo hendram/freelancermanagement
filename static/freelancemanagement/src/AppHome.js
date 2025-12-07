@@ -1,4 +1,3 @@
-// Updated AppHome.js with role-based access control
 import React, { useRef, useReducer, useEffect } from "react";
 import { invoke } from "@forge/bridge";
 import AddResume from "./AddResume";
@@ -17,14 +16,12 @@ function useForceUpdate() {
 
 export default function AppHome() {
   const forceUpdate = useForceUpdate();
-
   const userRole = useRef(null); // "admin" | "manager" | "user"
 
   useEffect(() => {
     const check = async () => {
       try {
         const res = await invoke("checkuser");
-        console.log("res", res);
         userRole.current = res?.role || "user";
       } catch (err) {
         userRole.current = "user";
@@ -51,19 +48,20 @@ export default function AppHome() {
     const role = userRole.current;
 
     const adminOnly = ["addResume", "updateResume", "updateAction", "reputationCatalog", "assignReputation", "addReferrer", "updateReferrer"];
-
-    if (role === "user" && adminOnly.includes(page)) {
-      return; // block access
-    }
+    if (role === "user" && adminOnly.includes(page)) return;
 
     Object.keys(pages.current).forEach((k) => (pages.current[k] = false));
     pages.current[page] = true;
     forceUpdate();
   };
 
-  const selectedResumeRef = useRef(null);
+  // ----------------------------
+  // Selected resume for update
+  // ----------------------------
+  const [selectedResume, setSelectedResume] = React.useState(null);
+
   const updateResume = (resumeData) => {
-    selectedResumeRef.current = resumeData;
+    setSelectedResume(resumeData); // store selected resume
     switchPage("updateResume");
   };
 
@@ -75,7 +73,6 @@ export default function AppHome() {
 
   const MainPage = () => {
     const role = userRole.current;
-
     return (
       <div className="homecontainer">
         <h1 className="hometitle">Freelancer Candidates</h1>
@@ -153,8 +150,19 @@ export default function AppHome() {
     <>
       {pages.current.main && <MainPage />}
       {pages.current.addResume && <AddResume goBack={() => switchPage("main")} />}
-      {pages.current.updateResume && <UpdateResume goBackU={() => switchPage("main")} />}
-      {pages.current.updateAction && <UpdateAction goBackUA={() => switchPage("updateResume")} resumeData={selectedResumeRef.current} />}
+      
+      {/* Pass selectedResume to UpdateResume */}
+      {pages.current.updateResume && (
+        <UpdateResume
+          goBackU={() => switchPage("main")}
+          onSelectResumeForUpdate={(resumeData) => {
+            setSelectedResume(resumeData); // capture selected resume from UpdateResume
+            switchPage("updateAction"); // open UpdateAction page
+          }}
+        />
+      )}
+
+      {pages.current.updateAction && <UpdateAction goBackUA={() => switchPage("updateResume")} resumeData={selectedResume} />}
       {pages.current.reputationCatalog && <ReputationCatalog goBackRC={() => switchPage("main")} />}
       {pages.current.assignReputation && <AssignReputation goBackAR={() => switchPage("main")} />}
       {pages.current.addReferrer && <AddReferrer goBackAR={() => switchPage("main")} />}

@@ -4,16 +4,21 @@ import "./App.css";
 
 export default function App() {
   const [issue, setIssue] = useState(null);
-  const [skills, setSkills] = useState("");          // original input
-  const [managerSkills, setManagerSkills] = useState(""); // new manager input
+
+  const [managerSkills, setManagerSkills] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [managerResults, setManagerResults] = useState([]);
   const [candidates, setCandidates] = useState([]);
-  const [managerResults, setManagerResults] = useState([]); // results for manager search
+
   const [error, setError] = useState("");
 
-  // -----------------------------
-  // 1) AUTO-FETCH ISSUE DATA FROM CONTEXT
-  // -----------------------------
+  const [rfpOpen, setRfpOpen] = useState(null);
+  const [rfpMessage, setRfpMessage] = useState("");
+
+  // ---------------------------------------------------
+  // 1. AUTO LOAD ISSUE CONTEXT
+  // ---------------------------------------------------
   useEffect(() => {
     async function loadIssue() {
       try {
@@ -22,38 +27,41 @@ export default function App() {
           setError("Cannot detect issue context.");
           return;
         }
-        setIssue(data); // { key, summary }
+
+        setIssue({
+          key: data.key,
+          summary: data.summary,
+          issueType: data.issuetype || data.type || "Task"
+        });
       } catch (err) {
-        console.error(err);
         setError("Failed loading issue.");
       }
     }
     loadIssue();
   }, []);
 
-  // -----------------------------
-  // 2) SEARCH
-  // -----------------------------
-  const searchCandidates = async (inputSkills, setResultFn) => {
+  // ---------------------------------------------------
+  // 2. SEARCH CANDIDATES
+  // ---------------------------------------------------
+  const searchCandidates = async (skillsInput, setList) => {
     setError("");
-    setResultFn([]);
+    setList([]);
 
-    if (!inputSkills.trim()) {
+    if (!skillsInput.trim()) {
       setError("Please enter skills to match.");
       return;
     }
 
     setLoading(true);
     try {
-      const payload = { skills: inputSkills };
-      const res = await invoke("findcandidates", payload);
+      const res = await invoke("searchskills", { skills: skillsInput });
 
       if (!res?.success) {
         setError(res?.error || "Search failed.");
         return;
       }
 
-      setResultFn(res.candidates.slice(0, 5));
+      setList(res.candidates.slice(0, 5));
     } catch (err) {
       setError("Search error.");
     } finally {
@@ -61,21 +69,144 @@ export default function App() {
     }
   };
 
-  // -----------------------------
-  // 3) CANDIDATE ACTION HANDLERS
-  // -----------------------------
-  const handleInvite = (candidate) => console.log(`Inviting: ${candidate.fullName}`);
-  const handleRFP = (candidate) => console.log(`RFP: ${candidate.fullName}`);
-  const handlePass = (candidate) => console.log(`Passing: ${candidate.fullName}`);
-  const handleProposal = (candidate) => console.log(`Proposal: ${candidate.fullName}`);
-  const handleDeal = (candidate) => console.log(`Deal: ${candidate.fullName}`);
+  // ---------------------------------------------------
+  // COMMON PAYLOAD BUILDER
+  // ---------------------------------------------------
+  const buildPayload = (candidate, extra = {}) => ({
+    freelancerName: candidate.fullName,
+    resumeId: candidate.resume_id,
+    issueKey: issue?.key,
+    issueSummary: issue?.summary,
+    issueType: issue?.issueType,
+    ...extra
+  });
 
-  // -----------------------------
-  // 4) RENDER
-  // -----------------------------
+  // ---------------------------------------------------
+  // 3. BUTTON ACTIONS
+  // ---------------------------------------------------
+  const handleInvite = async (c) => {
+    try {
+      await invoke("invitation", buildPayload(c, { inviteStatus: "yes" }));
+      console.log("Invite sent:", c.fullName);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRFP = (c) => {
+    setRfpOpen(c.resume_id);
+    setRfpMessage("");
+  };
+
+  const handleRfpSubmit = async (c) => {
+    try {
+      await invoke(
+        "invitation",
+        buildPayload(c, {
+          inviteStatus: "yes",
+          rfpMessage
+        })
+      );
+      setRfpOpen(null);
+      setRfpMessage("");
+      console.log("RFP sent:", c.fullName);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRfpCancel = () => {
+    setRfpOpen(null);
+    setRfpMessage("");
+  };
+
+  const handlePass = (c, setList) => {
+    setList((prev) => prev.filter((x) => x.resume_id !== c.resume_id));
+  };
+
+  const handleProposal = (c) => {
+    console.log("Proposal clicked for:", c.fullName);
+  };
+
+  const handleDeal = async (c) => {
+    try {
+      await invoke(
+        "invitation",
+        buildPayload(c, {
+          deal: "yes"
+        })
+      );
+      console.log("Deal completed with:", c.fullName);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // ---------------------------------------------------
+  // 4. RENDER ONE ROW
+  // ---------------------------------------------------
+  const renderCandidateRow = (c, setList) => (
+    <div className="fb-candidate-row" key={c.resume_id}>
+      <div className="fb-c-left">
+        <span className="fb-c-name">{c.fullName}</span>
+
+        <div className="fb-c-actions">
+          <button className="fb-pill-btn invite-btn" onClick={() => handleInvite(c)}>
+            Invite
+          </button>
+
+          <button className="fb-pill-btn rfp-btn" onClick={() => handleRFP(c)}>
+            RFP
+          </button>
+
+          <button className="fb-pill-btn pass-btn" onClick={() => handlePass(c, setList)}>
+            Pass
+          </button>
+
+          <button className="fb-pill-btn proposal-btn" onClick={() => handleProposal(c)}>
+            Proposal
+          </button>
+
+          {c.price && (
+            <button className="fb-pill-btn deal-btn" onClick={() => handleDeal(c)}>
+              Deal
+            </button>
+          )}
+        </div>
+
+        {rfpOpen === c.resume_id && (
+          <div className="fb-rfp-box">
+            <textarea
+              value={rfpMessage}
+              onChange={(e) => setRfpMessage(e.target.value)}
+              placeholder="Enter your RFP message..."
+              rows={3}
+            />
+            <div className="fb-rfp-actions">
+              <button className="fb-pill-btn rfp-btn" onClick={() => handleRfpSubmit(c)}>
+                Submit
+              </button>
+              <button className="fb-pill-btn pass-btn" onClick={handleRfpCancel}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="fb-c-right">
+        Skills: {Array.isArray(c.skills) ? c.skills.join(", ") : c.skills}
+        <br />
+        Score: {c.score ?? "-"}
+      </div>
+    </div>
+  );
+
+  // ---------------------------------------------------
+  // 5. MAIN RENDER
+  // ---------------------------------------------------
   return (
     <div className="fb-wrapper">
-      {/* USER STORY */}
       {issue && (
         <div className="fb-issue-row">
           <div className="fb-issue-left">
@@ -87,11 +218,9 @@ export default function App() {
 
       {error && <div className="fb-error">{error}</div>}
 
-      {/* MANAGER SEARCH INPUT */}
       <div className="fb-manager-search">
-        <label htmlFor="manager-skills">Search skills:</label>
+        <label>Search skills:</label>
         <input
-          id="manager-skills"
           type="text"
           value={managerSkills}
           onChange={(e) => setManagerSkills(e.target.value)}
@@ -106,98 +235,13 @@ export default function App() {
         </button>
       </div>
 
-      {/* MANAGER SEARCH RESULTS */}
-      {managerResults.length > 0 && (
-        <div className="fb-candidate-block">
-          {managerResults.map((c) => (
-            <div className="fb-candidate-row" key={c.resume_id}>
-              <div className="fb-c-left">
-                <span className="fb-c-name">{c.fullName}</span>
-                <div className="fb-c-actions">
-                  <button className="fb-pill-btn invite-btn" onClick={() => handleInvite(c)}>
-                    Invite
-                  </button>
-                  <button className="fb-pill-btn rfp-btn" onClick={() => handleRFP(c)}>
-                    RFP
-                  </button>
-                  <button className="fb-pill-btn pass-btn" onClick={() => handlePass(c)}>
-                    Pass
-                  </button>
-                  <button className="fb-pill-btn proposal-btn" onClick={() => handleProposal(c)}>
-                    Proposal
-                  </button>
-                  {c.price && (
-                    <button className="fb-pill-btn deal-btn" onClick={() => handleDeal(c)}>
-                      Deal
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div className="fb-c-right">
-                Skills: {Array.isArray(c.skills) ? c.skills.join(", ") : c.skills}
-                <br />
-                Score: {c.score ?? "-"}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Manager search results */}
+      {managerResults.length > 0 &&
+        managerResults.map((c) => renderCandidateRow(c, setManagerResults))}
 
-      {/* ORIGINAL SKILLS INPUT (if you still want to keep it) */}
-      {issue && (
-        <div className="fb-issue-row fb-original-search">
-          <input
-            className="fb-skill-input"
-            value={skills}
-            onChange={(e) => setSkills(e.target.value)}
-            placeholder="Required skills (e.g. react, api)"
-          />
-          <button
-            className="fb-pill-btn"
-            onClick={() => searchCandidates(skills, setCandidates)}
-            disabled={loading}
-          >
-            {loading ? "Searching…" : "Submit"}
-          </button>
-        </div>
-      )}
-
-      {/* ORIGINAL CANDIDATES LIST */}
-      {candidates.length > 0 && (
-        <div className="fb-candidate-block">
-          {candidates.map((c) => (
-            <div className="fb-candidate-row" key={c.resume_id}>
-              <div className="fb-c-left">
-                <span className="fb-c-name">{c.fullName}</span>
-                <div className="fb-c-actions">
-                  <button className="fb-pill-btn invite-btn" onClick={() => handleInvite(c)}>
-                    Invite
-                  </button>
-                  <button className="fb-pill-btn rfp-btn" onClick={() => handleRFP(c)}>
-                    RFP
-                  </button>
-                  <button className="fb-pill-btn pass-btn" onClick={() => handlePass(c)}>
-                    Pass
-                  </button>
-                  <button className="fb-pill-btn proposal-btn" onClick={() => handleProposal(c)}>
-                    Proposal
-                  </button>
-                  {c.price && (
-                    <button className="fb-pill-btn deal-btn" onClick={() => handleDeal(c)}>
-                      Deal
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div className="fb-c-right">
-                Skills: {Array.isArray(c.skills) ? c.skills.join(", ") : c.skills}
-                <br />
-                Score: {c.score ?? "-"}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Original candidates */}
+      {candidates.length > 0 &&
+        candidates.map((c) => renderCandidateRow(c, setCandidates))}
     </div>
   );
 }
