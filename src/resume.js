@@ -22,6 +22,8 @@ import findcandidates from "./resolvers/findcandidates.js";
 import checkuser from "./resolvers/checkuser.js";
 import searchskills from "./resolvers/searchskills.js";
 import invitation from "./resolvers/invitation.js";
+import checkresumebyemail from "./resolvers/checkresumebyemail";
+import getinvitations from "./resolvers/getinvitations";
 
 resolver.define("addresume", async (args) =>
   addresume({ ...args, sql })
@@ -82,6 +84,14 @@ resolver.define("searchskills", async (args) =>
 
 resolver.define("invitation", async (args) =>
   invitation({ ...args, sql })
+);
+
+resolver.define("checkresumebyemail", async (args) =>
+  checkresumebyemail({ ...args, sql})
+);
+
+resolver.define("getinvitations", async (args) =>
+  getinvitations({ ...args, sql })
 );
 
 export const handler = resolver.getDefinitions();

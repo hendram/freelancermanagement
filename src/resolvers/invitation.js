@@ -1,13 +1,10 @@
-// resolvers/invitation.js
 export default async function invitation({ payload, sql }) {
   const {
     issueType,
     issueKey,
     issueSummary,
-
     freelancerName,
     resumeId,
-
     inviteStatus,
     rfpMessage,
     proposals,
@@ -23,21 +20,15 @@ export default async function invitation({ payload, sql }) {
   try {
     let finalIssueId = null;
 
-    // ----------------------------------------------------------
-    // ALWAYS check DB first for issue_key (ignore frontend issueId)
-    // ----------------------------------------------------------
+    // ----------------------------- CHECK ISSUE ------------------------------
     const existingIssue = await sql
       .prepare(`SELECT id FROM issues WHERE issue_key = ?`)
       .bindParams(issueKey)
       .execute();
 
-    console.log("existingIssue", existingIssue);
-
-    if (existingIssue && existingIssue.id) {
-      // Found existing issue row
-      finalIssueId = existingIssue.id;
+    if (existingIssue.rows.length > 0) {
+      finalIssueId = existingIssue.rows[0].id;
     } else {
-      // Insert new issue row
       const inserted = await sql
         .prepare(`
           INSERT INTO issues (issue_type, issue_key, issue_summary)
@@ -45,20 +36,12 @@ export default async function invitation({ payload, sql }) {
         `)
         .bindParams(issueType, issueKey, issueSummary)
         .execute();
-       
-      console.log("inserted", inserted);
+
       finalIssueId = inserted.lastInsertId;
-      console.log("finalIssueId", finalIssueId);
-
+     console.log("finalIssueIdinsert", finalIssueId);
     }
 
-    if (!finalIssueId) {
-      throw new Error("Could not resolve issue ID");
-    }
-
-    // ----------------------------------------------------------
-    // Check if freelancer already has negotiation for this issue
-    // ----------------------------------------------------------
+    // ----------------------------- CHECK INVITE -----------------------------
     const existingInvite = await sql
       .prepare(`
         SELECT id FROM myinvitation
@@ -66,12 +49,14 @@ export default async function invitation({ payload, sql }) {
       `)
       .bindParams(finalIssueId, freelancerName)
       .execute();
-     console.log("existinginvite", existingInvite);
 
-    // ----------------------------------------------------------
-    // Update path
-    // ----------------------------------------------------------
-    if (existingInvite && existingInvite.id) {
+    const inviteRows = existingInvite.rows;
+    console.log("inviteRowsmyinvitationfound", inviteRows);
+
+    // ----------------------------- UPDATE -----------------------------
+    if (inviteRows.length > 0) {
+      const inviteId = inviteRows[0].id;
+
       await sql
         .prepare(`
           UPDATE myinvitation
@@ -84,13 +69,12 @@ export default async function invitation({ payload, sql }) {
           proposals || null,
           price || null,
           deal || null,
-          existingInvite.id
+          inviteId
         )
         .execute();
     }
-    // ----------------------------------------------------------
-    // Insert path
-    // ----------------------------------------------------------
+
+    // ----------------------------- INSERT -----------------------------
     else {
       await sql
         .prepare(`

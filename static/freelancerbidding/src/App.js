@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { invoke } from "@forge/bridge";
+import { invoke, subscribe } from "@forge/bridge";
 import "./App.css";
 
 export default function App() {

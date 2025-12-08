@@ -1,149 +1,152 @@
 import React, { useState } from 'react';
-import './MyInvitation.css'; // Assuming you'll add a CSS file for styling
+import { invoke } from '@forge/bridge';
+import './MyInvitation.css';
 
-const MyInvitation = ({ invitationData }) => {
-  // State for toggling the referrer update select
-  const [showReferrerSelect, setShowReferrerSelect] = useState(false);
-  // State for the selected new referrer (simulated list)
-  const [newReferrer, setNewReferrer] = useState('');
+const MyInvitation = () => {
+  const [email, setEmail] = useState('');
+  const [invitations, setInvitations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [verified, setVerified] = useState(false);
 
-  // Sample data if invitationData is null (replace with actual database data structure)
-  const defaultData = {
-    type: 'Task', // Could be 'Task', 'Bug', 'Subtask'
-    title: 'Implement User Profile CRUD Operations',
-    key: 'PROJ-123',
-    summary: 'Develop the backend and frontend for user profile management.',
-    referrerName: 'Alice Johnson',
-    refereeName: 'Bob Williams', // The person referred by this invitee
-    hasProposal: true, // Determines if the proposal textarea should exist
-    currentProposal: "I propose to finish this in 3 days, focusing on secure API endpoints.",
-    price: 350,
-    priceUnit: 'per/task',
-    availableReferrers: ['Charlie Brown', 'Dana Scully', 'Eve Harrington'], // Simulated list
-  };
-
-  const data = invitationData || defaultData;
-
-  // Price unit options for the select element
   const priceUnits = [
-    'per/hour',
-    'per/day',
-    'per/week',
-    'per/month',
-    'per/task',
-    'per/bug',
-    'per/userstory',
+    'per/hour', 'per/day', 'per/week',
+    'per/month', 'per/task', 'per/bug', 'per/userstory'
   ];
 
-  const handleUpdateReferrer = () => {
-    setShowReferrerSelect(!showReferrerSelect);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setInvitations([]);
+    setVerified(false);
+
+    try {
+      if (!email) {
+        setError('Please enter your email.');
+        setLoading(false);
+        return;
+      }
+
+      // Verify if resume exists for this email
+      const resumeCheck = await invoke('checkresumebyemail', { email });
+      if (!resumeCheck?.exists) {
+        setError('No resume found for this email.');
+        setLoading(false);
+        return;
+      }
+
+      // Fetch invitations for this resume
+      const res = await invoke('getinvitations', { resumeId: resumeCheck.resumeId });
+      if (res?.success && Array.isArray(res.data)) {
+        setInvitations(res.data);
+        setVerified(true);
+      } else {
+        setError(res?.error || 'Failed to fetch invitations.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Unexpected error occurred.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handlePass = () => {
-    alert(`Passed on ${data.type}: ${data.title}`);
-    // **Implement actual logic to update database/state for passing on the invitation**
+  const handleReset = () => {
+    setEmail('');
+    setInvitations([]);
+    setVerified(false);
+    setError(null);
   };
 
+  if (!verified) {
+    // Email input form
+    return (
+      <div className="email-verification">
+        <h2>Enter your email to access invitations</h2>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <button type="submit" disabled={loading}>
+            {loading ? 'Verifying...' : 'Submit'}
+          </button>
+          <button type="button" onClick={handleReset}>Reset</button>
+        </form>
+        {error && <p className="error">{error}</p>}
+      </div>
+    );
+  }
+
+  // Invitations view after email verified
   return (
-    <div className="my-invitation-card">
-      {/* 1. Task/Bug/Subtask Title */}
-      <div className="row title-row">
-        <h2>
-          **{data.type}:** {data.title}
-        </h2>
-      </div>
+    <div>
+      {invitations.length === 0 && <div>No invitations found.</div>}
+      {invitations.map((data) => (
+        <div key={data.id} className="my-invitation-card">
 
-      <hr />
-
-      {/* 2. Task Label (Key + Summary) */}
-      <div className="row label-row">
-        <span className="task-key">**Task Label:** {data.key}</span>
-        <p className="task-summary">{data.summary}</p>
-      </div>
-
-      <hr />
-
-      {/* 3. Referrer Section */}
-      <div className="row refer-row">
-        <div className="refer-item">
-          **Refer by:** <span className="referrer-name">{data.referrerName}</span>
-        </div>
-        <div className="refer-item">
-          **Refer To:** <span className="referee-name">{data.refereeName || 'N/A'}</span>
-        </div>
-      </div>
-
-      {/* 4. Update Referrer Button and Select */}
-      <div className="row update-referrer-row">
-        <button className="update-btn" onClick={handleUpdateReferrer}>
-          Update Referrer
-        </button>
-        {showReferrerSelect && (
-          <select
-            value={newReferrer}
-            onChange={(e) => setNewReferrer(e.target.value)}
-            className="referrer-select"
-          >
-            <option value="" disabled>
-              Select New Referrer
-            </option>
-            {data.availableReferrers.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
-
-      <hr />
-
-      {/* 5. Submit Proposal (Conditionally rendered) */}
-      {data.hasProposal && (
-        <>
-          <div className="row proposal-row">
-            <label htmlFor="proposal-textarea">**Submit Your Proposal:**</label>
-            <textarea
-              id="proposal-textarea"
-              defaultValue={data.currentProposal} // Use defaultValue for initial proposal
-              rows="4"
-              placeholder="Detail your approach, estimated time, and any relevant notes..."
-            ></textarea>
+          {/* TITLE */}
+          <div className="row title-row">
+            <h2>{data.issue_type || 'Task'}: {data.issue_summary || 'No Summary'}</h2>
           </div>
           <hr />
-        </>
-      )}
 
-      {/* 6. Price Input */}
-      <div className="row price-row">
-        <label htmlFor="price-input">**Price:**</label>
-        <div className="price-inputs">
-          <input
-            id="price-input"
-            type="text"
-            defaultValue={data.price}
-            placeholder="e.g., 500"
-            className="price-amount"
-          />
-          <span className="currency">USD</span>
-          <select defaultValue={data.priceUnit} className="price-unit-select">
-            {priceUnits.map((unit) => (
-              <option key={unit} value={unit}>
-                {unit}
-              </option>
-            ))}
-          </select>
+          {/* LABEL */}
+          <div className="row label-row">
+            <span className="task-key"><b>Task Label:</b> {data.issue_key || 'N/A'}</span>
+            <p className="task-summary">{data.issue_summary || 'No Summary'}</p>
+          </div>
+          <hr />
+
+          {/* REFERRER */}
+          <div className="row refer-row">
+            <div className="refer-item"><b>Refer by:</b> {data.referrer_name || 'N/A'}</div>
+            <div className="refer-item"><b>Refer To:</b> {data.referee_name || 'N/A'}</div>
+          </div>
+          <hr />
+
+          {/* PROPOSAL */}
+          {data.proposals != null && (
+            <>
+              <div className="row proposal-row">
+                <label>Proposal:</label>
+                <textarea defaultValue={data.proposals} rows="4"></textarea>
+              </div>
+              <hr />
+            </>
+          )}
+
+          {/* PRICE */}
+          <div className="row price-row">
+            <label><b>Price:</b></label>
+            <div className="price-inputs">
+              <input
+                type="text"
+                defaultValue={data.price || ''}
+                placeholder="e.g. 500"
+                className="price-amount"
+              />
+              <span className="currency">USD</span>
+              <select defaultValue={data.price_unit || 'per/task'}>
+                {priceUnits.map((unit) => (
+                  <option key={unit} value={unit}>{unit}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <hr />
+
+          {/* PASS BUTTON */}
+          <div className="row pass-row flex-end">
+            <button className="pass-btn">Pass</button>
+          </div>
         </div>
-      </div>
-
-      <hr />
-
-      {/* 7. Pass Button (Flex-end) */}
-      <div className="row pass-row flex-end">
-        <button className="pass-btn" onClick={handlePass}>
-          Pass
-        </button>
-      </div>
+      ))}
+      <button onClick={handleReset} className="reset-btn">Change Email</button>
     </div>
   );
 };
