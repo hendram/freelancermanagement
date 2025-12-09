@@ -9,7 +9,7 @@ function useForceUpdate() {
 export default function MyInvitation({ goBackMI }) {
   const forceUpdate = useForceUpdate();
 
-  // Using refs instead of useState
+  // Refs instead of state
   const emailRef = useRef("");
   const invitationsRef = useRef([]);
   const verifiedRef = useRef(false);
@@ -119,94 +119,104 @@ export default function MyInvitation({ goBackMI }) {
   // INVITATIONS VIEW
   // -------------------------
   return (
-    <div className="invitation-container">
-      {invitationsRef.current.length === 0 && (
-        <div>No invitations found.</div>
-      )}
+    <div className="myinvitation-container">
+      {invitationsRef.current.length === 0 && <div>No invitations found.</div>}
 
-      {invitationsRef.current.map((data) => (
-        <div key={data.id} className="my-invitation-card">
-          {/* TITLE */}
-          <div className="row title-row">
-            <h2>
-              {data.issue_type || "Task"}: {data.issue_summary || "No Summary"}
-            </h2>
-          </div>
-          <hr />
+      {invitationsRef.current.map((data) => {
+        const referrerNames = Array.isArray(data.referrers)
+          ? data.referrers.map((r) => r.name).join(", ")
+          : "";
+        const refereeNames = Array.isArray(data.referees)
+          ? data.referees.map((r) => r.name).join(", ")
+          : "";
 
-          {/* LABEL */}
-          <div className="row label-row">
-            <span className="task-key">
-              <b>Task Label:</b> {data.issue_key || "N/A"}
-            </span>
-            <p className="task-summary">
-              {data.issue_summary || "No Summary"}
-            </p>
-          </div>
-          <hr />
+        const showRfpProposal =
+          (Array.isArray(data.rfp) && data.rfp.length > 0) ||
+          (Array.isArray(data.proposals) && data.proposals.length > 0);
 
-          {/* REFERRER */}
-          <div className="row refer-row">
-            <div className="refer-item">
-              <b>Refer by:</b> {data.referrer_name || "N/A"}
-            </div>
-            <div className="refer-item">
-              <b>Refer To:</b> {data.referee_name || "N/A"}
-            </div>
-          </div>
-          <hr />
-
-          {/* PROPOSAL */}
-          {data.proposals != null && (
-            <>
-              <div className="row proposal-row">
-                <label>Proposal:</label>
-                <textarea defaultValue={data.proposals} rows="4"></textarea>
+        return (
+          <div key={data.id} className="myinvitation-container">
+            {/* LABEL */}
+            <div className="issue-container">
+              <div className="issuetype-div">
+                <span className="issuetype-span">{data.issue_type}</span>
               </div>
-              <hr />
-            </>
-          )}
+              <div className="issuekey-div">
+                <span className="issuekey-span">{data.issue_key}</span>
+              </div>
+              <div className="issuesummary-div">
+                <span className="issuesummary-span">{data.issue_summary}</span>
+              </div>
+            </div>
 
-          {/* PRICE */}
-          <div className="row price-row">
-            <label>
-              <b>Price:</b>
-            </label>
-            <div className="price-inputs">
-              <input
-                type="text"
-                defaultValue={data.price || ""}
-                className="price-amount"
-                placeholder="e.g. 500"
-              />
+            {/* REFERRER */}
+            <div className="refer-container">
+              <div className="referby-div">
+                <b>Refer by:</b> {referrerNames}
+              </div>
+              <div className="referto-div">
+                <b>Refer To:</b> {refereeNames}
+              </div>
+            </div>
 
-              <span className="currency">USD</span>
+            {/* PROPOSAL */}
+            {showRfpProposal && (
+              <div className="rfpproposal-div">
+                {Array.isArray(data.rfp) && data.rfp.length > 0 && (
+                  <div className="rfp-div">
+                    <label className="rfp-label">Rfp:</label>
+                    <textarea
+                      className="rfp-textarea"
+                      defaultValue={data.rfp.join(", ")}
+                      rows="4"
+                    />
+                  </div>
+                )}
+                {Array.isArray(data.proposals) && data.proposals.length > 0 && (
+                  <div className="proposal-div">
+                    <label className="proposal-label">Proposal:</label>
+                    <textarea
+                      className="proposal-textarea"
+                      defaultValue={data.proposals.join(", ")}
+                      rows="4"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
 
-              <select defaultValue={data.price_unit || "per/task"}>
-                {priceUnits.map((unit) => (
-                  <option key={unit} value={unit}>
-                    {unit}
-                  </option>
-                ))}
-              </select>
+            {/* PRICE */}
+            <div className="price-div">
+              <span className="price-span">Price: </span>
+              <div className="priceinput-div">
+                <input
+                  className="price-amount"
+                  type="text"
+                  defaultValue={data.price || ""}
+                  placeholder="e.g. 500"
+                />
+                <span className="currency-span">USD</span>
+                <select defaultValue={data.price_unit || "per/task"}>
+                  {priceUnits.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <hr />
+
+            {/* PASS BUTTON */}
+            <div className="passbackbutton-div">
+              <button className="pass-btn">Pass</button>
+              <button className="back-btn" onClick={goBackMI}>
+                Back
+              </button>
             </div>
           </div>
-          <hr />
-
-          {/* PASS BUTTON */}
-          <div className="row pass-row flex-end">
-            <button className="pass-btn">Pass</button>
-          </div>
-        </div>
-      ))}
-
-      <button onClick={handleReset} className="reset-btn">
-        Change Email
-      </button>
-
-      <button className="back-btn" onClick={goBackMI}>
-        Back
-      </button>
+        );
+      })}
     </div>
   );
 }

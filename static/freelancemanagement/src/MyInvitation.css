@@ -1,142 +1,128 @@
-.my-invitation-card {
-  border: 1px solid #ddd;
-  padding: 20px;
+/* Container for the whole invitations page */
+.myinvitation-container {
+  width: 90%;
+  max-width: 900px;
   margin: 20px auto;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  max-width: 650px;
   font-family: Arial, sans-serif;
-  background: #fff;
+  color: #333;
 }
 
-/* GENERAL ROW */
-.row {
+/* Issue section */
+.issue-container {
   display: flex;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-  align-items: center;
-}
-
-/* TITLE */
-.title-row h2 {
-  margin: 0;
-  font-size: 1.45rem;
-  color: #222;
-  font-weight: 700;
-}
-
-/* LABEL */
-.label-row {
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.task-key {
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: #444;
-}
-
-.task-summary {
-  margin: 0;
-  font-size: 0.92rem;
-  color: #666;
-}
-
-/* REFER */
-.refer-row {
-  width: 100%;
-  justify-content: space-between;
   gap: 10px;
+  margin-bottom: 10px;
 }
 
-.refer-item {
+.issuetype-div,
+.issuekey-div,
+.issuesummary-div {
   flex: 1;
-  font-size: 0.95rem;
 }
 
-.referrer-name,
-.referee-name {
-  font-style: italic;
-  font-weight: 600;
-  color: #0A66C2;
+.issuetype-span,
+.issuekey-span,
+.issuesummary-span {
+  display: block;
+  font-weight: bold;
+  background: #f4f4f4;
+  padding: 5px 10px;
+  border-radius: 5px;
 }
 
-/* PROPOSAL */
-.proposal-row {
+/* Referrer section */
+.refer-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.referby-div,
+.referto-div {
+  flex: 1;
+  padding: 5px 10px;
+  background: #eef2f7;
+  border-radius: 5px;
+  margin-right: 5px;
+}
+
+.referto-div {
+  margin-right: 0;
+}
+
+/* RFP and Proposal sections */
+.rfp-div,
+.proposal-div {
+  margin-bottom: 10px;
+}
+
+.rfp-label,
+.proposal-label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.rfp-textarea,
+.proposal-textarea {
   width: 100%;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-#proposal-textarea,
-.proposal-row textarea {
-  width: 100%;
-  padding: 10px;
-  margin-top: 6px;
-  border-radius: 4px;
+  padding: 5px 10px;
+  border-radius: 5px;
   border: 1px solid #ccc;
+  font-family: inherit;
+  font-size: 14px;
   resize: vertical;
-  font-size: 0.95rem;
-  box-sizing: border-box;
 }
 
-/* PRICE */
-.price-row {
-  width: 100%;
-  justify-content: flex-start;
+/* Price section */
+.price-div {
+  margin-bottom: 10px;
 }
 
-.price-inputs {
+.price-span {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.priceinput-div {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
 }
 
-.price-amount {
-  width: 90px;
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #bbb;
-}
-
-.currency {
-  font-weight: 600;
-  color: #008000;
-}
-
-.price-unit-select,
-.price-row select {
-  padding: 8px;
-  border: 1px solid #bbb;
-  border-radius: 4px;
-}
-
-/* PASS BUTTON */
-.pass-row {
-  width: 100%;
-  justify-content: flex-end;
-}
-
-.pass-btn {
-  background-color: #dc3545;
-  color: #fff;
-  border: none;
-  padding: 10px 22px;
+.price-input {
+  padding: 5px 10px;
   border-radius: 5px;
+  border: 1px solid #ccc;
+  width: 80px;
+}
+
+.currency-span {
+  margin-left: 5px;
+  font-weight: bold;
+}
+
+/* Pass and Back buttons */
+.passbackbutton-div {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.pass-btn,
+.back-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 5px;
+  background-color: #1976d2;
+  color: white;
   cursor: pointer;
-  font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 14px;
+  transition: background-color 0.2s;
 }
 
-.pass-btn:hover {
-  background-color: #c82333;
+.pass-btn:hover,
+.back-btn:hover {
+  background-color: #115293;
 }
 
-/* DIVIDERS */
-hr {
-  width: 100%;
-  border: 0;
-  border-top: 1px solid #eee;
-  margin: 12px 0;
-}
