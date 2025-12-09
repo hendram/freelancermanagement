@@ -1,209 +1,220 @@
-import React, { useRef, useEffect, useReducer } from "react";
+import React, { useRef, useState } from "react";
 import { invoke } from "@forge/bridge";
 import "./App.css";
 
 export default function App() {
-  const forceUpdate = useReducer(() => ({}), {})[1];
+  const issueRef = useRef(null);
+  const managerSkillsRef = useRef(null);
+  const managerResultsRef = useRef([]);
+  const loadingRef = useRef(false);
+  const errorRef = useRef("");
+  const rfpOpenRef = useRef(null);
+  const rfpMessageRef = useRef("");
 
-  // ------------------------------
-  // REFS (no useState at all)
-  // ------------------------------
-  const issue = useRef(null);
-  const referByList = useRef([]);
-  const referToList = useRef([]);
+  const [, forceUpdate] = useState({}); // to force rerender
 
-  const rfpTextReadonly = useRef("");
-  const proposalText = useRef("");
-
-  const priceRef = useRef("");
-  const priceUnitRef = useRef("");
-  const priceTypeRef = useRef("");
-
-  const showProposalBox = useRef(false);
-
-  // ------------------------------
-  // LOAD ISSUE + REFER DATA
-  // ------------------------------
-  useEffect(() => {
-    async function load() {
+  // -----------------------------
+  // 1. Load issue context
+  // -----------------------------
+  React.useEffect(() => {
+    async function loadIssue() {
       try {
         const data = await invoke("getcurrentissue", {});
-
-        if (!data?.key) {
-          issue.current = null;
-          forceUpdate();
+        if (!data || !data.key) {
+          errorRef.current = "Cannot detect issue context.";
+          forceUpdate({});
           return;
         }
 
-        issue.current = {
+        issueRef.current = {
           key: data.key,
           summary: data.summary,
           issueType: data.issuetype || data.type || "Task",
-          label: data.key,
         };
-
-        // Get refer by & refer to pills
-        const refData = await invoke("getrefer", {
-          issueKey: data.key,
-        });
-
-        referByList.current = refData?.referBy || [];
-        referToList.current = refData?.referTo || [];
-        rfpTextReadonly.current = refData?.rfp || "";
-        proposalText.current = "";
-
-        forceUpdate();
-      } catch (e) {
-        issue.current = null;
-        forceUpdate();
+        forceUpdate({});
+      } catch (err) {
+        errorRef.current = "Failed loading issue.";
+        console.error(err);
+        forceUpdate({});
       }
     }
-
-    load();
+    loadIssue();
   }, []);
 
-  // ------------------------------
-  // HANDLERS
-  // ------------------------------
-  const handleAddReferTo = async () => {
-    const name = prompt("Enter freelancer name to refer:");
-    if (!name) return;
+  // -----------------------------
+  // 2. Search manager candidates
+  // -----------------------------
+  const searchCandidates = async () => {
+    errorRef.current = "";
+    managerResultsRef.current = [];
+    forceUpdate({});
 
-    await invoke("addrefer", {
-      issueKey: issue.current.key,
-      name,
-    });
+    const skillsInput = managerSkillsRef.current.value.trim();
+    if (!skillsInput) {
+      errorRef.current = "Please enter skills to match.";
+      forceUpdate({});
+      return;
+    }
 
-    referToList.current.push(name);
-    forceUpdate();
+    loadingRef.current = true;
+    forceUpdate({});
+    try {
+      const res = await invoke("searchskills", { skills: skillsInput });
+      if (!res?.success) {
+        errorRef.current = res?.error || "Search failed.";
+      } else {
+        managerResultsRef.current = res.candidates.slice(0, 5);
+      }
+    } catch (err) {
+      console.error(err);
+      errorRef.current = "Search error.";
+    } finally {
+      loadingRef.current = false;
+      forceUpdate({});
+    }
   };
 
-  const handleSendProposal = async () => {
-    const text = proposalText.current.value || "";
-    if (!text.trim()) return;
+  // -----------------------------
+  // 3. Build payload
+  // -----------------------------
+  const buildPayload = (candidate, extra = {}) => ({
+    freelancerName: candidate.fullName,
+    resumeId: candidate.resume_id,
+    issueKey: issueRef.current?.key,
+    issueSummary: issueRef.current?.summary,
+    issueType: issueRef.current?.issueType,
+    ...extra,
+  });
 
-    await invoke("invitation", {
-      inviteStatus: "yes",
-      proposal: text,
-      issueKey: issue.current.key,
-    });
-
-    showProposalBox.current = false;
-    proposalText.current = "";
-    forceUpdate();
+  // -----------------------------
+  // 4. Action handlers
+  // -----------------------------
+  const handleInvite = async (c) => {
+    try {
+      await invoke("invitation", buildPayload(c, { inviteStatus: "yes" }));
+      console.log("Invite sent:", c.fullName);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handlePass = async () => {
-    await invoke("invitation", {
-      inviteStatus: "pass",
-      issueKey: issue.current.key,
-    });
-    alert("You passed this task.");
+  const handleRFP = (c) => {
+    rfpOpenRef.current = c.resume_id;
+    rfpMessageRef.current = "";
+    forceUpdate({});
   };
 
-  // ------------------------------
-  // UI SECTIONS
-  // ------------------------------
-  const renderPills = (arr) =>
-    arr.map((name) => (
-      <div key={name} className="pill">
-        {name}
-      </div>
-    ));
+  const handleRfpSubmit = async (c) => {
+    try {
+      await invoke(
+        "invitation",
+        buildPayload(c, { inviteStatus: "yes", rfpMessage: rfpMessageRef.current })
+      );
+      rfpOpenRef.current = null;
+      rfpMessageRef.current = "";
+      console.log("RFP sent:", c.fullName);
+      forceUpdate({});
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  // ------------------------------
-  // MAIN UI
-  // ------------------------------
-  if (!issue.current)
-    return <div className="fb-wrapper">Cannot detect issue context.</div>;
+  const handleRfpCancel = () => {
+    rfpOpenRef.current = null;
+    rfpMessageRef.current = "";
+    forceUpdate({});
+  };
 
-  return (
-    <div className="fb-wrapper">
+  const handlePass = (c) => {
+    managerResultsRef.current = managerResultsRef.current.filter(
+      (x) => x.resume_id !== c.resume_id
+    );
+    forceUpdate({});
+  };
 
-      {/* ------------------ HEADER ------------------ */}
-      <div className="issue-box">
-        <div className="issue-title">
-          {issue.current.issueType}: {issue.current.summary}
-        </div>
+  const handleProposal = (c) => {
+    console.log("Proposal clicked for:", c.fullName);
+  };
 
-        <div className="issue-label">{issue.current.label}</div>
+  const handleDeal = async (c) => {
+    try {
+      await invoke("invitation", buildPayload(c, { deal: "yes" }));
+      console.log("Deal completed with:", c.fullName);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-        <div className="issue-summary">{issue.current.summary}</div>
-      </div>
-
-      {/* ------------------ REFER BY ------------------ */}
-      <div className="row-block">
-        <div className="row-title">Refer by:</div>
-        <div className="pill-row">
-          {referByList.current.length === 0
-            ? "N/A"
-            : renderPills(referByList.current)}
-        </div>
-      </div>
-
-      {/* ------------------ REFER TO ------------------ */}
-      <div className="row-block">
-        <div className="row-title">Refer To:</div>
-        <div className="pill-row">
-          {referToList.current.length === 0
-            ? "N/A"
-            : renderPills(referToList.current)}
-        </div>
-
-        <button className="pill-btn add-btn" onClick={handleAddReferTo}>
-          + Refer Name
-        </button>
-      </div>
-
-      {/* ------------------ RFP (READONLY) ------------------ */}
-      {rfpTextReadonly.current.trim() !== "" && (
-        <div className="row-block">
-          <div className="row-title">RFP:</div>
-          <textarea
-            className="rfp-box"
-            readOnly
-            value={rfpTextReadonly.current}
-          ></textarea>
-        </div>
-      )}
-
-      {/* ------------------ PROPOSAL (EDITABLE) ------------------ */}
-      <div className="row-block">
-        <div className="row-title">Proposal:</div>
-
-        {!showProposalBox.current && (
+  // -----------------------------
+  // 5. Render candidate row
+  // -----------------------------
+  const renderCandidateRow = (c) => (
+    <div className="fbcandidate-container" key={c.resume_id}>
+      <div className="fbfullname-div">
+        <span className="fbfullname-span">{c.fullName}</span>
+  <div className="fbskills-div">
+    <span className="fbskills-span">
+    Skills: {Array.isArray(c.skills) ? c.skills.join(", ") : c.skills}
+        </span>
+       </div>    
+   </div>
+       
+        <div className="fbbuttons-container">
           <button
-            className="pill-btn"
-            onClick={() => {
-              showProposalBox.current = true;
-              forceUpdate();
-            }}
+            className="fbinvite-btn"
+            onClick={() => handleInvite(c)}
           >
-            Write Proposal
+            Invite
           </button>
-        )}
+          <button
+            className="fbrfp-btn"
+            onClick={() => handleRFP(c)}
+          >
+            RFP
+          </button>
+          <button  className="fbproposal-btn"
+            onClick={() => handleProposal(c)}
+          >
+            Proposal
+          </button>
+  <button  className="fbpass-btn" onClick={() => handlePass(c)}  >
+            Pass
+          </button>
+                
+  {c.price && (
+            <button
+              className="fbdeal-btn"
+              onClick={() => handleDeal(c)}
+            >
+              Deal
+            </button>
+          )}
+        </div>
 
-        {showProposalBox.current && (
-          <div className="proposal-section">
+        {rfpOpenRef.current === c.resume_id && (
+          <div className="fbopenrfp-div">
             <textarea
-              ref={proposalText}
-              placeholder="Write your proposal..."
-              className="proposal-box"
-              rows={4}
-            ></textarea>
-
-            <div className="proposal-actions">
-              <button className="pill-btn" onClick={handleSendProposal}>
+              className="fbrfptextarea"
+              ref={(el) => (rfpMessageRef.currentEl = el)}
+              defaultValue={rfpMessageRef.current}
+              onChange={(e) => (rfpMessageRef.current = e.target.value)}
+              placeholder="Enter your RFP message..."
+              rows={3}
+            />
+            <div className="fbrfp-submitbtn">
+              <button
+                className="fbsubmit-btn"
+                onClick={() => {
+                  rfpMessageRef.current =
+                    rfpMessageRef.currentEl?.value || "";
+                  handleRfpSubmit(c);
+                }}
+              >
                 Submit
               </button>
-
               <button
-                className="pill-btn pass-btn"
-                onClick={() => {
-                  showProposalBox.current = false;
-                  proposalText.current = "";
-                  forceUpdate();
-                }}
+                className="fbcancel-btn"
+                onClick={handleRfpCancel}
               >
                 Cancel
               </button>
@@ -212,26 +223,42 @@ export default function App() {
         )}
       </div>
 
-      {/* ------------------ PRICE ROW ------------------ */}
-      <div className="row-block">
-        <div className="row-title">Price:</div>
+    
+  );
 
-        <input type="text" ref={priceRef} className="price-input" placeholder="e.g. 500" />
+  // -----------------------------
+  // 6. Render main
+  // -----------------------------
+  return (
+    <div className="fb-container">
+      {issueRef.current && (
+        <div className="fbissue-container">
+            <span className="fbissuekey-span">{issueRef.current.key}</span>
+            <span className="fbissuesummary-span">{issueRef.current.summary}</span>
+        </div>
+      )}
 
-        <span className="usd-label">USD</span>
+      {errorRef.current && <div className="fberror">{errorRef.current}</div>}
 
-        <select ref={priceTypeRef} className="select-box">
-          <option value="per/task">per/task</option>
-          <option value="per/hour">per/hour</option>
-        </select>
-      </div>
-
-      {/* ------------------ PASS BUTTON ------------------ */}
-      <div className="row-block pass-container">
-        <button className="pass-btn final-pass" onClick={handlePass}>
-          Pass
+      <div className="fbmanager-search">
+        <label>Search skills:</label>
+        <input
+          className="fbskills-input"
+          type="text"
+          placeholder="e.g. react, api"
+          ref={managerSkillsRef}
+        />
+        <button
+          className="fbsearch-btn"
+          onClick={searchCandidates}
+          disabled={loadingRef.current}
+        >
+          {loadingRef.current ? "Searching…" : "Search"}
         </button>
       </div>
+
+      {managerResultsRef.current.length > 0 &&
+        managerResultsRef.current.map(renderCandidateRow)}
     </div>
   );
 }
