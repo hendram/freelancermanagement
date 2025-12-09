@@ -6,8 +6,6 @@ export default async function invitation({ payload, sql }) {
     freelancerName,
     resumeId,
     inviteStatus,
-    rfpMessage,
-    proposals,
     price,
     deal
   } = payload;
@@ -20,7 +18,7 @@ export default async function invitation({ payload, sql }) {
   try {
     let finalIssueId = null;
 
-    // ----------------------------- CHECK ISSUE ------------------------------
+    // ---------- CHECK ISSUE ----------
     const existingIssue = await sql
       .prepare(`SELECT id FROM issues WHERE issue_key = ?`)
       .bindParams(issueKey)
@@ -29,7 +27,8 @@ export default async function invitation({ payload, sql }) {
     if (existingIssue.rows.length > 0) {
       finalIssueId = existingIssue.rows[0].id;
     } else {
-      const inserted = await sql
+      // Insert issue
+      await sql
         .prepare(`
           INSERT INTO issues (issue_type, issue_key, issue_summary)
           VALUES (?, ?, ?)
@@ -37,11 +36,16 @@ export default async function invitation({ payload, sql }) {
         .bindParams(issueType, issueKey, issueSummary)
         .execute();
 
-      finalIssueId = inserted.lastInsertId;
-     console.log("finalIssueIdinsert", finalIssueId);
+      // SELECT AGAIN because Forge SQL has no lastInsertId
+      const reselect = await sql
+        .prepare(`SELECT id FROM issues WHERE issue_key = ?`)
+        .bindParams(issueKey)
+        .execute();
+
+      finalIssueId = reselect.rows[0].id;
     }
 
-    // ----------------------------- CHECK INVITE -----------------------------
+    // ---------- CHECK INVITATION ----------
     const existingInvite = await sql
       .prepare(`
         SELECT id FROM myinvitation
@@ -50,47 +54,38 @@ export default async function invitation({ payload, sql }) {
       .bindParams(finalIssueId, freelancerName)
       .execute();
 
-    const inviteRows = existingInvite.rows;
-    console.log("inviteRowsmyinvitationfound", inviteRows);
+    const invite = existingInvite.rows[0];
 
-    // ----------------------------- UPDATE -----------------------------
-    if (inviteRows.length > 0) {
-      const inviteId = inviteRows[0].id;
+    const finalPrice = inviteStatus === "yes" ? price || null : null;
+    const finalDeal  = inviteStatus === "yes" ? deal  || null : null;
 
+    // ---------- UPDATE ----------
+    if (invite) {
       await sql
         .prepare(`
           UPDATE myinvitation
-          SET invite_status = ?, rfp_message = ?, proposals = ?, price = ?, deal = ?
+          SET invite_status = ?, price = ?, deal = ?
           WHERE id = ?
         `)
-        .bindParams(
-          inviteStatus || null,
-          rfpMessage || null,
-          proposals || null,
-          price || null,
-          deal || null,
-          inviteId
-        )
+        .bindParams(inviteStatus, finalPrice, finalDeal, invite.id)
         .execute();
     }
 
-    // ----------------------------- INSERT -----------------------------
+    // ---------- INSERT ----------
     else {
       await sql
         .prepare(`
           INSERT INTO myinvitation
-          (issue_id, resume_id, freelancer_name, invite_status, rfp_message, proposals, price, deal)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (issue_id, resume_id, freelancer_name, invite_status, price, deal)
+          VALUES (?, ?, ?, ?, ?, ?)
         `)
         .bindParams(
           finalIssueId,
           resumeId || null,
           freelancerName,
-          inviteStatus || null,
-          rfpMessage || null,
-          proposals || null,
-          price || null,
-          deal || null
+          inviteStatus,
+          finalPrice,
+          finalDeal
         )
         .execute();
     }
@@ -98,7 +93,7 @@ export default async function invitation({ payload, sql }) {
     return { success: true, issueId: finalIssueId };
 
   } catch (e) {
-    console.error(">>> SQL ERROR (invitation):", e.stack);
+    console.error(">>> SQL ERROR (invitation):", e);
     return { success: false, error: e.message };
   }
 }

@@ -1,111 +1,158 @@
-import React, { useState } from 'react';
-import { invoke } from '@forge/bridge';
-import './MyInvitation.css';
+import React, { useRef, useReducer } from "react";
+import { invoke } from "@forge/bridge";
+import "./MyInvitation.css";
 
-const MyInvitation = () => {
-  const [email, setEmail] = useState('');
-  const [invitations, setInvitations] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [verified, setVerified] = useState(false);
+function useForceUpdate() {
+  return useReducer(() => ({}), {})[1];
+}
+
+export default function MyInvitation({ goBackMI }) {
+  const forceUpdate = useForceUpdate();
+
+  // Using refs instead of useState
+  const emailRef = useRef("");
+  const invitationsRef = useRef([]);
+  const verifiedRef = useRef(false);
+  const loadingRef = useRef(false);
+  const errorRef = useRef(null);
 
   const priceUnits = [
-    'per/hour', 'per/day', 'per/week',
-    'per/month', 'per/task', 'per/bug', 'per/userstory'
+    "per/hour",
+    "per/day",
+    "per/week",
+    "per/month",
+    "per/task",
+    "per/bug",
+    "per/userstory",
   ];
 
+  // -------------------------
+  // SUBMIT EMAIL
+  // -------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setInvitations([]);
-    setVerified(false);
+    loadingRef.current = true;
+    errorRef.current = null;
+    invitationsRef.current = [];
+    verifiedRef.current = false;
+    forceUpdate();
+
+    const email = emailRef.current.value.trim();
+    if (!email) {
+      errorRef.current = "Please enter your email.";
+      loadingRef.current = false;
+      forceUpdate();
+      return;
+    }
 
     try {
-      if (!email) {
-        setError('Please enter your email.');
-        setLoading(false);
-        return;
-      }
+      const resumeCheck = await invoke("checkresumebyemail", { email });
 
-      // Verify if resume exists for this email
-      const resumeCheck = await invoke('checkresumebyemail', { email });
       if (!resumeCheck?.exists) {
-        setError('No resume found for this email.');
-        setLoading(false);
+        errorRef.current = "No resume found for this email.";
+        loadingRef.current = false;
+        forceUpdate();
         return;
       }
 
-      // Fetch invitations for this resume
-      const res = await invoke('getinvitations', { resumeId: resumeCheck.resumeId });
+      const res = await invoke("getinvitations", {
+        resumeId: resumeCheck.resumeId,
+      });
+
       if (res?.success && Array.isArray(res.data)) {
-        setInvitations(res.data);
-        setVerified(true);
+        invitationsRef.current = res.data;
+        verifiedRef.current = true;
       } else {
-        setError(res?.error || 'Failed to fetch invitations.');
+        errorRef.current = res?.error || "Failed to fetch invitations.";
       }
     } catch (err) {
-      console.error(err);
-      setError('Unexpected error occurred.');
+      errorRef.current = "Unexpected error occurred.";
     } finally {
-      setLoading(false);
+      loadingRef.current = false;
+      forceUpdate();
     }
   };
 
   const handleReset = () => {
-    setEmail('');
-    setInvitations([]);
-    setVerified(false);
-    setError(null);
+    emailRef.current.value = "";
+    invitationsRef.current = [];
+    verifiedRef.current = false;
+    errorRef.current = null;
+    forceUpdate();
   };
 
-  if (!verified) {
-    // Email input form
+  // -------------------------
+  // EMAIL INPUT SCREEN
+  // -------------------------
+  if (!verifiedRef.current) {
     return (
       <div className="email-verification">
         <h2>Enter your email to access invitations</h2>
+
         <form onSubmit={handleSubmit}>
           <input
             type="email"
             placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            ref={emailRef}
             required
           />
-          <button type="submit" disabled={loading}>
-            {loading ? 'Verifying...' : 'Submit'}
+
+          <button type="submit" disabled={loadingRef.current}>
+            {loadingRef.current ? "Verifying..." : "Submit"}
           </button>
-          <button type="button" onClick={handleReset}>Reset</button>
+
+          <button type="button" onClick={handleReset}>
+            Reset
+          </button>
         </form>
-        {error && <p className="error">{error}</p>}
+
+        {errorRef.current && <p className="error">{errorRef.current}</p>}
+
+        <button className="back-btn" onClick={goBackMI}>
+          Back
+        </button>
       </div>
     );
   }
 
-  // Invitations view after email verified
+  // -------------------------
+  // INVITATIONS VIEW
+  // -------------------------
   return (
-    <div>
-      {invitations.length === 0 && <div>No invitations found.</div>}
-      {invitations.map((data) => (
-        <div key={data.id} className="my-invitation-card">
+    <div className="invitation-container">
+      {invitationsRef.current.length === 0 && (
+        <div>No invitations found.</div>
+      )}
 
+      {invitationsRef.current.map((data) => (
+        <div key={data.id} className="my-invitation-card">
           {/* TITLE */}
           <div className="row title-row">
-            <h2>{data.issue_type || 'Task'}: {data.issue_summary || 'No Summary'}</h2>
+            <h2>
+              {data.issue_type || "Task"}: {data.issue_summary || "No Summary"}
+            </h2>
           </div>
           <hr />
 
           {/* LABEL */}
           <div className="row label-row">
-            <span className="task-key"><b>Task Label:</b> {data.issue_key || 'N/A'}</span>
-            <p className="task-summary">{data.issue_summary || 'No Summary'}</p>
+            <span className="task-key">
+              <b>Task Label:</b> {data.issue_key || "N/A"}
+            </span>
+            <p className="task-summary">
+              {data.issue_summary || "No Summary"}
+            </p>
           </div>
           <hr />
 
           {/* REFERRER */}
           <div className="row refer-row">
-            <div className="refer-item"><b>Refer by:</b> {data.referrer_name || 'N/A'}</div>
-            <div className="refer-item"><b>Refer To:</b> {data.referee_name || 'N/A'}</div>
+            <div className="refer-item">
+              <b>Refer by:</b> {data.referrer_name || "N/A"}
+            </div>
+            <div className="refer-item">
+              <b>Refer To:</b> {data.referee_name || "N/A"}
+            </div>
           </div>
           <hr />
 
@@ -122,18 +169,24 @@ const MyInvitation = () => {
 
           {/* PRICE */}
           <div className="row price-row">
-            <label><b>Price:</b></label>
+            <label>
+              <b>Price:</b>
+            </label>
             <div className="price-inputs">
               <input
                 type="text"
-                defaultValue={data.price || ''}
-                placeholder="e.g. 500"
+                defaultValue={data.price || ""}
                 className="price-amount"
+                placeholder="e.g. 500"
               />
+
               <span className="currency">USD</span>
-              <select defaultValue={data.price_unit || 'per/task'}>
+
+              <select defaultValue={data.price_unit || "per/task"}>
                 {priceUnits.map((unit) => (
-                  <option key={unit} value={unit}>{unit}</option>
+                  <option key={unit} value={unit}>
+                    {unit}
+                  </option>
                 ))}
               </select>
             </div>
@@ -146,9 +199,14 @@ const MyInvitation = () => {
           </div>
         </div>
       ))}
-      <button onClick={handleReset} className="reset-btn">Change Email</button>
+
+      <button onClick={handleReset} className="reset-btn">
+        Change Email
+      </button>
+
+      <button className="back-btn" onClick={goBackMI}>
+        Back
+      </button>
     </div>
   );
-};
-
-export default MyInvitation;
+}

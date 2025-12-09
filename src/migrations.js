@@ -104,6 +104,31 @@ const INDEX_ASSIGN_REPUTATION = `
 `;
 
 // ------------------------- MY INVITATION TABLE -------------------------
+
+
+const CREATE_RFP_PROPOSAL_TABLE = `
+    CREATE TABLE IF NOT EXISTS rfp_proposals (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    rfp_message TEXT,
+    proposals TEXT
+); 
+`;
+
+const CREATE_ISSUE_TABLE = `
+  CREATE TABLE IF NOT EXISTS issues (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    issue_type TEXT NOT NULL,
+    issue_key VARCHAR(64) UNIQUE NOT NULL,
+    issue_summary TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+`;
+
+const INDEX_ISSUE_KEY = `
+  CREATE INDEX IF NOT EXISTS idx_issue_key 
+  ON issues(issue_key);
+`;
+
 const CREATE_MY_INVITATION_TABLE = `
   CREATE TABLE IF NOT EXISTS myinvitation (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -111,13 +136,20 @@ const CREATE_MY_INVITATION_TABLE = `
     resume_id VARCHAR(64),
     freelancer_name TEXT NOT NULL,
     invite_status TEXT,
-    rfp_message TEXT,
-    proposals TEXT,
+    rfp_prop_id INT,       -- FK to rfp_prop table
     price FLOAT,
     deal TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_myinvitation_resume FOREIGN KEY (resume_id)
       REFERENCES resumes(id)
+      ON DELETE CASCADE,
+
+      CONSTRAINT fk_rfpproposals FOREIGN KEY (issue_id)
+      REFERENCES issues(id)
+      ON DELETE CASCADE,
+
+      CONSTRAINT fk_issues FOREIGN KEY (rfp_prop_id)
+      REFERENCES rfp_proposals(id)
       ON DELETE CASCADE
   );
 `;
@@ -131,24 +163,6 @@ const INDEX_MY_INVITATION_ISSUE_ID = `
   CREATE INDEX IF NOT EXISTS idx_myinvitation_issue_id
   ON myinvitation(issue_id);
 `;
-
-const CREATE_ISSUE_TABLE = `
-  CREATE TABLE IF NOT EXISTS issues (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    issue_type TEXT NOT NULL,
-    issue_key VARCHAR(64) UNIQUE NOT NULL,
-    issue_summary TEXT NOT NULL,
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  );
-`;
-
-const INDEX_ISSUE_KEY = `
-  CREATE INDEX IF NOT EXISTS idx_issue_key 
-  ON issues(issue_key);
-`;
-
-
 
 
 const migrations = migrationRunner
@@ -165,12 +179,15 @@ const migrations = migrationRunner
   .enqueue('v_create_assignreputation', CREATE_ASSIGN_REPUTATION_TABLE)
   .enqueue('v_index_assignreputation', INDEX_ASSIGN_REPUTATION)
 
-  .enqueue('v_create_myinvitationtable', CREATE_MY_INVITATION_TABLE)
-  .enqueue('v_index_myinvitationtable', INDEX_MY_INVITATION)
-  .enqueue('v_index_myinvitationtableissue', INDEX_MY_INVITATION_ISSUE_ID)
+  .enqueue('v_create_rfpproposaltable', CREATE_RFP_PROPOSAL_TABLE)
 
   .enqueue('v_create_issuetable', CREATE_ISSUE_TABLE)
-  .enqueue('v_index_issuekey', INDEX_ISSUE_KEY);
+  .enqueue('v_index_issuekey', INDEX_ISSUE_KEY)
+
+  .enqueue('v_create_myinvitationtable', CREATE_MY_INVITATION_TABLE)
+  .enqueue('v_index_myinvitationtable', INDEX_MY_INVITATION)
+  .enqueue('v_index_myinvitationtableissue', INDEX_MY_INVITATION_ISSUE_ID);
+
 
   
 
