@@ -6,7 +6,6 @@ export default async function getinvitations({ payload, sql }) {
     return { success: false, error: "resumeId or fullName is required" };
   }
 
-  // Utility: split fullName into first + last (first token -> first_name, rest -> last_name)
   function splitFullName(name) {
     if (!name) return { first: "", last: "" };
     const parts = name.trim().split(/\s+/);
@@ -16,29 +15,41 @@ export default async function getinvitations({ payload, sql }) {
   }
 
   try {
-    // load invitations (same as you already had)
+    // ------------------------------------
+    // Resolve resumeId from fullName
+    // ------------------------------------
     if (!resumeId) {
-      // try to resolve resumeId from fullName if you need it for invitations query
       const { first: fFirst, last: fLast } = splitFullName(fullName);
       const resumeRow = await sql
-        .prepare(`SELECT id FROM resumes WHERE LOWER(TRIM(first_name)) = LOWER(TRIM(?)) AND LOWER(TRIM(last_name)) = LOWER(TRIM(?)) LIMIT 1`)
+        .prepare(`
+          SELECT id FROM resumes 
+          WHERE LOWER(TRIM(first_name)) = LOWER(TRIM(?))
+            AND LOWER(TRIM(last_name))  = LOWER(TRIM(?))
+          LIMIT 1
+        `)
         .bindParams(fFirst, fLast)
         .execute();
 
       if (resumeRow.rows.length === 0) {
-        return { success: true, data: [] }; // no resume found for that fullName
+        return { success: true, data: [] };
       }
-      // set resumeId for invitations query below
+
       payload.resumeId = resumeId = resumeRow.rows[0].id;
     }
 
-    const invs = await sql.prepare(`
+    // ------------------------------------
+    // Load Invitations
+    // ------------------------------------
+    const invs = await sql
+      .prepare(
+        `
       SELECT 
         mi.id AS invitation_id,
         mi.freelancer_name,
         mi.invite_status,
         mi.price,
         mi.deal,
+        mi.rfp_prop_id,
         i.issue_type,
         i.issue_key,
         i.issue_summary,
@@ -47,35 +58,40 @@ export default async function getinvitations({ payload, sql }) {
       JOIN issues i ON mi.issue_id = i.id
       WHERE mi.resume_id = ?
       ORDER BY mi.id DESC
-    `).bindParams(resumeId).execute();
+    `
+      )
+      .bindParams(resumeId)
+      .execute();
 
-    // Determine target name to search referrers/referees
-    let targetFirst = "", targetLast = "";
+    // ------------------------------------
+    // Determine target person for referrers/referees
+    // ------------------------------------
+    let targetFirst = "",
+      targetLast = "";
+
     if (fullName) {
       const s = splitFullName(fullName);
       targetFirst = s.first;
       targetLast = s.last;
     } else {
-      // fallback: use freelancer_name from first invitation row if available
       const sample = invs.rows[0];
-      if (sample && sample.freelancer_name) {
+      if (sample?.freelancer_name) {
         const s = splitFullName(sample.freelancer_name);
         targetFirst = s.first;
         targetLast = s.last;
-      } else {
-        // if still unknown, nothing to search
-        targetFirst = "";
-        targetLast = "";
       }
     }
 
-    // Normalize and query: who referred TARGET (others referred TARGET)
-    // rows where first_name/last_name == target -> referrer_* columns contain the who referred them
     const referrers = [];
     const referees = [];
 
+    // ------------------------------------
+    // Load Referrers + Referees
+    // ------------------------------------
     if (targetFirst || targetLast) {
-      const refsWhoReferredTarget = await sql.prepare(`
+      const refsWhoReferredTarget = await sql
+        .prepare(
+          `
         SELECT
           referrer_first_name AS ref_first,
           referrer_last_name  AS ref_last,
@@ -84,22 +100,25 @@ export default async function getinvitations({ payload, sql }) {
         FROM referrers
         WHERE LOWER(TRIM(first_name)) = LOWER(TRIM(?))
           AND LOWER(TRIM(last_name))  = LOWER(TRIM(?))
-      `).bindParams(targetFirst, targetLast).execute();
+      `
+        )
+        .bindParams(targetFirst, targetLast)
+        .execute();
 
       for (const r of refsWhoReferredTarget.rows) {
-        // only include non-empty referrer names
         if ((r.ref_first || "").trim()) {
           referrers.push({
             first_name: r.ref_first || "",
             last_name: r.ref_last || "",
             user_story: r.user_story || "",
-            created_at: r.created_at
+            created_at: r.created_at,
           });
         }
       }
 
-      // Query for who TARGET referred to (rows where referrer_first_name/referrer_last_name == target)
-      const refsTargetDidRefer = await sql.prepare(`
+      const refsTargetDidRefer = await sql
+        .prepare(
+          `
         SELECT
           first_name  AS refed_first,
           last_name   AS refed_last,
@@ -108,7 +127,10 @@ export default async function getinvitations({ payload, sql }) {
         FROM referrers
         WHERE LOWER(TRIM(referrer_first_name)) = LOWER(TRIM(?))
           AND LOWER(TRIM(referrer_last_name))  = LOWER(TRIM(?))
-      `).bindParams(targetFirst, targetLast).execute();
+      `
+        )
+        .bindParams(targetFirst, targetLast)
+        .execute();
 
       for (const r of refsTargetDidRefer.rows) {
         if ((r.refed_first || r.refed_last || "").trim()) {
@@ -116,16 +138,49 @@ export default async function getinvitations({ payload, sql }) {
             first_name: r.refed_first || "",
             last_name: r.refed_last || "",
             user_story: r.user_story || "",
-            created_at: r.created_at
+            created_at: r.created_at,
           });
         }
       }
     }
 
-    // build response per-invitation, but re-use the same referrers/referees arrays
-    const out = invs.rows.map(inv => {
+    // ------------------------------------
+    // Build output list
+    // ------------------------------------
+    const out = [];
+
+    for (const inv of invs.rows) {
       const invited = inv.invite_status === "yes";
-      return {
+
+      // ------------------------------------------------------------
+      // FIXED BLOCK: Load RFP + PROPOSALS from rfp_proposals table
+      // ------------------------------------------------------------
+      let rfp = [];
+      let proposals = [];
+
+      if (inv.rfp_prop_id) {
+        const rfpRows = await sql
+          .prepare(
+            `
+            SELECT rfp_message, proposals
+            FROM rfp_proposals
+            WHERE id = ?
+          `
+          )
+          .bindParams(inv.rfp_prop_id)
+          .execute();
+
+        if (rfpRows.rows.length > 0) {
+          const row = rfpRows.rows[0];
+
+          rfp = row.rfp_message ? row.rfp_message.split(/\r?\n/) : [];
+          proposals = row.proposals ? row.proposals.split(/\r?\n/) : [];
+        }
+      }
+
+      // ------------------------------------------------------------
+
+      out.push({
         id: inv.invitation_id,
         freelancer_name: inv.freelancer_name,
         invite_status: inv.invite_status,
@@ -134,13 +189,16 @@ export default async function getinvitations({ payload, sql }) {
         issue_summary: invited ? inv.issue_summary : null,
         price: invited ? inv.price : null,
         deal: invited ? inv.deal : null,
-        rfp: [],
-        proposals: [],
-        referrers,   // people who referred TARGET
-        referees,    // people TARGET referred to
-        created_at: inv.created_at
-      };
-    });
+
+        rfp,
+        proposals,
+
+        referrers,
+        referees,
+
+        created_at: inv.created_at,
+      });
+    }
 
     return { success: true, data: out };
   } catch (err) {
