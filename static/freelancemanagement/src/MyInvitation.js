@@ -102,6 +102,11 @@ export default function MyInvitation({ goBackMI }) {
         newProposal,
         price,
         priceUnit,
+
+        // NEW >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        referrers: Array.isArray(inv.referrers) ? inv.referrers : [],
+        referees: Array.isArray(inv.referees) ? inv.referees : []
+        // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
       });
 
       alert("Submitted.");
