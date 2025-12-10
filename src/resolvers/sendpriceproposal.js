@@ -1,123 +1,204 @@
 // src/resolvers/sendpriceproposal.js
 export default async function sendpriceproposal({ payload, sql }) {
+  console.log(">>> DEBUG: Incoming payload:", JSON.stringify(payload, null, 2));
+
   const {
     issueId,
     resumeId,
-    freelancerFullName,
     newProposal,
     price,
     priceUnit,
-    referToNames
+
+    referrers = [],
+    referees = []
   } = payload;
 
-  if (!issueId)  return { success: false, error: "Missing issueId" };
+  if (!issueId) return { success: false, error: "Missing issueId" };
   if (!resumeId) return { success: false, error: "Missing resumeId" };
+  if (!newProposal || !String(newProposal).trim())
+    return { success: false, error: "Empty proposal" };
 
   try {
-    // -------------------------------------------------------
-    // 1) Find invitation
-    // -------------------------------------------------------
-    const inviteRes = await sql
+    //
+    // ---------------------------------------------------
+    // 1) Find latest myinvitation row
+    // ---------------------------------------------------
+    console.log(">>> DEBUG: Fetching invitation for:", { issueId, resumeId });
+
+    const invRes = await sql
       .prepare(`
-        SELECT id, rfp_prop_id
+        SELECT id, rfp_prop_id, first_name, last_name
         FROM myinvitation
         WHERE issue_id = ? AND resume_id = ?
+        ORDER BY id DESC
+        LIMIT 1
       `)
       .bindParams(issueId, resumeId)
       .execute();
 
-    if (inviteRes.rows.length === 0)
-      return { success: false, error: "Invitation not found." };
+    console.log(">>> DEBUG: Invitation result:", invRes.rows);
 
-    const invite = inviteRes.rows[0];
+    if (invRes.rows.length === 0)
+      return { success: false, error: "Invitation not found" };
 
-    // -------------------------------------------------------
-    // 2) Find the latest RFP row for this invitation
-    // -------------------------------------------------------
-    const rfpRows = await sql
-      .prepare(`
-        SELECT id, proposals
-        FROM rfp_proposals
-        WHERE id = ?
-      `)
+    const invite = invRes.rows[0];
+
+    //
+    // ---------------------------------------------------
+    // 2) Enforce RFP exists
+    // ---------------------------------------------------
+    if (!invite.rfp_prop_id) {
+      console.log(">>> DEBUG: No RFP found on myinvitation row");
+      return {
+        success: false,
+        error: "No RFP exists; manager must send RFP first."
+      };
+    }
+
+    //
+    // ---------------------------------------------------
+    // 3) Load RFP row
+    // ---------------------------------------------------
+    console.log(">>> DEBUG: Loading RFP row for id:", invite.rfp_prop_id);
+
+    const rfpRes = await sql
+      .prepare(`SELECT id, proposals FROM rfp_proposals WHERE id = ?`)
       .bindParams(invite.rfp_prop_id)
       .execute();
 
-    if (rfpRows.rows.length === 0)
-      return { success: false, error: "No RFP exists yet. Manager must send RFP first." };
+    console.log(">>> DEBUG: RFP row:", rfpRes.rows);
 
-    const rfp = rfpRows.rows[0];
-    const rfpPropId = rfp.id;
+    if (rfpRes.rows.length === 0)
+      return { success: false, error: "RFP row missing" };
 
-    // -------------------------------------------------------
-    // 3) Append proposal to the existing proposals column
-    // -------------------------------------------------------
-    if (newProposal && newProposal.trim() !== "") {
+    const rfpRow = rfpRes.rows[0];
+    const trimmed = String(newProposal).trim();
+
+    //
+    // ---------------------------------------------------
+    // 4) Append proposal
+    // ---------------------------------------------------
+    console.log(">>> DEBUG: Appending proposal text");
+
+    if (!rfpRow.proposals || String(rfpRow.proposals).trim() === "") {
+      console.log(">>> DEBUG: Writing first proposal");
       await sql
-        .prepare(`
-          UPDATE rfp_proposals
-          SET proposals = COALESCE(proposals, '') || '\n' || ?
-          WHERE id = ?
-        `)
-        .bindParams(newProposal.trim(), rfpPropId)
+        .prepare(`UPDATE rfp_proposals SET proposals = ? WHERE id = ?`)
+        .bindParams(trimmed, rfpRow.id)
+        .execute();
+    } else {
+      console.log(">>> DEBUG: Appending proposal to existing");
+      await sql
+        .prepare(
+          `UPDATE rfp_proposals
+           SET proposals = CONCAT(COALESCE(proposals,''), '\n', ?)
+           WHERE id = ?`
+        )
+        .bindParams(trimmed, rfpRow.id)
         .execute();
     }
 
-    // -------------------------------------------------------
-    // 4) Update price + price_unit on myinvitation
-    // -------------------------------------------------------
+    //
+    // ---------------------------------------------------
+    // 5) Update price + price_unit
+    // ---------------------------------------------------
+    console.log(">>> DEBUG: Updating price:", { price, priceUnit });
+
     await sql
-      .prepare(`
-        UPDATE myinvitation
-        SET price = ?, price_unit = ?
-        WHERE id = ?
-      `)
+      .prepare(
+        `UPDATE myinvitation
+         SET price = ?, price_unit = ?
+         WHERE id = ?`
+      )
       .bindParams(price || null, priceUnit || null, invite.id)
       .execute();
 
-    // -------------------------------------------------------
-    // 5) REFER-TO LOGIC (names → resume_ids)
-    // -------------------------------------------------------
-    if (Array.isArray(referToNames)) {
-      for (const full of referToNames) {
-        if (!full) continue;
+    //
+    // ---------------------------------------------------
+    // 6) REFERRERS TABLE LOGIC
+    // ---------------------------------------------------
+    console.log(">>> DEBUG: Processing referees[]:", referees);
 
-        // find resume_id by full name
-        const findRes = await sql
-          .prepare(`
-            SELECT resume_id
-            FROM resumes
-            WHERE full_name = ?
-          `)
-          .bindParams(full.trim())
+    const referrerFirst = invite.first_name || "";
+    const referrerLast = invite.last_name || "";
+    const userStory = `${invite.issue_key || ""} ${invite.issue_summary || ""}`.trim();
+
+    if (Array.isArray(referees) && referees.length > 0) {
+      for (const full of referees) {
+        console.log(">>> DEBUG: Handling referee name:", full);
+
+        if (!full || !String(full).trim()) {
+          console.log(">>> DEBUG: Skipped empty name");
+          continue;
+        }
+
+        const clean = full.trim();
+        const parts = clean.split(/\s+/);
+        const first = parts.shift() || "";
+        const last = parts.join(" ") || "";
+
+        console.log(">>> DEBUG: Resolving referee:", { first, last });
+
+        const found = await sql
+          .prepare(
+            `SELECT id AS resume_id, first_name, last_name
+             FROM resumes
+             WHERE LOWER(TRIM(first_name)) = LOWER(TRIM(?))
+               AND LOWER(TRIM(last_name))  = LOWER(TRIM(?))
+             LIMIT 1`
+          )
+          .bindParams(first, last)
           .execute();
 
-        if (findRes.rows.length === 0) continue;
+        console.log(">>> DEBUG: Resume lookup result:", found.rows);
 
-        const refereeResumeId = findRes.rows[0].resume_id;
+        if (found.rows.length === 0) {
+          console.log(">>> DEBUG: No resume match found, skipping");
+          continue;
+        }
 
-        // insert mapping
+        const target = found.rows[0];
+
+        console.log(">>> DEBUG: Inserting into referrers table:", {
+          referee_resume_id: target.resume_id,
+          referee_name: `${target.first_name} ${target.last_name}`,
+          referrer: `${referrerFirst} ${referrerLast}`,
+          userStory
+        });
+
         await sql
-          .prepare(`
-            INSERT INTO refer_map (
-              referrer_resume_id,
-              referee_resume_id,
-              referrer_name,
-              referee_name
+          .prepare(
+            `
+            INSERT INTO referrers (
+              resume_id,
+              first_name,
+              last_name,
+              referrer_first_name,
+              referrer_last_name,
+              user_story
             )
-            VALUES (?, ?, ?, ?)
-          `)
+            VALUES (?, ?, ?, ?, ?, ?)
+            `
+          )
           .bindParams(
-            resumeId,
-            refereeResumeId,
-            freelancerFullName.trim(),
-            full.trim()
+            target.resume_id,
+            target.first_name || "",
+            target.last_name || "",
+            referrerFirst,
+            referrerLast,
+            userStory
           )
           .execute();
       }
     }
 
-    return { success: true, rfpPropId };
+    //
+    // ---------------------------------------------------
+    // DONE
+    // ---------------------------------------------------
+    console.log(">>> DEBUG: Finished sendpriceproposal OK");
+
+    return { success: true, rfpPropId: rfpRow.id };
   } catch (e) {
     console.error(">>> SQL ERROR (sendpriceproposal):", e);
     return { success: false, error: e.message || String(e) };

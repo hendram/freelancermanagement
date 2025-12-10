@@ -45,6 +45,7 @@ export default async function getinvitations({ payload, sql }) {
         `
       SELECT 
         mi.id AS invitation_id,
+        mi.issue_id,
         mi.freelancer_name,
         mi.invite_status,
         mi.price,
@@ -170,6 +171,8 @@ export default async function getinvitations({ payload, sql }) {
           .bindParams(inv.rfp_prop_id)
           .execute();
 
+          console.log("rfpRows", rfpRows);
+
         if (rfpRows.rows.length > 0) {
           const row = rfpRows.rows[0];
 
@@ -184,6 +187,8 @@ export default async function getinvitations({ payload, sql }) {
         id: inv.invitation_id,
         freelancer_name: inv.freelancer_name,
         invite_status: inv.invite_status,
+         issue_id: inv.issue_id,           // <-- add this
+         resume_id: resumeId,
         issue_type: invited ? inv.issue_type : null,
         issue_key: invited ? inv.issue_key : null,
         issue_summary: invited ? inv.issue_summary : null,

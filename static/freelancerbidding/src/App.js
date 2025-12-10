@@ -10,6 +10,8 @@ export default function App() {
   const errorRef = useRef("");
   const rfpOpenRef = useRef(null);
   const rfpMessageRef = useRef("");
+const proposalOpenRef = useRef(null);
+const proposalContentRef = useRef("");
 
   const [, forceUpdate] = useState({}); // to force rerender
 
@@ -132,9 +134,35 @@ export default function App() {
     forceUpdate({});
   };
 
-  const handleProposal = (c) => {
-    console.log("Proposal clicked for:", c.fullName);
-  };
+const handleProposal = async (c) => {
+  try {
+    // fetch all RFP proposals for this candidate
+    const res = await invoke("getrfppropmanager", {
+      issueId: issueRef.current?.key, // or .id depending on backend
+      resumeId: c.resume_id,
+    });
+
+    if (!res?.success) {
+      console.error("Failed fetching proposals:", res?.error);
+      return;
+    }
+
+    // Build combined text: RFP1, Proposal1, RFP2, Proposal2, ...
+    let combinedText = "";
+    res.data.forEach((item, idx) => {
+      const rfpLines = Array.isArray(item.rfp) ? item.rfp.join("\n") : item.rfp || "";
+      const proposalLines = Array.isArray(item.proposals) ? item.proposals.join("\n") : item.proposals || "";
+      combinedText += `RFP ${idx + 1}:\n${rfpLines}\nProposal ${idx + 1}:\n${proposalLines}\n\n`;
+    });
+
+    proposalContentRef.current = combinedText.trim();
+    proposalOpenRef.current = c.resume_id;
+    forceUpdate({});
+  } catch (err) {
+    console.error("Error fetching proposals:", err);
+  }
+};
+
 
   const handleDeal = async (c) => {
     try {
@@ -190,6 +218,31 @@ export default function App() {
             </button>
           )}
         </div>
+
+{proposalOpenRef.current === c.resume_id && (
+  <div className="fbopenproposal-div">
+    <textarea
+      className="fbproposaltextarea"
+      ref={(el) => (proposalContentRef.currentEl = el)}
+      defaultValue={proposalContentRef.current}
+      readOnly
+      rows={6}
+    />
+    <div className="fbproposal-closebtn">
+      <button
+        className="fbclose-btn"
+        onClick={() => {
+          proposalOpenRef.current = null;
+          proposalContentRef.current = "";
+          forceUpdate({});
+        }}
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
+
 
         {rfpOpenRef.current === c.resume_id && (
           <div className="fbopenrfp-div">

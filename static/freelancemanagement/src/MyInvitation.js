@@ -64,7 +64,8 @@ export default function MyInvitation({ goBackMI }) {
       const res = await invoke("getinvitations", {
         resumeId: resumeCheck.resumeId,
       });
-
+           console.log("res", res);   
+         
       if (res?.success && Array.isArray(res.data)) {
         invitationsRef.current = res.data;
         verifiedRef.current = true;
