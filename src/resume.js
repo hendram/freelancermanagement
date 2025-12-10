@@ -24,6 +24,7 @@ import searchskills from "./resolvers/searchskills.js";
 import invitation from "./resolvers/invitation.js";
 import checkresumebyemail from "./resolvers/checkresumebyemail";
 import getinvitations from "./resolvers/getinvitations";
+import sendpriceproposals from "./resolvers/sendpriceproposals";
 
 resolver.define("addresume", async (args) =>
   addresume({ ...args, sql })
@@ -92,6 +93,10 @@ resolver.define("checkresumebyemail", async (args) =>
 
 resolver.define("getinvitations", async (args) =>
   getinvitations({ ...args, sql })
+);
+
+resolver.define("sendpriceproposals", async (args) =>
+  sendpriceproposals({ ...args, sql })
 );
 
 export const handler = resolver.getDefinitions();
