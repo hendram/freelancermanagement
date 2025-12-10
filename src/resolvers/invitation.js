@@ -1,6 +1,7 @@
 // src/resolvers/invitation.js
 export default async function invitation({ payload, sql }) {
-  const {
+  // make inviteStatus mutable because RFP forces invite = "yes"
+  let {
     issueType,
     issueKey,
     issueSummary,
@@ -9,7 +10,7 @@ export default async function invitation({ payload, sql }) {
     inviteStatus,
     price,
     deal,
-    rfpMessage   // can be undefined or empty string
+    rfpMessage // manager-provided RFP (may be empty/undefined)
   } = payload;
 
   if (!freelancerName) return { success: false, error: "Freelancer name is required" };
@@ -17,10 +18,12 @@ export default async function invitation({ payload, sql }) {
   if (!issueSummary) return { success: false, error: "Issue summary is required" };
   if (!issueType) return { success: false, error: "Issue type is required" };
 
-  try {
-    let finalIssueId;
+  const hasRfp = rfpMessage && String(rfpMessage).trim() !== "";
+  if (hasRfp) inviteStatus = "yes"; // sending RFP implies invite
 
-    // ---------- CHECK ISSUE ----------
+  try {
+    // ---------- ensure issue exists ----------
+    let finalIssueId;
     const existingIssue = await sql
       .prepare(`SELECT id FROM issues WHERE issue_key = ?`)
       .bindParams(issueKey)
@@ -30,10 +33,7 @@ export default async function invitation({ payload, sql }) {
       finalIssueId = existingIssue.rows[0].id;
     } else {
       await sql
-        .prepare(`
-          INSERT INTO issues (issue_type, issue_key, issue_summary)
-          VALUES (?, ?, ?)
-        `)
+        .prepare(`INSERT INTO issues (issue_type, issue_key, issue_summary) VALUES (?, ?, ?)`)
         .bindParams(issueType, issueKey, issueSummary)
         .execute();
 
@@ -41,132 +41,129 @@ export default async function invitation({ payload, sql }) {
         .prepare(`SELECT id FROM issues WHERE issue_key = ?`)
         .bindParams(issueKey)
         .execute();
-
       finalIssueId = reselect.rows[0].id;
     }
 
-    // ---------- CHECK INVITATION (also get rfp_prop_id if exists) ----------
-    const existingInviteRes = await sql
+    // ---------- find latest invitation row for this issue+freelancer ----------
+    const latestInvRes = await sql
       .prepare(`
-        SELECT id, rfp_prop_id FROM myinvitation
-        WHERE issue_id = ? AND freelancer_name = ?
+        SELECT *
+        FROM myinvitation
+        WHERE issue_id = ? AND (resume_id = ? OR freelancer_name = ?)
+        ORDER BY id DESC
+        LIMIT 1
       `)
-      .bindParams(finalIssueId, freelancerName)
+      .bindParams(finalIssueId, resumeId || null, freelancerName)
       .execute();
 
-    const invite = existingInviteRes.rows[0];
+    const latestInvite = latestInvRes.rows[0] || null;
+    const finalPrice = inviteStatus === "yes" ? (price || null) : null;
+    const finalDeal = inviteStatus === "yes" ? (deal || null) : null;
 
-    const finalPrice = inviteStatus === "yes" ? price || null : null;
-    const finalDeal  = inviteStatus === "yes" ? deal  || null : null;
-
-    // ---------- If rfpMessage provided (non-empty), handle rfp_proposals table ----------
-    // We'll only insert/update rfp_proposals when rfpMessage is non-empty.
+    // ---------- handle RFP (manager) ----------
+    // If hasRfp: either append to latest rfp row (if proposals IS NULL) OR create new rfp_proposals + new myinvitation row.
     let createdRfpPropId = null;
-    const hasRfp = rfpMessage && String(rfpMessage).trim() !== "";
-
     if (hasRfp) {
-      if (invite && invite.rfp_prop_id) {
-        // update existing rfp_proposals row
-        await sql
-          .prepare(`
-            UPDATE rfp_proposals
-            SET rfp_message = ?
-            WHERE id = ?
-          `)
-          .bindParams(rfpMessage, invite.rfp_prop_id)
+      const rfpText = String(rfpMessage).trim();
+
+      if (latestInvite && latestInvite.rfp_prop_id) {
+        // load the rfp_proposals row pointed by latestInvite
+        const cur = await sql
+          .prepare(`SELECT id, rfp_message, proposals FROM rfp_proposals WHERE id = ?`)
+          .bindParams(latestInvite.rfp_prop_id)
           .execute();
 
-        createdRfpPropId = invite.rfp_prop_id;
-      } else {
-        // insert new rfp_proposals row then capture its id
-        await sql
-          .prepare(`
-            INSERT INTO rfp_proposals (rfp_message, proposals)
-            VALUES (?, ?)
-          `)
-          .bindParams(rfpMessage, null)
-          .execute();
-
-        // Forge SQL doesn't provide lastInsertId; select the last inserted id
-        // (ordering by id desc). This is the pragmatic approach used elsewhere.
-        const fetchRfpId = await sql
-          .prepare(`SELECT id FROM rfp_proposals ORDER BY id DESC LIMIT 1`)
-          .execute();
-
-        if (fetchRfpId.rows.length > 0) {
-          createdRfpPropId = fetchRfpId.rows[0].id;
-        } else {
-          // defensive: if we couldn't retrieve id, throw to surface issue
-          throw new Error("Failed to retrieve inserted rfp_proposals id");
-        }
-
-        // If we have an existing invite (but it lacked rfp_prop_id), attach it
-        if (invite) {
+        if (cur.rows.length === 0) {
+          // pointer broken: treat as no existing row -> create new rfp_proposals + myinvitation row
           await sql
-            .prepare(`UPDATE myinvitation SET rfp_prop_id = ? WHERE id = ?`)
-            .bindParams(createdRfpPropId, invite.id)
+            .prepare(`INSERT INTO rfp_proposals (rfp_message, proposals) VALUES (?, NULL)`)
+            .bindParams(rfpText)
             .execute();
+
+          const fetchNew = await sql.prepare(`SELECT id FROM rfp_proposals ORDER BY id DESC LIMIT 1`).execute();
+          createdRfpPropId = fetchNew.rows[0].id;
+
+          // create a new myinvitation row referencing this new rfp row
+          await sql
+            .prepare(`
+              INSERT INTO myinvitation (issue_id, resume_id, freelancer_name, invite_status, price, deal, rfp_prop_id)
+              VALUES (?, ?, ?, ?, ?, ?, ?)
+            `)
+            .bindParams(finalIssueId, resumeId || null, freelancerName, "yes", finalPrice, finalDeal, createdRfpPropId)
+            .execute();
+        } else {
+          const row = cur.rows[0];
+          // If latest row has NO proposals yet -> concatenate RFP into that row's rfp_message (no new invitation)
+          if (row.proposals === null) {
+            const newRfpMsg = row.rfp_message
+              ? row.rfp_message + "\n---\n" + rfpText
+              : rfpText;
+
+            await sql
+              .prepare(`UPDATE rfp_proposals SET rfp_message = ? WHERE id = ?`)
+              .bindParams(newRfpMsg, row.id)
+              .execute();
+
+            createdRfpPropId = row.id;
+            // keep invitation rows as-is (they already reference this row)
+          } else {
+            // latest rfp row already has proposals -> create new rfp_proposals row + new myinvitation row
+            await sql
+              .prepare(`INSERT INTO rfp_proposals (rfp_message, proposals) VALUES (?, NULL)`)
+              .bindParams(rfpText)
+              .execute();
+
+            const fetchNew = await sql.prepare(`SELECT id FROM rfp_proposals ORDER BY id DESC LIMIT 1`).execute();
+            createdRfpPropId = fetchNew.rows[0].id;
+
+            await sql
+              .prepare(`
+                INSERT INTO myinvitation (issue_id, resume_id, freelancer_name, invite_status, price, deal, rfp_prop_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+              `)
+              .bindParams(finalIssueId, resumeId || null, freelancerName, "yes", finalPrice, finalDeal, createdRfpPropId)
+              .execute();
+          }
         }
-      }
-    }
+      } else {
+        // No latest invite or no pointer: create first rfp_proposals row and create new myinvitation row referencing it
+        await sql
+          .prepare(`INSERT INTO rfp_proposals (rfp_message, proposals) VALUES (?, NULL)`)
+          .bindParams(rfpText)
+          .execute();
 
-    // ---------- UPDATE EXISTING INVITATION ----------
-    if (invite) {
-      // update invite_status/price/deal always
-      await sql
-        .prepare(`
-          UPDATE myinvitation
-          SET invite_status = ?, price = ?, deal = ?
-          WHERE id = ?
-        `)
-        .bindParams(inviteStatus, finalPrice, finalDeal, invite.id)
-        .execute();
+        const fetchNew = await sql.prepare(`SELECT id FROM rfp_proposals ORDER BY id DESC LIMIT 1`).execute();
+        createdRfpPropId = fetchNew.rows[0].id;
 
-      // if we created a new rfp_proposals row and invite didn't previously have one,
-      // we already attached it above. No further action needed.
-    }
-
-    // ---------- INSERT NEW INVITATION ----------
-    else {
-      if (hasRfp && createdRfpPropId) {
-        // insert including rfp_prop_id
         await sql
           .prepare(`
-            INSERT INTO myinvitation
-              (issue_id, resume_id, freelancer_name, invite_status, price, deal, rfp_prop_id)
+            INSERT INTO myinvitation (issue_id, resume_id, freelancer_name, invite_status, price, deal, rfp_prop_id)
             VALUES (?, ?, ?, ?, ?, ?, ?)
           `)
-          .bindParams(
-            finalIssueId,
-            resumeId || null,
-            freelancerName,
-            inviteStatus,
-            finalPrice,
-            finalDeal,
-            createdRfpPropId
-          )
+          .bindParams(finalIssueId, resumeId || null, freelancerName, "yes", finalPrice, finalDeal, createdRfpPropId)
+          .execute();
+      }
+    } // end hasRfp
+
+    // ---------- manager did not send RFP: just update or insert invitation row ----------
+    if (!hasRfp) {
+      if (latestInvite) {
+        await sql
+          .prepare(`UPDATE myinvitation SET invite_status = ?, price = ?, deal = ? WHERE id = ?`)
+          .bindParams(inviteStatus, finalPrice, finalDeal, latestInvite.id)
           .execute();
       } else {
-        // insert without rfp_prop_id
         await sql
           .prepare(`
-            INSERT INTO myinvitation
-              (issue_id, resume_id, freelancer_name, invite_status, price, deal)
+            INSERT INTO myinvitation (issue_id, resume_id, freelancer_name, invite_status, price, deal)
             VALUES (?, ?, ?, ?, ?, ?)
           `)
-          .bindParams(
-            finalIssueId,
-            resumeId || null,
-            freelancerName,
-            inviteStatus,
-            finalPrice,
-            finalDeal
-          )
+          .bindParams(finalIssueId, resumeId || null, freelancerName, inviteStatus, finalPrice, finalDeal)
           .execute();
       }
     }
 
-    return { success: true, issueId: finalIssueId };
+    return { success: true, issueId: finalIssueId, createdRfpPropId: createdRfpPropId || null };
   } catch (e) {
     console.error(">>> SQL ERROR (invitation):", e);
     return { success: false, error: e.message || String(e) };

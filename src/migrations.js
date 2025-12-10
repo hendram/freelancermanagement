@@ -1,174 +1,176 @@
-// src/resolvers/invitation.js
-export default async function invitation({ payload, sql }) {
-  const {
-    issueType,
-    issueKey,
-    issueSummary,
-    freelancerName,
-    resumeId,
-    inviteStatus,
-    price,
-    deal,
-    rfpMessage   // can be undefined or empty string
-  } = payload;
+import { migrationRunner } from '@forge/sql';
 
-  if (!freelancerName) return { success: false, error: "Freelancer name is required" };
-  if (!issueKey) return { success: false, error: "Issue key is required" };
-  if (!issueSummary) return { success: false, error: "Issue summary is required" };
-  if (!issueType) return { success: false, error: "Issue type is required" };
+export const CREATE_RESUME_TABLE = `
+  CREATE TABLE IF NOT EXISTS resumes (
+  id VARCHAR(64) PRIMARY KEY,
+  first_name TEXT,
+  last_name TEXT,
+  date_of_birth TEXT,
+  place_of_birth TEXT,
+  address TEXT,
+  religion TEXT,
+  contact TEXT,
+  email TEXT,
+  nationality TEXT,
+  github TEXT,
+  skills TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+`;
 
+const CREATE_EXPERIENCE_TABLE_ONLY = `
+CREATE TABLE IF NOT EXISTS experiences (
+  id VARCHAR(64) PRIMARY KEY,
+  resume_id VARCHAR(64) NOT NULL,
+  company TEXT,
+  position TEXT,
+  working_period TEXT,
+  job_description TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_resume FOREIGN KEY (resume_id) REFERENCES resumes(id) ON DELETE CASCADE
+);
+`;
+
+const INDEX_EXPERIENCES = `
+CREATE INDEX IF NOT EXISTS idx_experiences_resume_id ON experiences(resume_id);
+`;
+
+const CREATE_REFERRER_TABLE_ONLY = `
+CREATE TABLE IF NOT EXISTS referrers (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  resume_id VARCHAR(64) NOT NULL,
+  first_name TEXT,
+  last_name TEXT,
+  referrer_first_name TEXT,
+  referrer_last_name TEXT,
+  user_story TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_referrer_resume FOREIGN KEY (resume_id) REFERENCES resumes(id) ON DELETE CASCADE
+);
+`;
+
+const INDEX_REFERRERS = `
+CREATE INDEX IF NOT EXISTS idx_referrers_resume_id ON referrers(resume_id);
+`;
+
+const CREATE_REPUTATION_CATALOG_TABLE = `
+CREATE TABLE IF NOT EXISTS reputationcatalog (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  range_lowerpositive INTEGER,
+  range_upperpositive INTEGER,
+  positive_id INTEGER,
+  positive_definition TEXT,
+  positive_value INTEGER,
+  range_lowernegative INTEGER,
+  range_uppernegative INTEGER,
+  negative_id INTEGER,
+  negative_definition TEXT,
+  negative_value INTEGER,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+`;
+
+const INDEX_REPUTATION_CATALOG = `
+CREATE INDEX IF NOT EXISTS idx_reputationcatalog_id ON reputationcatalog(id);
+`;
+
+const CREATE_ASSIGN_REPUTATION_TABLE = `
+CREATE TABLE IF NOT EXISTS assignreputation (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  resume_id VARCHAR(64),
+  first_name TEXT,
+  last_name TEXT,
+  total_reputation_value INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_assignreputation_resume FOREIGN KEY (resume_id) REFERENCES resumes(id) ON DELETE SET NULL
+);
+`;
+
+const INDEX_ASSIGN_REPUTATION = `
+CREATE INDEX IF NOT EXISTS idx_assignreputation_resume_id ON assignreputation(resume_id);
+`;
+
+const CREATE_RFP_PROPOSAL_TABLE = `
+CREATE TABLE IF NOT EXISTS rfp_proposals (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  rfp_message TEXT,
+  proposals TEXT
+);
+`;
+
+const CREATE_ISSUE_TABLE = `
+CREATE TABLE IF NOT EXISTS issues (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  issue_type TEXT NOT NULL,
+  issue_key VARCHAR(64) UNIQUE NOT NULL,
+  issue_summary TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+`;
+
+const INDEX_ISSUE_KEY = `
+CREATE INDEX IF NOT EXISTS idx_issue_key ON issues(issue_key);
+`;
+
+const CREATE_MY_INVITATION_TABLE = `
+CREATE TABLE IF NOT EXISTS myinvitation (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  issue_id INT NOT NULL,
+  resume_id VARCHAR(64),
+  freelancer_name TEXT NOT NULL,
+  invite_status TEXT,
+  rfp_prop_id INT,
+  price FLOAT,
+  deal TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_myinvitation_resume FOREIGN KEY (resume_id) REFERENCES resumes(id) ON DELETE CASCADE,
+  CONSTRAINT fk_rfpproposals FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE,
+  CONSTRAINT fk_issues FOREIGN KEY (rfp_prop_id) REFERENCES rfp_proposals(id) ON DELETE CASCADE
+);
+`;
+
+const INDEX_MY_INVITATION = `
+CREATE INDEX IF NOT EXISTS idx_myinvitation_table_id ON myinvitation(resume_id);
+`;
+
+const INDEX_MY_INVITATION_ISSUE_ID = `
+CREATE INDEX IF NOT EXISTS idx_myinvitation_issue_id ON myinvitation(issue_id);
+`;
+
+const migrations = migrationRunner
+  .enqueue('v_create_resumes', CREATE_RESUME_TABLE)
+  .enqueue('v_create_experiences', CREATE_EXPERIENCE_TABLE_ONLY)
+  .enqueue('v_index_experiences', INDEX_EXPERIENCES)
+  .enqueue('v_create_referrers', CREATE_REFERRER_TABLE_ONLY)
+  .enqueue('v_index_referrers', INDEX_REFERRERS)
+  .enqueue('v_create_reputationcatalog', CREATE_REPUTATION_CATALOG_TABLE)
+  .enqueue('v_index_reputationcatalog', INDEX_REPUTATION_CATALOG)
+  .enqueue('v_create_assignreputation', CREATE_ASSIGN_REPUTATION_TABLE)
+  .enqueue('v_index_assignreputation', INDEX_ASSIGN_REPUTATION)
+  .enqueue('v_create_rfpproposaltable', CREATE_RFP_PROPOSAL_TABLE)
+  .enqueue('v_create_issuetable', CREATE_ISSUE_TABLE)
+  .enqueue('v_index_issuekey', INDEX_ISSUE_KEY)
+  .enqueue('v_create_myinvitationtable', CREATE_MY_INVITATION_TABLE)
+  .enqueue('v_index_myinvitationtable', INDEX_MY_INVITATION)
+  .enqueue('v_index_myinvitationtableissue', INDEX_MY_INVITATION_ISSUE_ID);
+
+export const runSchemaMigration = async () => {
   try {
-    let finalIssueId;
-
-    // ---------- CHECK ISSUE ----------
-    const existingIssue = await sql
-      .prepare(`SELECT id FROM issues WHERE issue_key = ?`)
-      .bindParams(issueKey)
-      .execute();
-
-    if (existingIssue.rows.length > 0) {
-      finalIssueId = existingIssue.rows[0].id;
-    } else {
-      await sql
-        .prepare(`
-          INSERT INTO issues (issue_type, issue_key, issue_summary)
-          VALUES (?, ?, ?)
-        `)
-        .bindParams(issueType, issueKey, issueSummary)
-        .execute();
-
-      const reselect = await sql
-        .prepare(`SELECT id FROM issues WHERE issue_key = ?`)
-        .bindParams(issueKey)
-        .execute();
-
-      finalIssueId = reselect.rows[0].id;
-    }
-
-    // ---------- CHECK INVITATION (also get rfp_prop_id if exists) ----------
-    const existingInviteRes = await sql
-      .prepare(`
-        SELECT id, rfp_prop_id FROM myinvitation
-        WHERE issue_id = ? AND freelancer_name = ?
-      `)
-      .bindParams(finalIssueId, freelancerName)
-      .execute();
-
-    const invite = existingInviteRes.rows[0];
-
-    const finalPrice = inviteStatus === "yes" ? price || null : null;
-    const finalDeal  = inviteStatus === "yes" ? deal  || null : null;
-
-    // ---------- If rfpMessage provided (non-empty), handle rfp_proposals table ----------
-    // We'll only insert/update rfp_proposals when rfpMessage is non-empty.
-    let createdRfpPropId = null;
-    const hasRfp = rfpMessage && String(rfpMessage).trim() !== "";
-
-    if (hasRfp) {
-      if (invite && invite.rfp_prop_id) {
-        // update existing rfp_proposals row
-        await sql
-          .prepare(`
-            UPDATE rfp_proposals
-            SET rfp_message = ?
-            WHERE id = ?
-          `)
-          .bindParams(rfpMessage, invite.rfp_prop_id)
-          .execute();
-
-        createdRfpPropId = invite.rfp_prop_id;
-      } else {
-        // insert new rfp_proposals row then capture its id
-        await sql
-          .prepare(`
-            INSERT INTO rfp_proposals (rfp_message, proposals)
-            VALUES (?, ?)
-          `)
-          .bindParams(rfpMessage, null)
-          .execute();
-
-        // Forge SQL doesn't provide lastInsertId; select the last inserted id
-        // (ordering by id desc). This is the pragmatic approach used elsewhere.
-        const fetchRfpId = await sql
-          .prepare(`SELECT id FROM rfp_proposals ORDER BY id DESC LIMIT 1`)
-          .execute();
-
-        if (fetchRfpId.rows.length > 0) {
-          createdRfpPropId = fetchRfpId.rows[0].id;
-        } else {
-          // defensive: if we couldn't retrieve id, throw to surface issue
-          throw new Error("Failed to retrieve inserted rfp_proposals id");
-        }
-
-        // If we have an existing invite (but it lacked rfp_prop_id), attach it
-        if (invite) {
-          await sql
-            .prepare(`UPDATE myinvitation SET rfp_prop_id = ? WHERE id = ?`)
-            .bindParams(createdRfpPropId, invite.id)
-            .execute();
-        }
-      }
-    }
-
-    // ---------- UPDATE EXISTING INVITATION ----------
-    if (invite) {
-      // update invite_status/price/deal always
-      await sql
-        .prepare(`
-          UPDATE myinvitation
-          SET invite_status = ?, price = ?, deal = ?
-          WHERE id = ?
-        `)
-        .bindParams(inviteStatus, finalPrice, finalDeal, invite.id)
-        .execute();
-
-      // if we created a new rfp_proposals row and invite didn't previously have one,
-      // we already attached it above. No further action needed.
-    }
-
-    // ---------- INSERT NEW INVITATION ----------
-    else {
-      if (hasRfp && createdRfpPropId) {
-        // insert including rfp_prop_id
-        await sql
-          .prepare(`
-            INSERT INTO myinvitation
-              (issue_id, resume_id, freelancer_name, invite_status, price, deal, rfp_prop_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-          `)
-          .bindParams(
-            finalIssueId,
-            resumeId || null,
-            freelancerName,
-            inviteStatus,
-            finalPrice,
-            finalDeal,
-            createdRfpPropId
-          )
-          .execute();
-      } else {
-        // insert without rfp_prop_id
-        await sql
-          .prepare(`
-            INSERT INTO myinvitation
-              (issue_id, resume_id, freelancer_name, invite_status, price, deal)
-            VALUES (?, ?, ?, ?, ?, ?)
-          `)
-          .bindParams(
-            finalIssueId,
-            resumeId || null,
-            freelancerName,
-            inviteStatus,
-            finalPrice,
-            finalDeal
-          )
-          .execute();
-      }
-    }
-
-    return { success: true, issueId: finalIssueId };
+    await migrations.run();
+    return getHttpResponse(200, 'Migrations successfully executed');
   } catch (e) {
-    console.error(">>> SQL ERROR (invitation):", e);
-    return { success: false, error: e.message || String(e) };
+    console.error('Migration error:', e);
+    return getHttpResponse(500, 'Error while executing migrations');
   }
+};
+
+function getHttpResponse(statusCode, body) {
+  return {
+    headers: {
+      'Content-Type': ['application/json']
+    },
+    statusCode,
+    statusText: statusCode === 200 ? 'Ok' : 'Bad Request',
+    body,
+  };
 }
