@@ -25,6 +25,7 @@ import invitation from "./resolvers/invitation.js";
 import checkresumebyemail from "./resolvers/checkresumebyemail";
 import getinvitations from "./resolvers/getinvitations";
 import sendpriceproposal from "./resolvers/sendpriceproposal";
+import getrfppropmanager from "./resolvers/getrfppropmanager";
 
 resolver.define("addresume", async (args) =>
   addresume({ ...args, sql })
@@ -97,6 +98,10 @@ resolver.define("getinvitations", async (args) =>
 
 resolver.define("sendpriceproposal", async (args) =>
   sendpriceproposal({ ...args, sql })
+);
+
+resolver.define("getrfppropmanager", async (args) =>
+  getrfppropmanager({ ...args, sql })
 );
 
 export const handler = resolver.getDefinitions();
