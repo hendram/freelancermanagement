@@ -21,7 +21,7 @@ export default async function getinvitations({ payload, sql }) {
     // ------------------------------------
     // Resolve resumeId from fullName
     // ------------------------------------
-    if (!resumeId) {
+    if (!resumeId && fullName) {
       const { first: fFirst, last: fLast } = splitFullName(fullName);
       console.log("🔎 splitFullName(fullName) =", { fFirst, fLast });
 
@@ -52,146 +52,46 @@ export default async function getinvitations({ payload, sql }) {
     const invs = await sql
       .prepare(
         `
-      SELECT 
-        mi.id AS invitation_id,
-        mi.issue_id,
-        mi.resume_id,
-        mi.first_name,
-        mi.last_name,
-        mi.invite_status,
-        mi.price,
-        mi.deal,
-        mi.rfp_prop_id,
-        mi.created_at,
-        i.issue_type,
-        i.issue_key,
-        i.issue_summary
-      FROM myinvitation mi
-      JOIN issues i ON mi.issue_id = i.id
-      WHERE mi.resume_id = ?
-      ORDER BY mi.id DESC
-    `
+        SELECT 
+          mi.id AS invitation_id,
+          mi.issue_id,
+          mi.resume_id,
+          mi.first_name,
+          mi.last_name,
+          mi.invite_status,
+          mi.price,
+          mi.deal,
+          mi.rfp_prop_id,
+          mi.created_at,
+          i.issue_type,
+          i.issue_key,
+          i.issue_summary
+        FROM myinvitation mi
+        JOIN issues i ON mi.issue_id = i.id
+        WHERE mi.resume_id = ?
+        ORDER BY mi.id DESC
+      `
       )
       .bindParams(payload.resumeId)
       .execute();
 
     console.log("📦 Invitations loaded:", invs.rows.length);
 
-    // ------------------------------------
-    // TARGET PERSON NAME (the one searched)
-    // ------------------------------------
-    let targetFirst = "";
-    let targetLast = "";
-
-    if (fullName) {
-      const s = splitFullName(fullName);
-      targetFirst = s.first;
-      targetLast = s.last;
-      console.log("🎯 target via fullName =", { targetFirst, targetLast });
-    } else {
-      const sample = invs.rows[0];
-      if (sample?.first_name) {
-        const s = splitFullName(`${sample.first_name} ${sample.last_name || ""}`);
-        targetFirst = s.first;
-        targetLast = s.last;
-      }
-      console.log("🎯 target via sample invitation =", {
-        targetFirst,
-        targetLast
-      });
-    }
-
-    const referrers = [];
-    const referees = [];
-
-    if (targetFirst || targetLast) {
-      // --------------------------------------------
-      // People who referred THIS TARGET PERSON
-      // --------------------------------------------
-      const refsWhoReferredTarget = await sql
-        .prepare(
-          `
-        SELECT
-          referrer_first_name AS ref_first,
-          referrer_last_name  AS ref_last,
-          issue_key,
-          issue_summary,
-          created_at
-        FROM referrers
-        WHERE LOWER(TRIM(first_name)) = LOWER(TRIM(?))
-          AND LOWER(TRIM(last_name))  = LOWER(TRIM(?))
-      `
-        )
-        .bindParams(targetFirst, targetLast)
-        .execute();
-
-      console.log("📘 refsWhoReferredTarget =", refsWhoReferredTarget.rows.length);
-
-      for (const r of refsWhoReferredTarget.rows) {
-        referrers.push({
-          referrer_first_name: r.ref_first || "",
-          referrer_last_name: r.ref_last || "",
-          issue_key: r.issue_key || "",
-          issue_summary: r.issue_summary || "",
-          isFixed: true,
-          created_at: r.created_at
-        });
-      }
-
-      // --------------------------------------------
-      // TARGET PERSON referred OTHER people
-      // --------------------------------------------
-      const refsTargetDidRefer = await sql
-        .prepare(
-          `
-        SELECT
-          first_name  AS refed_first,
-          last_name   AS refed_last,
-          issue_key,
-          issue_summary,
-          created_at
-        FROM referrers
-        WHERE LOWER(TRIM(referrer_first_name)) = LOWER(TRIM(?))
-          AND LOWER(TRIM(referrer_last_name))  = LOWER(TRIM(?))
-      `
-        )
-        .bindParams(targetFirst, targetLast)
-        .execute();
-
-      console.log("📙 refsTargetDidRefer =", refsTargetDidRefer.rows.length);
-
-      for (const r of refsTargetDidRefer.rows) {
-        referees.push({
-          referrer_first_name: r.refed_first || "",
-          referrer_last_name: r.refed_last || "",
-          issue_key: r.issue_key || "",
-          issue_summary: r.issue_summary || "",
-          isFixed: true,
-          created_at: r.created_at
-        });
-      }
-    }
-
-    // ------------------------------------
-    // Build output list
-    // ------------------------------------
     const out = [];
 
     for (const inv of invs.rows) {
+      console.log(`\n--- Processing invitation ${inv.invitation_id} ---`);
+
       const invited = inv.invite_status === "yes";
 
+      // ------------------------------------
+      // RFP / proposals
+      // ------------------------------------
       let rfp = [];
       let proposals = [];
-
       if (inv.rfp_prop_id) {
         const rfpRows = await sql
-          .prepare(
-            `
-            SELECT rfp_message, proposals
-            FROM rfp_proposals
-            WHERE id = ?
-          `
-          )
+          .prepare(`SELECT rfp_message, proposals FROM rfp_proposals WHERE id = ?`)
           .bindParams(inv.rfp_prop_id)
           .execute();
 
@@ -204,6 +104,71 @@ export default async function getinvitations({ payload, sql }) {
         }
       }
 
+      // ------------------------------------
+      // Referrers per invitation
+      // ------------------------------------
+      const referrers = [];
+      const refsWhoReferred = await sql
+        .prepare(`
+          SELECT 
+            referrer_first_name AS ref_first,
+            referrer_last_name  AS ref_last,
+            issue_key,
+            issue_summary,
+            created_at
+          FROM referrers
+          WHERE resume_id = ? AND issue_key = ?
+        `)
+        .bindParams(inv.resume_id, inv.issue_key)
+        .execute();
+
+      console.log(`📘 refsWhoReferred for invitation ${inv.invitation_id}:`, refsWhoReferred.rows.length);
+      for (const r of refsWhoReferred.rows) {
+        referrers.push({
+          referrer_first_name: r.ref_first || "",
+          referrer_last_name: r.ref_last || "",
+          issue_key: r.issue_key || "",
+          issue_summary: r.issue_summary || "",
+          isFixed: true,
+          created_at: r.created_at
+        });
+      }
+
+      // ------------------------------------
+      // Referees per invitation
+      // ------------------------------------
+      const referees = [];
+      const refsTargetDidRefer = await sql
+        .prepare(`
+          SELECT
+            first_name AS refed_first,
+            last_name AS refed_last,
+            issue_key,
+            issue_summary,
+            created_at
+          FROM referrers
+          WHERE LOWER(TRIM(referrer_first_name)) = LOWER(TRIM(?))
+            AND LOWER(TRIM(referrer_last_name))  = LOWER(TRIM(?))
+            AND issue_key = ?
+        `)
+        .bindParams(inv.first_name, inv.last_name, inv.issue_key)
+        .execute();
+
+      console.log(`📙 refsTargetDidRefer for invitation ${inv.invitation_id}:`, refsTargetDidRefer.rows.length);
+      for (const r of refsTargetDidRefer.rows) {
+        referees.push({
+          referrer_first_name: r.refed_first || "",
+          referrer_last_name: r.refed_last || "",
+          issue_key: r.issue_key || "",
+          issue_summary: r.issue_summary || "",
+          isFixed: true,
+          created_at: r.created_at
+        });
+      }
+
+      // ------------------------------------
+      // Build invitation record
+      // ------------------------------------
       const record = {
         id: inv.invitation_id,
         resume_id: inv.resume_id,
@@ -231,13 +196,11 @@ export default async function getinvitations({ payload, sql }) {
       };
 
       console.log("📤 Output invitation record =", record);
-
       out.push(record);
     }
 
     console.log("✅ FINAL OUTPUT count =", out.length);
     return { success: true, data: out };
-
   } catch (err) {
     console.error("❌ ERROR getinvitations:", err);
     return { success: false, error: err.message || String(err) };

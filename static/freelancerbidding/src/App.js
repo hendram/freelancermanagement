@@ -13,6 +13,8 @@ export default function App() {
   const proposalOpenRef = useRef(null);
   const proposalContentRef = useRef("");
 
+  const priceRefs = useRef({});
+
   const [, forceUpdate] = useState({}); // force rerender
 
   // -----------------------------
@@ -62,7 +64,7 @@ export default function App() {
     forceUpdate({});
     try {
       const res = await invoke("searchskills", { skills: skillsInput });
-     console.log("res", res);
+      console.log("res", res);
       if (!res?.success) {
         errorRef.current = res?.error || "Search failed.";
       } else {
@@ -78,7 +80,7 @@ export default function App() {
   };
 
   // -----------------------------
-  // 3. Build payload  (FIXED)
+  // 3. Build payload
   // -----------------------------
   const buildPayload = (candidate, extra = {}) => ({
     first_name: candidate.first_name,
@@ -97,8 +99,9 @@ export default function App() {
   // -----------------------------
   const handleInvite = async (c) => {
     try {
-      await invoke("invitation", buildPayload(c, { inviteStatus: "yes" }));
-      console.log("Invite sent:", c.first_name, c.last_name);
+      const price = priceRefs.current[c.resume_id]?.value.trim() || "";
+      await invoke("invitation", buildPayload(c, { inviteStatus: "yes", price }));
+      console.log("Invite sent with price:", price, c.first_name, c.last_name);
     } catch (err) {
       console.error(err);
     }
@@ -112,16 +115,18 @@ export default function App() {
 
   const handleRfpSubmit = async (c) => {
     try {
+      const price = priceRefs.current[c.resume_id]?.value.trim() || "";
       await invoke(
         "invitation",
         buildPayload(c, {
           inviteStatus: "yes",
           rfpMessage: rfpMessageRef.current,
+          price,
         })
       );
       rfpOpenRef.current = null;
       rfpMessageRef.current = "";
-      console.log("RFP sent:", c.first_name, c.last_name);
+      console.log("RFP sent with price:", price, c.first_name, c.last_name);
       forceUpdate({});
     } catch (err) {
       console.error(err);
@@ -176,8 +181,9 @@ export default function App() {
 
   const handleDeal = async (c) => {
     try {
-      await invoke("invitation", buildPayload(c, { deal: "yes" }));
-      console.log("Deal completed with:", c.first_name, c.last_name);
+      const price = priceRefs.current[c.resume_id]?.value.trim() || "";
+      await invoke("invitation", buildPayload(c, { deal: "yes", price }));
+      console.log("Deal completed with price:", price, c.first_name, c.last_name);
     } catch (err) {
       console.error(err);
     }
@@ -200,6 +206,18 @@ export default function App() {
       </div>
 
       <div className="fbbuttons-container">
+        <div className="fbprice-div">
+          <label className="fbprice-label">Price:</label>
+          <input
+            type="text"
+            className="fbprice-input"
+            defaultValue={c.price || ""}
+            ref={(el) => (priceRefs.current[c.resume_id] = el)}
+            placeholder="Enter price"
+          />
+          <span className="fbcurrency-span">USD</span>
+        </div>
+
         <button className="fbinvite-btn" onClick={() => handleInvite(c)}>
           Invite
         </button>

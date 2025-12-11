@@ -158,31 +158,6 @@ export default function MyInvitation({ goBackMI }) {
 
       {invitationsRef.current.map((inv) => {
 
-  const referrers = Array.isArray(inv.referrers)
-      ? inv.referrers.map(r => `${r.referrer_first_name} ${r.referrer_last_name}`)
-      : [];
-
-   const referees = Array.isArray(inv.referees)
-      ? inv.referees.map(r => `${r.referrer_first_name} ${r.referrer_last_name}`)
-      : [];
-
- // Push into interleaved arrays (one by one)
-const referrerInterleaved = [];
-const maxReferrer = referrersArr.length;
-for (let j = 0; j < maxReferrer; j++) {
-  if (referrersArr[j]) referrerInterleaved.push(referrersArr[j]);
-}
-
-const refereeInterleaved = [];
-const maxReferee = refereesArr.length;
-for (let j = 0; j < maxReferee; j++) {
-  if (refereesArr[j]) refereeInterleaved.push(refereesArr[j]);
-}
-
-// Now you can join them into strings for textareas if needed
-const combinedReferrersText = referrerInterleaved.join("\n");
-const combinedRefereesText = refereeInterleaved.join("\n");
-
 
         const rfpArr = Array.isArray(inv.rfp) ? inv.rfp : [];
         const proposalsArr = Array.isArray(inv.proposals) ? inv.proposals : [];
@@ -212,13 +187,32 @@ const combinedRefereesText = refereeInterleaved.join("\n");
             </div>
 
         <div className="refer-block">
-            <div className="referrer-div">
-            <span className="referrer-span"> Refer By: </span> {combinedReferrersText}
-              </div>
-              <div className="referree-div">
-                <span className="referree-span">Refer To: </span> {combinedRefereesText}
-              </div>
-           </div>    
+          <div className="referrer-div">
+  <span className="referrer-span">Refer By:</span>
+  {Array.isArray(inv.referrers) && inv.referrers.length > 0 ? (
+    inv.referrers.map((r, idx) => (
+      <div key={idx}>
+        {r.referrer_first_name} {r.referrer_last_name}
+      </div>
+    ))
+  ) : (
+    <div>—</div>
+  )}
+</div>
+
+<div className="referree-div">
+  <span className="referree-span">Refer To:</span>
+  {Array.isArray(inv.referees) && inv.referees.length > 0 ? (
+    inv.referees.map((r, idx) => (
+      <div key={idx}>
+        {r.referrer_first_name} {r.referrer_last_name}
+      </div>
+    ))
+  ) : (
+    <div>—</div>
+  )}
+</div>
+ </div>    
 
             <div className="rfp-block">
               <label className="rfp-label">RFP + Your Proposals:</label>

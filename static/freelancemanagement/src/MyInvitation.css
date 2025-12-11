@@ -125,27 +125,3 @@
 .back-btn:hover {
   background-color: #115293;
 }
-
-/* --- HIDE ALL OLD COMPONENT SECTIONS COMPLETELY --- */
-
-.issue-container,
-.issuetype-div,
-.issuekey-div,
-.issuesummary-div,
-.refer-container,
-.referby-div,
-.referto-div,
-.rfp-div,
-.proposal-div,
-.price-div,
-.priceinput-div,
-.passbackbutton-div,
-.pass-btn,
-.back-btn {
-  display: none !important;
-}
-
-/* OPTIONAL: hide the whole old wrapper if exists */
-.myinvitation-container {
-  display: none !important;
-}

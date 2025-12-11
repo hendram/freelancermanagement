@@ -37,7 +37,9 @@ export default async function getrfppropmanager({ payload, sql }) {
         )
         .bindParams(inv.rfp_prop_id)
         .execute();
-
+ 
+     console.log("rfpRows", rfpRows);
+ 
       if (rfpRows.rows.length > 0) {
         const row = rfpRows.rows[0];
         out.push({
