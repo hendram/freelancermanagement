@@ -1,0 +1,36 @@
+.referee-editor-container {
+  border: 1px solid #ccc;
+  padding: 5px;
+  border-radius: 5px;
+  width: 100%;
+  min-height: 40px;
+  font-family: Arial, sans-serif;
+}
+
+.referee-editor-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+}
+
+.referee-tag {
+  background: #eef2f7;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.referee-tag:hover {
+  background: #d0e2f0;
+}
+
+.referee-editor-tags input {
+  flex: 1;
+  min-width: 120px;
+  border: none;
+  outline: none;
+  padding: 4px;
+  font-size: 14px;
+}

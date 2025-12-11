@@ -1,105 +1,197 @@
 /* Container for the whole invitations page */
 .myinvitation-container {
-  width: 90%;
-  max-width: 900px;
-  margin: 20px auto;
-  font-family: Arial, sans-serif;
-  color: #333;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
 }
 
+.invitation-block {
+ display: flex;
+  flex-direction: column;
+  width: 100vw;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+}
+  
 /* Issue section */
 .issue-container {
   display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
+  flex-direction: column;
+  width: 100vw;
+  min-height: 18vh;
+  justify-content: center;
+  align-items: center;
 }
 
-.issuetype-div,
-.issuekey-div,
+.issuetype-div {
+  display: flex;
+  flex-direction: row;
+  width: 100vw;
+  height: 8vh;
+  justify-content: flex-start;
+  align-items: center;
+ font-size: calc(1.5vw + 0.01vh);
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.issuekeysummary-div {
+  display: flex;
+  flex-direction: row;
+  width: 100vw;
+   min-height: 8vh;
+  justify-content: center;
+  align-items: center;
+}
+
+.issuekey-div {
+  display: flex;
+  flex-direction: row;
+  width: 20vw;
+  height: 5vh;
+  justify-content: flex-start;
+  align-items: center;
+ font-size: calc(1.5vw + 0.01vh);
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
 .issuesummary-div {
-  flex: 1;
-}
-
-.issuetype-span,
-.issuekey-span,
-.issuesummary-span {
-  display: block;
-  font-weight: bold;
-  background: #f4f4f4;
-  padding: 5px 10px;
-  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  width: 80vw;
+  min-height: 5vh;
+  justify-content: flex-start;
+  align-items: center;
+ font-size: calc(1.5vw + 0.01vh);
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* Referrer section */
-.refer-container {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
+.refer-block {
+ display: flex;
+  flex-direction: column;
+  width: 100vw;
+  min-height: 21vh;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 1vh;
 }
 
-.referby-div,
-.referto-div {
-  flex: 1;
-  padding: 5px 10px;
-  background: #eef2f7;
-  border-radius: 5px;
-  margin-right: 5px;
+.referrer-div,
+.referree-div {
+ display: flex;
+  flex-direction: row;
+  width: 100vw;
+  min-height: 10vh;
+  justify-content: center;
+  align-items: center;
 }
 
-.referto-div {
-  margin-right: 0;
+.referto-div,
+.referby-div {
+ display: flex;
+  flex-direction: row;
+  width: 100vw;
+  height: 8vh;
+  justify-content: flex-start;
+  align-items: center;
+font-size: calc(1.5vw + 0.01vh);
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
+
 
 /* RFP and Proposal sections */
-.rfp-div,
-.proposal-div {
-  margin-bottom: 10px;
+.rfp-block,
+.proposal-block {
+display: flex;
+  flex-direction: column;
+  width: 100vw;
+  min-height: 50vh;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .rfp-label,
 .proposal-label {
-  font-weight: bold;
-  display: block;
-  margin-bottom: 5px;
+display: flex;
+  flex-direction: row;
+  width: 100vw;
+  height: 8vh;
+  justify-content: flex-start;
+  align-items: center;
+  font-weight: bolder;
+font-size: calc(1.5vw + 0.01vh);
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
 }
 
 .rfp-textarea,
 .proposal-textarea {
-  width: 100%;
-  padding: 5px 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  font-family: inherit;
-  font-size: 14px;
-  resize: vertical;
+  display: flex;
+  flex-direction: row;
+  width: 100vw;
+  height: 32vh;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: calc(1.5vw + 0.01vh);
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  border: none;
+  outline: none;
+  resize: none;
 }
 
 /* Price section */
 .price-div {
-  margin-bottom: 10px;
+display: flex;
+  flex-direction: row;
+  width: 100vw;
+  height: 8vh;
+  justify-content: center;
+  align-items: center;
 }
 
 .price-span {
-  font-weight: bold;
-  margin-right: 10px;
+  font-weight: bolder;
+font-size: calc(1.5vw + 0.01vh);
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
 }
 
 .priceinput-div {
-  display: flex;
+display: flex;
+  flex-direction: row;
+  width: 10vw;
+  height: 8vh;
+  justify-content: center;
   align-items: center;
-  gap: 5px;
 }
 
 .price-input {
-  padding: 5px 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  width: 80px;
+display: flex;
+  flex-direction: row;
+  width: 8vw;
+  height: 5vh;
+  justify-content: center;
+  align-items: center;
+font-size: calc(1.5vw + 0.01vh);
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 .currency-span {
-  margin-left: 5px;
-  font-weight: bold;
+font-size: calc(1.5vw + 0.01vh);
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* Pass and Back buttons */
@@ -109,16 +201,29 @@
   margin: 15px 0;
 }
 
+.actions {
+display: flex;
+  flex-direction: row;
+  width: 100vw;
+  height: 8vh;
+  justify-content: center;
+  align-items: center
+}
+
+
 .pass-btn,
 .back-btn {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 5px;
-  background-color: #1976d2;
+display: flex;
+  flex-direction: row;
+  width: 10vw;
+  height: 8vh;
+  justify-content: center;
+  align-items: center;
+font-size: calc(1.5vw + 0.01vh);
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   color: white;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
 }
 
 .pass-btn:hover,

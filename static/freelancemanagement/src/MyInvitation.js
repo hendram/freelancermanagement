@@ -1,6 +1,8 @@
 import React, { useRef, useReducer } from "react";
 import { invoke } from "@forge/bridge";
 import "./MyInvitation.css";
+import RefereeEditor from "./RefereeEditor";
+
 
 function useForceUpdate() {
   return useReducer(() => ({}), {})[1];
@@ -153,7 +155,7 @@ export default function MyInvitation({ goBackMI }) {
     <div className="myinvitation-container">
 
       {invitationsRef.current.length === 0 && (
-        <div>No invitations found.</div>
+        <div className="noinvitation-div">No invitations found.</div>
       )}
 
       {invitationsRef.current.map((inv) => {
@@ -176,22 +178,24 @@ export default function MyInvitation({ goBackMI }) {
 
             <div className="issue-container">
               <div className="issuetype-div">
-                <span className="issuetype-span">{inv.issue_type}</span>
+                {inv.issue_type}
               </div>
+            <div className="issuekeysummary-div">
               <div className="issuekey-div">
-                <span className="issuekey-span">{inv.issue_key}</span>
+                {inv.issue_key}
               </div>
               <div className="issuesummary-div">
-                <span className="issuesummary-span">{inv.issue_summary}</span>
+                {inv.issue_summary}
               </div>
+            </div>
             </div>
 
         <div className="refer-block">
           <div className="referrer-div">
-  <span className="referrer-span">Refer By:</span>
+  <div className="referby-div">Refer By:</div>
   {Array.isArray(inv.referrers) && inv.referrers.length > 0 ? (
     inv.referrers.map((r, idx) => (
-      <div key={idx}>
+      <div className="referrername-div" key={idx}>
         {r.referrer_first_name} {r.referrer_last_name}
       </div>
     ))
@@ -201,22 +205,25 @@ export default function MyInvitation({ goBackMI }) {
 </div>
 
 <div className="referree-div">
-  <span className="referree-span">Refer To:</span>
-  {Array.isArray(inv.referees) && inv.referees.length > 0 ? (
-    inv.referees.map((r, idx) => (
-      <div key={idx}>
-        {r.referrer_first_name} {r.referrer_last_name}
-      </div>
-    ))
-  ) : (
-    <div>—</div>
-  )}
+  <div className="referto-div">Refer To:</div>
+  <RefereeEditor
+      initialReferees={
+        Array.isArray(inv.referees)
+          ? inv.referees.map(r => `${r.referrer_first_name} ${r.referrer_last_name}`)
+          : []
+      }
+      onChange={(newReferees) => {
+        // save edited referees in inv object for later submission
+        inv.refereesEdited = newReferees;
+      }}
+    />
 </div>
  </div>    
 
             <div className="rfp-block">
-              <label className="rfp-label">RFP + Your Proposals:</label>
+              <label className="rfp-label" htmlFor="rfp-textarea" >RFP:</label>
               <textarea
+                id="rfp-textarea"
                 className="rfp-textarea"
                 defaultValue={combinedText}
                 rows="6"
@@ -225,8 +232,9 @@ export default function MyInvitation({ goBackMI }) {
             </div>
 
             <div className="proposal-block">
-              <label className="proposal-label">New Proposal:</label>
+              <label className="proposal-label" htmlFor="proposal-textarea">New Proposal:</label>
               <textarea
+                id="proposal-textarea"
                 className="proposal-textarea"
                 ref={(el) => (newProposalRefs.current[inv.id] = el)}
                 placeholder="Write your new proposal..."
@@ -247,16 +255,6 @@ export default function MyInvitation({ goBackMI }) {
 
               <span className="currency-span">USD</span>
 
-              <select
-                defaultValue={inv.price_unit || "per/task"}
-                ref={(el) => (priceUnitRefs.current[inv.id] = el)}
-              >
-                {priceUnits.map((unit) => (
-                  <option key={unit} value={unit}>
-                    {unit}
-                  </option>
-                ))}
-              </select>
             </div>
 
             <div className="actions">
