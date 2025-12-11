@@ -43,7 +43,8 @@ CREATE TABLE IF NOT EXISTS referrers (
   last_name TEXT,
   referrer_first_name TEXT,
   referrer_last_name TEXT,
-  user_story TEXT,
+  issue_key TEXT,
+  issue_summary TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_referrer_resume FOREIGN KEY (resume_id) REFERENCES resumes(id) ON DELETE CASCADE
 );
@@ -117,7 +118,8 @@ CREATE TABLE IF NOT EXISTS myinvitation (
   id INT PRIMARY KEY AUTO_INCREMENT,
   issue_id INT NOT NULL,
   resume_id VARCHAR(64),
-  freelancer_name TEXT NOT NULL,
+  first_name TEXT NOT NULL,
+  last_name TEXt,
   invite_status TEXT,
   rfp_prop_id INT,
   price FLOAT,

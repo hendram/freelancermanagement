@@ -27,10 +27,17 @@ export default async function sendpriceproposal({ payload, sql }) {
 
     const invRes = await sql
       .prepare(`
-        SELECT id, rfp_prop_id, first_name, last_name
-        FROM myinvitation
-        WHERE issue_id = ? AND resume_id = ?
-        ORDER BY id DESC
+        SELECT 
+          mi.id, 
+          mi.rfp_prop_id, 
+          mi.first_name, 
+          mi.last_name,
+          i.issue_key,
+          i.issue_summary
+        FROM myinvitation mi
+        JOIN issues i ON mi.issue_id = i.id
+        WHERE mi.issue_id = ? AND mi.resume_id = ?
+        ORDER BY mi.id DESC
         LIMIT 1
       `)
       .bindParams(issueId, resumeId)
@@ -76,18 +83,16 @@ export default async function sendpriceproposal({ payload, sql }) {
 
     //
     // ---------------------------------------------------
-    // 4) Append proposal
+    // 4) Append proposal text
     // ---------------------------------------------------
     console.log(">>> DEBUG: Appending proposal text");
 
     if (!rfpRow.proposals || String(rfpRow.proposals).trim() === "") {
-      console.log(">>> DEBUG: Writing first proposal");
       await sql
         .prepare(`UPDATE rfp_proposals SET proposals = ? WHERE id = ?`)
         .bindParams(trimmed, rfpRow.id)
         .execute();
     } else {
-      console.log(">>> DEBUG: Appending proposal to existing");
       await sql
         .prepare(
           `UPDATE rfp_proposals
@@ -115,13 +120,16 @@ export default async function sendpriceproposal({ payload, sql }) {
 
     //
     // ---------------------------------------------------
-    // 6) REFERRERS TABLE LOGIC
+    // 6) REFERRERS TABLE LOGIC (updated)
     // ---------------------------------------------------
     console.log(">>> DEBUG: Processing referees[]:", referees);
 
     const referrerFirst = invite.first_name || "";
     const referrerLast = invite.last_name || "";
-    const userStory = `${invite.issue_key || ""} ${invite.issue_summary || ""}`.trim();
+
+    // NEW — no user_story.
+    const issueKey = invite.issue_key || "";
+    const issueSummary = invite.issue_summary || "";
 
     if (Array.isArray(referees) && referees.length > 0) {
       for (const full of referees) {
@@ -137,8 +145,7 @@ export default async function sendpriceproposal({ payload, sql }) {
         const first = parts.shift() || "";
         const last = parts.join(" ") || "";
 
-        console.log(">>> DEBUG: Resolving referee:", { first, last });
-
+        // lookup referee resume
         const found = await sql
           .prepare(
             `SELECT id AS resume_id, first_name, last_name
@@ -150,8 +157,6 @@ export default async function sendpriceproposal({ payload, sql }) {
           .bindParams(first, last)
           .execute();
 
-        console.log(">>> DEBUG: Resume lookup result:", found.rows);
-
         if (found.rows.length === 0) {
           console.log(">>> DEBUG: No resume match found, skipping");
           continue;
@@ -159,13 +164,15 @@ export default async function sendpriceproposal({ payload, sql }) {
 
         const target = found.rows[0];
 
-        console.log(">>> DEBUG: Inserting into referrers table:", {
+        console.log(">>> DEBUG: Inserting referrer row using issue_key + issue_summary:", {
           referee_resume_id: target.resume_id,
-          referee_name: `${target.first_name} ${target.last_name}`,
-          referrer: `${referrerFirst} ${referrerLast}`,
-          userStory
+          referrer_first: referrerFirst,
+          referrer_last: referrerLast,
+          issueKey,
+          issueSummary
         });
 
+        // NEW SCHEMA — no user_story
         await sql
           .prepare(
             `
@@ -175,9 +182,10 @@ export default async function sendpriceproposal({ payload, sql }) {
               last_name,
               referrer_first_name,
               referrer_last_name,
-              user_story
+              issue_key,
+              issue_summary
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             `
           )
           .bindParams(
@@ -186,7 +194,8 @@ export default async function sendpriceproposal({ payload, sql }) {
             target.last_name || "",
             referrerFirst,
             referrerLast,
-            userStory
+            issueKey,
+            issueSummary
           )
           .execute();
       }

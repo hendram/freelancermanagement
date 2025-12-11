@@ -6,11 +6,12 @@ export default function AddReferrer({ goBackAR }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fullnameFromParts = (first, last) => `${(first || "").trim()} ${(last || "").trim()}`.trim();
+  const fullnameFromParts = (first, last) =>
+    `${(first || "").trim()} ${(last || "").trim()}`.trim();
 
-  // -------------------------------
-  // LOAD DATA
-  // -------------------------------
+  // ------------------------------------------------------------
+  // LOAD DATA FROM BACKEND
+  // ------------------------------------------------------------
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -23,40 +24,47 @@ export default function AddReferrer({ goBackAR }) {
         }
 
         const mapped = res.list.map(r => {
-          const referrerOptions = Array.isArray(r.availableReferrers) ? r.availableReferrers : [];
-          const storyOptions = Array.isArray(r.availableStories) ? r.availableStories : [];
-          const blocks = [];
+          // ------------------------------
+          // FIXED ROWS FROM BACKEND
+          // ------------------------------
+          const fixedRows = Array.isArray(r.referrers)
+            ? r.referrers.map(ref => ({
+                referrer: fullnameFromParts(
+                  ref.referrer_first_name,
+                  ref.referrer_last_name
+                ),
+                issue_key: ref.issue_key,
+                issue_summary: ref.issue_summary,
+                isFixed: true
+              }))
+            : [];
 
-          // Merge stories by referrer to avoid duplicates
-          const grouped = {};
-          (r.referrers || []).forEach(ref => {
-            const refName = ref.referrer || fullnameFromParts(ref.referrer_first_name, ref.referrer_last_name);
-            if (!grouped[refName]) grouped[refName] = [];
-            if (Array.isArray(ref.userStories)) {
-              grouped[refName].push(...ref.userStories.filter(s => s)); // only non-empty
-            }
-          });
-
-          // Convert grouped referrers into blocks
-          Object.keys(grouped).forEach(refName => {
-            const stories = grouped[refName];
-            const blockRows = stories.map((story, idx) => ({
-              referrer: idx === 0 ? refName : "", // show referrer only on first row
-              userStory: story, // just the label string
-              isFixed: true
-            }));
-            blocks.push(blockRows);
-          });
-
-          // Always add one editable row at the end
-          blocks.push([{ referrer: "", userStory: "", isFixed: false }]);
+          // New empty row (editable)
+          const editableRow = {
+            referrer: "",
+            issue_key: "",
+            issue_summary: "",
+            isFixed: false
+          };
 
           return {
             resume_id: r.resume_id,
             fullName: r.fullName,
-            blocks,
-            referrerOptions,
-            storyOptions
+
+            referrerOptions: Array.isArray(r.availableReferrers)
+              ? r.availableReferrers
+              : [],
+
+            issueOptions: (Array.isArray(r.availableStories)
+              ? r.availableStories
+              : []
+            ).map(s => ({
+              issue_key: s.issue_key,
+              issue_summary: s.issue_summary,
+              label: `${s.issue_key} - ${s.issue_summary}`
+            })),
+
+            rows: [...fixedRows, editableRow]
           };
         });
 
@@ -71,162 +79,175 @@ export default function AddReferrer({ goBackAR }) {
     loadData();
   }, []);
 
-  // -------------------------------
-  // UPDATE FIELD
-  // -------------------------------
-  const updateInput = (rowIdx, blockIdx, cellIdx, field, value) => {
+  // ------------------------------------------------------------
+  // UPDATE CELL
+  // ------------------------------------------------------------
+  const updateInput = (rowIdx, cellIdx, field, value) => {
     setRows(prev =>
       prev.map((row, i) =>
         i !== rowIdx
           ? row
           : {
               ...row,
-              blocks: row.blocks.map((block, bIdx) =>
-                bIdx !== blockIdx
-                  ? block
-                  : block.map((cell, cIdx) =>
-                      cIdx !== cellIdx ? cell : { ...cell, [field]: value }
-                    )
+              rows: row.rows.map((cell, cIdx) =>
+                cIdx !== cellIdx ? cell : { ...cell, [field]: value }
               )
             }
       )
     );
   };
 
-// -------------------------------
-// ADD ROW TO BLOCK (+ button)
-// -------------------------------
-const addRowToBlock = (rowIdx, blockIdx) => {
-  setRows(prev =>
-    prev.map((row, i) =>
-      i !== rowIdx
-        ? row
-        : {
-            ...row,
-            blocks: row.blocks.map((block, bIdx) =>
-              bIdx !== blockIdx
-                ? block
-                : [
-                    ...block,
-                    {
-                      referrer: "",   // always empty
-                      userStory: "",  // empty
-                      isFixed: false  // editable
-                    }
-                  ]
-            )
-          }
-    )
-  );
-};
+  // ------------------------------------------------------------
+  // ADD NEW ROW
+  // ------------------------------------------------------------
+  const addRow = rowIdx => {
+    setRows(prev =>
+      prev.map((row, i) =>
+        i !== rowIdx
+          ? row
+          : {
+              ...row,
+              rows: [
+                ...row.rows,
+                {
+                  referrer: "",
+                  issue_key: "",
+                  issue_summary: "",
+                  isFixed: false
+                }
+              ]
+            }
+      )
+    );
+  };
 
-  // -------------------------------
-  // SUBMIT
-  // -------------------------------
+  // ------------------------------------------------------------
+  // SUBMIT DATA
+  // ------------------------------------------------------------
   const submit = async () => {
     try {
       for (const row of rows) {
-        for (const block of row.blocks) {
-          const refName = block[0].referrer?.trim();
-          const stories = block.map(c => c.userStory).filter(s => s); // only non-empty
+        for (const cell of row.rows) {
+          if (cell.isFixed) continue;
 
-          if (!refName || stories.length === 0) continue;
+          const ref = cell.referrer?.trim();
+          const key = cell.issue_key?.trim();
+          const summary = cell.issue_summary?.trim();
+
+          if (!ref || !key || !summary) continue;
 
           await invoke("addreferrer", {
             resume_id: row.resume_id,
-            referrer: refName,
-            userStories: stories // just array of labels
+            referrer: ref,
+            issue_key: key,
+            issue_summary: summary
           });
         }
       }
+
       alert("Referrers assigned successfully!");
       goBackAR && goBackAR();
     } catch (err) {
-      console.error("addReferrer failed:", err);
+      console.error("addreferrer failed:", err);
       alert("Error assigning referrers.");
     }
   };
 
   if (loading) return <div>Loading...</div>;
 
+  // ------------------------------------------------------------
+  // FRONTEND RENDER
+  // ------------------------------------------------------------
   return (
     <div className="addreferrer-container">
       <h2>Add Referrer</h2>
+
       <table className="addreferrer-table">
         <thead>
           <tr>
             <th>Full Name</th>
             <th>Referrer</th>
-            <th>User Story</th>
+            <th>Issue</th>
             <th></th>
           </tr>
         </thead>
+
         <tbody>
           {rows.map((row, rowIdx) =>
-            row.blocks.map((block, blockIdx) =>
-              block.map((cell, cellIdx) => (
-                <tr key={`${row.resume_id}-${blockIdx}-${cellIdx}`}>
-                  {cellIdx === 0 && <td rowSpan={block.length}>{row.fullName}</td>}
+            row.rows.map((cell, cellIdx) => (
+              <tr key={`${row.resume_id}-${cellIdx}`}>
+                {cellIdx === 0 && (
+                  <td rowSpan={row.rows.length}>{row.fullName}</td>
+                )}
 
-{/* Referrer */}
-<td>
-  {cell.isFixed ? (
-    <span>{cell.referrer}</span>
-  ) : cellIdx === 0 ? (
-    <select
-      value={cell.referrer}
-      onChange={e => updateInput(rowIdx, blockIdx, cellIdx, "referrer", e.target.value)}
-    >
-      <option value="">Select Referrer</option>
-      {row.referrerOptions
-        .filter(opt => opt.resume_id !== row.resume_id)
-        .map(opt => (
-          <option key={opt.resume_id} value={opt.fullName}>{opt.fullName}</option>
-        ))}
-    </select>
-  ) : (
-    <select
-      value={cell.referrer}   // new rows also show select
-      onChange={e => updateInput(rowIdx, blockIdx, cellIdx, "referrer", e.target.value)}
-    >
-      <option value="">Select Referrer</option>
-      {row.referrerOptions
-        .filter(opt => opt.resume_id !== row.resume_id)
-        .map(opt => (
-          <option key={opt.resume_id} value={opt.fullName}>{opt.fullName}</option>
-        ))}
-    </select>
-  )}
-</td>
+                {/* Referrer */}
+                <td>
+                  {cell.isFixed ? (
+                    <span>{cell.referrer}</span>
+                  ) : (
+                    <select
+                      value={cell.referrer}
+                      onChange={e =>
+                        updateInput(rowIdx, cellIdx, "referrer", e.target.value)
+                      }
+                    >
+                      <option value="">Select Referrer</option>
+                      {row.referrerOptions
+                        .filter(opt => opt.resume_id !== row.resume_id)
+                        .map(opt => (
+                          <option key={opt.resume_id} value={opt.fullName}>
+                            {opt.fullName}
+                          </option>
+                        ))}
+                    </select>
+                  )}
+                </td>
 
-{/* User Story */}
-<td>
-  {cell.isFixed ? (
-    <span>{cell.userStory}</span>
-  ) : (
-    <select
-      value={cell.userStory || ""}
-      onChange={e => updateInput(rowIdx, blockIdx, cellIdx, "userStory", e.target.value)}
-      disabled={!cell.referrer}  // disable until this row has a referrer
-    >
-      <option value="">Select Story</option>
-      {row.storyOptions.map(s => (
-        <option key={s.label} value={s.label}>{s.label}</option>
-      ))}
-    </select>
-  )}
-</td>
-                  {/* + Button */}
-                  <td>
-                    {!cell.isFixed && cellIdx === block.length - 1 && (
-                      <button type="button" onClick={() => addRowToBlock(rowIdx, blockIdx)}>
-                        +
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))
-            )
+                {/* Issue */}
+                <td>
+                  {cell.isFixed ? (
+                    <span>
+                      {cell.issue_key} - {cell.issue_summary}
+                    </span>
+                  ) : (
+                    <select
+                      value={cell.issue_key}
+                      disabled={!cell.referrer}
+                      onChange={e => {
+                        const selected = row.issueOptions.find(
+                          x => x.issue_key === e.target.value
+                        );
+                        if (!selected) return;
+
+                        updateInput(rowIdx, cellIdx, "issue_key", selected.issue_key);
+                        updateInput(
+                          rowIdx,
+                          cellIdx,
+                          "issue_summary",
+                          selected.issue_summary
+                        );
+                      }}
+                    >
+                      <option value="">Select Issue</option>
+                      {row.issueOptions.map(s => (
+                        <option key={s.issue_key} value={s.issue_key}>
+                          {s.label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </td>
+
+                {/* Add button */}
+                <td>
+                  {!cell.isFixed && cellIdx === row.rows.length - 1 && (
+                    <button type="button" onClick={() => addRow(rowIdx)}>
+                      +
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))
           )}
         </tbody>
       </table>

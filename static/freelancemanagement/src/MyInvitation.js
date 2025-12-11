@@ -9,16 +9,12 @@ function useForceUpdate() {
 export default function MyInvitation({ goBackMI }) {
   const forceUpdate = useForceUpdate();
 
-  // ------------------------------
-  // REFS
-  // ------------------------------
   const emailRef = useRef("");
   const invitationsRef = useRef([]);
   const verifiedRef = useRef(false);
   const loadingRef = useRef(false);
   const errorRef = useRef(null);
 
-  // Used for new proposal and price inputs (one per invitation)
   const newProposalRefs = useRef({});
   const priceRefs = useRef({});
   const priceUnitRefs = useRef({});
@@ -33,11 +29,12 @@ export default function MyInvitation({ goBackMI }) {
     "per/userstory",
   ];
 
-  // --------------------------
-  // SUBMIT EMAIL
-  // --------------------------
+  // -----------------------------------------
+  // EMAIL SUBMIT (THE ONLY ENTRY POINT)
+  // -----------------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     loadingRef.current = true;
     errorRef.current = null;
     invitationsRef.current = [];
@@ -45,6 +42,7 @@ export default function MyInvitation({ goBackMI }) {
     forceUpdate();
 
     const email = emailRef.current.value.trim();
+
     if (!email) {
       errorRef.current = "Please enter your email.";
       loadingRef.current = false;
@@ -53,33 +51,34 @@ export default function MyInvitation({ goBackMI }) {
     }
 
     try {
+      // First: verify the email → get resume ID
       const resumeCheck = await invoke("checkresumebyemail", { email });
-      if (!resumeCheck?.exists) {
+   console.log("resumeCheck", resumeCheck);
+      if (!resumeCheck?.exists || !resumeCheck.resumeId) {
         errorRef.current = "No resume found for this email.";
         loadingRef.current = false;
         forceUpdate();
         return;
       }
 
-      const res = await invoke("getinvitations", {
+      // Second: load invitations
+      const inv = await invoke("getinvitations", {
         resumeId: resumeCheck.resumeId,
       });
-           console.log("res", res);   
-         
-      if (res?.success && Array.isArray(res.data)) {
-        invitationsRef.current = res.data;
-        verifiedRef.current = true;
-      } else {
-        errorRef.current = "Failed to fetch invitations.";
-      }
+
+      console.log("inv", inv);
+      invitationsRef.current = Array.isArray(inv?.data) ? inv.data : [];
+      verifiedRef.current = true;
+       
     } catch (err) {
-      errorRef.current = "Unexpected error occurred.";
-    } finally {
-      loadingRef.current = false;
-      forceUpdate();
+      errorRef.current = "Unexpected server error.";
     }
+
+    loadingRef.current = false;
+    forceUpdate();
   };
 
+  // Reset form
   const handleReset = () => {
     emailRef.current.value = "";
     invitationsRef.current = [];
@@ -88,9 +87,9 @@ export default function MyInvitation({ goBackMI }) {
     forceUpdate();
   };
 
-  // --------------------------
-  // SUBMIT PRICE + NEW PROPOSAL
-  // --------------------------
+  // -----------------------------------------
+  // SUBMIT PROPOSAL
+  // -----------------------------------------
   const handleSubmitProposal = async (inv) => {
     const newProposal = newProposalRefs.current[inv.id]?.value.trim() || "";
     const price = priceRefs.current[inv.id]?.value.trim() || "";
@@ -103,11 +102,8 @@ export default function MyInvitation({ goBackMI }) {
         newProposal,
         price,
         priceUnit,
-
-        // NEW >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         referrers: Array.isArray(inv.referrers) ? inv.referrers : [],
         referees: Array.isArray(inv.referees) ? inv.referees : []
-        // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
       });
 
       alert("Submitted.");
@@ -116,9 +112,9 @@ export default function MyInvitation({ goBackMI }) {
     }
   };
 
-  // ---------------------------
-  // EMAIL INPUT SCREEN
-  // ---------------------------
+  // -----------------------------------------
+  // EMAIL PAGE
+  // -----------------------------------------
   if (!verifiedRef.current) {
     return (
       <div className="email-verification">
@@ -150,24 +146,49 @@ export default function MyInvitation({ goBackMI }) {
     );
   }
 
-  // ---------------------------
-  // INVITATIONS
-  // ---------------------------
+  // -----------------------------------------
+  // INVITATION PAGE
+  // -----------------------------------------
   return (
     <div className="myinvitation-container">
-      {invitationsRef.current.length === 0 && <div>No invitations found.</div>}
+
+      {invitationsRef.current.length === 0 && (
+        <div>No invitations found.</div>
+      )}
 
       {invitationsRef.current.map((inv) => {
-        // Normalize arrays
-        const rfpArr = Array.isArray(inv.rfp) ? inv.rfp : [];
-        const proposalsArr = Array.isArray(inv.proposals)
-          ? inv.proposals
-          : [];
 
-        // Build interleaved RFP + Proposal text
+  const referrers = Array.isArray(inv.referrers)
+      ? inv.referrers.map(r => `${r.referrer_first_name} ${r.referrer_last_name}`)
+      : [];
+
+   const referees = Array.isArray(inv.referees)
+      ? inv.referees.map(r => `${r.referrer_first_name} ${r.referrer_last_name}`)
+      : [];
+
+ // Push into interleaved arrays (one by one)
+const referrerInterleaved = [];
+const maxReferrer = referrersArr.length;
+for (let j = 0; j < maxReferrer; j++) {
+  if (referrersArr[j]) referrerInterleaved.push(referrersArr[j]);
+}
+
+const refereeInterleaved = [];
+const maxReferee = refereesArr.length;
+for (let j = 0; j < maxReferee; j++) {
+  if (refereesArr[j]) refereeInterleaved.push(refereesArr[j]);
+}
+
+// Now you can join them into strings for textareas if needed
+const combinedReferrersText = referrerInterleaved.join("\n");
+const combinedRefereesText = refereeInterleaved.join("\n");
+
+
+        const rfpArr = Array.isArray(inv.rfp) ? inv.rfp : [];
+        const proposalsArr = Array.isArray(inv.proposals) ? inv.proposals : [];
+
         const interleaved = [];
         const max = Math.max(rfpArr.length, proposalsArr.length);
-
         for (let i = 0; i < max; i++) {
           if (rfpArr[i]) interleaved.push(rfpArr[i]);
           if (proposalsArr[i]) interleaved.push(proposalsArr[i]);
@@ -177,7 +198,7 @@ export default function MyInvitation({ goBackMI }) {
 
         return (
           <div key={inv.id} className="invitation-block">
-            {/* Issue header */}
+
             <div className="issue-container">
               <div className="issuetype-div">
                 <span className="issuetype-span">{inv.issue_type}</span>
@@ -190,7 +211,15 @@ export default function MyInvitation({ goBackMI }) {
               </div>
             </div>
 
-            {/* RFP + PROPOSAL (readonly combined) */}
+        <div className="refer-block">
+            <div className="referrer-div">
+            <span className="referrer-span"> Refer By: </span> {combinedReferrersText}
+              </div>
+              <div className="referree-div">
+                <span className="referree-span">Refer To: </span> {combinedRefereesText}
+              </div>
+           </div>    
+
             <div className="rfp-block">
               <label className="rfp-label">RFP + Your Proposals:</label>
               <textarea
@@ -201,7 +230,6 @@ export default function MyInvitation({ goBackMI }) {
               />
             </div>
 
-            {/* NEW PROPOSAL */}
             <div className="proposal-block">
               <label className="proposal-label">New Proposal:</label>
               <textarea
@@ -212,7 +240,6 @@ export default function MyInvitation({ goBackMI }) {
               />
             </div>
 
-            {/* PRICE */}
             <div className="price-div">
               <span className="price-span">Price:</span>
 
@@ -238,7 +265,6 @@ export default function MyInvitation({ goBackMI }) {
               </select>
             </div>
 
-            {/* ACTION BUTTONS */}
             <div className="actions">
               <button
                 className="submit-btn"
@@ -246,14 +272,15 @@ export default function MyInvitation({ goBackMI }) {
               >
                 Submit
               </button>
-              <button className="pass-btn">Pass</button>
               <button className="back-btn" onClick={goBackMI}>
                 Back
               </button>
             </div>
+
           </div>
         );
       })}
+
     </div>
   );
 }

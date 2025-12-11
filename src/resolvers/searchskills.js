@@ -14,7 +14,8 @@ export default async function searchskills({ payload, sql }) {
       .prepare(`
         SELECT 
           id AS resume_id,
-          CONCAT(first_name, ' ', last_name) AS fullName,
+          first_name,
+          last_name,
           skills
         FROM resumes
         WHERE REPLACE(LOWER(skills), ' ', '') LIKE ?
@@ -41,7 +42,8 @@ export default async function searchskills({ payload, sql }) {
 
       return {
         resume_id: r.resume_id,
-        fullName: r.fullName,
+        first_name: r.first_name,
+        last_name: r.last_name, 
         skills: cleanedSkills
       };
     });

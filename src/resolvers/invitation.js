@@ -1,11 +1,14 @@
 // src/resolvers/invitation.js
 export default async function invitation({ payload, sql }) {
   // make inviteStatus mutable because RFP forces invite = "yes"
+   console.log("payload", payload);
+
   let {
     issueType,
     issueKey,
     issueSummary,
-    freelancerName,
+    first_name,
+    last_name,
     resumeId,
     inviteStatus,
     price,
@@ -13,7 +16,7 @@ export default async function invitation({ payload, sql }) {
     rfpMessage // manager-provided RFP (may be empty/undefined)
   } = payload;
 
-  if (!freelancerName) return { success: false, error: "Freelancer name is required" };
+  if (!first_name) return { success: false, error: "Freelancer name is required" };
   if (!issueKey) return { success: false, error: "Issue key is required" };
   if (!issueSummary) return { success: false, error: "Issue summary is required" };
   if (!issueType) return { success: false, error: "Issue type is required" };
@@ -49,12 +52,14 @@ export default async function invitation({ payload, sql }) {
       .prepare(`
         SELECT *
         FROM myinvitation
-        WHERE issue_id = ? AND (resume_id = ? OR freelancer_name = ?)
+        WHERE issue_id = ? AND (resume_id = ?)
         ORDER BY id DESC
         LIMIT 1
       `)
-      .bindParams(finalIssueId, resumeId || null, freelancerName)
+      .bindParams(finalIssueId, resumeId || null)
       .execute();
+   
+    console.log("latestInvRes", latestInvRes);
 
     const latestInvite = latestInvRes.rows[0] || null;
     const finalPrice = inviteStatus === "yes" ? (price || null) : null;
@@ -86,10 +91,10 @@ export default async function invitation({ payload, sql }) {
           // create a new myinvitation row referencing this new rfp row
           await sql
             .prepare(`
-              INSERT INTO myinvitation (issue_id, resume_id, freelancer_name, invite_status, price, deal, rfp_prop_id)
-              VALUES (?, ?, ?, ?, ?, ?, ?)
+              INSERT INTO myinvitation (issue_id, resume_id, first_name, last_name, invite_status, price, deal, rfp_prop_id)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `)
-            .bindParams(finalIssueId, resumeId || null, freelancerName, "yes", finalPrice, finalDeal, createdRfpPropId)
+            .bindParams(finalIssueId, resumeId || null, first_name, last_name, "yes", finalPrice, finalDeal, createdRfpPropId)
             .execute();
         } else {
           const row = cur.rows[0];
@@ -118,10 +123,10 @@ export default async function invitation({ payload, sql }) {
 
             await sql
               .prepare(`
-                INSERT INTO myinvitation (issue_id, resume_id, freelancer_name, invite_status, price, deal, rfp_prop_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO myinvitation (issue_id, resume_id, first_name, last_name, invite_status, price, deal, rfp_prop_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
               `)
-              .bindParams(finalIssueId, resumeId || null, freelancerName, "yes", finalPrice, finalDeal, createdRfpPropId)
+              .bindParams(finalIssueId, resumeId || null, first_name, last_name, "yes", finalPrice, finalDeal, createdRfpPropId)
               .execute();
           }
         }
@@ -137,10 +142,10 @@ export default async function invitation({ payload, sql }) {
 
         await sql
           .prepare(`
-            INSERT INTO myinvitation (issue_id, resume_id, freelancer_name, invite_status, price, deal, rfp_prop_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO myinvitation (issue_id, resume_id, first_name, last_name, invite_status, price, deal, rfp_prop_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
           `)
-          .bindParams(finalIssueId, resumeId || null, freelancerName, "yes", finalPrice, finalDeal, createdRfpPropId)
+          .bindParams(finalIssueId, resumeId || null, first_name, last_name, "yes", finalPrice, finalDeal, createdRfpPropId)
           .execute();
       }
     } // end hasRfp
@@ -155,10 +160,10 @@ export default async function invitation({ payload, sql }) {
       } else {
         await sql
           .prepare(`
-            INSERT INTO myinvitation (issue_id, resume_id, freelancer_name, invite_status, price, deal)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO myinvitation (issue_id, resume_id, first_name, last_name, invite_status, price, deal)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
           `)
-          .bindParams(finalIssueId, resumeId || null, freelancerName, inviteStatus, finalPrice, finalDeal)
+          .bindParams(finalIssueId, resumeId || null, first_name, last_name, inviteStatus, finalPrice, finalDeal)
           .execute();
       }
     }
