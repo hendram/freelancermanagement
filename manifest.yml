@@ -8,10 +8,12 @@ modules:
       resource: main
       resolver:
         function: resume
-      title: freelancermanagement
+      title: Freelancer Management
+      layout: blank
   jira:issuePanel:
     - key: freelancerbidding-panel
       title: Freelancer Bidding
+      layout: blank
       resource: bidder-frontend
       icon: "issues"
       resolver:

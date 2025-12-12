@@ -25,19 +25,18 @@ export default function RefereeEditor({ initialReferees = [], onChange }) {
 
   return (
     <div className="referee-editor-container">
-      <div className="referee-editor-tags">
         {referees.map((r, idx) => (
           <span key={idx} className="referee-tag" onClick={() => handleRemove(idx)}>
             {r} &times;
           </span>
         ))}
         <input
+          className="referee-input"
           type="text"
           placeholder="Type name and press Enter"
           ref={inputRef}
           onKeyDown={handleKeyDown}
         />
-      </div>
     </div>
   );
 }

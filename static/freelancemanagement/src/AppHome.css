@@ -22,11 +22,13 @@ body {
 
 /* TOP MENU */
 .hometop-menu {
-  width: 100vh;
   display: flex;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
+  width: 100vw;
   height: 8vh;
+  gap: 2vw;
 }
 
 /* MENU BUTTON WRAPPER */

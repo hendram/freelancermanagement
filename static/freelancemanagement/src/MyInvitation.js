@@ -108,63 +108,92 @@ export default function MyInvitation({ goBackMI }) {
   // -----------------------------------------
   if (!verifiedRef.current) {
     return (
-      <div className="email-verification">
-        <h2>Enter your email to access invitations</h2>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            placeholder="you@example.com"
-            ref={emailRef}
-            required
-          />
-          <button type="submit" disabled={loadingRef.current}>
-            {loadingRef.current ? "Verifying..." : "Submit"}
-          </button>
-          <button type="button" onClick={handleReset}>
-            Reset
-          </button>
-        </form>
-
-        {errorRef.current && (
-          <p className="error">{errorRef.current}</p>
-        )}
-
-        <button className="back-btn" onClick={goBackMI}>
-          Back
-        </button>
-      </div>
+    <div className="email-verification">
+  <label className="emaillabel" htmlFor="email">
+    Please enter your email to access invitations:
+  </label>
+ <div className="email-div">
+  <input
+    id="email"
+    className="email"
+    type="email"
+    placeholder="you@example.com"
+    ref={emailRef}
+    required
+  />
+</div>
+<div className="ebuttons-btn">
+  <button
+    className="elogin-btn"
+    onClick={(e) => handleSubmit(e)}
+    disabled={loadingRef.current}
+  >
+    {loadingRef.current ? "Verifying..." : "Submit"}
+  </button>
+  <button className="ereset-btn" onClick={handleReset}>
+    Reset
+  </button>
+  <button className="eback-btn" onClick={goBackMI}>
+    Back
+  </button>
+</div>
+  {errorRef.current && <p className="error">{errorRef.current}</p>}
+</div>
     );
   }
 
   // ======================================================
   //            GROUP BY issue_id  (ONE BLOCK)
   // ======================================================
-  const grouped = {};
+// ======================================================
+//        GROUP BY issue_id — ALWAYS PICK LATEST ROW
+// ======================================================
+const grouped = {};
 
-  for (const row of invitationsRef.current) {
-    if (!grouped[row.issue_id]) {
-      grouped[row.issue_id] = {
-        ...row,
-        _rfp: [],
-        _proposals: [],
-      };
-    }
+console.log("🔍 Grouping invitations");
 
-    if (Array.isArray(row.rfp)) grouped[row.issue_id]._rfp.push(...row.rfp);
-    if (Array.isArray(row.proposals))
-      grouped[row.issue_id]._proposals.push(...row.proposals);
+for (const row of invitationsRef.current) {
+  console.log("Row:", row);
 
-    if (
-      row.rfp_prop_id &&
-      (!grouped[row.issue_id].rfp_prop_id ||
-        row.rfp_prop_id > grouped[row.issue_id].rfp_prop_id)
-    ) {
-      grouped[row.issue_id].rfp_prop_id = row.rfp_prop_id;
-      grouped[row.issue_id].price = row.price;
-    }
+  const id = row.issue_id;
+
+  // Skip rows with null invite_status (invalid garbage history)
+  if (!row.invite_status) {
+    console.log("⛔ Skipping null invite_status row:", row);
+    continue;
   }
 
-  const issueBlocks = Object.values(grouped);
+  // If first row for this issue_id → assign
+  if (!grouped[id]) {
+    grouped[id] = {
+      ...row,
+      latest_created_at: row.created_at,
+      _rfp: Array.isArray(row.rfp) ? [...row.rfp] : [],
+      _proposals: Array.isArray(row.proposals) ? [...row.proposals] : [],
+    };
+    continue;
+  }
+
+  // Pick the MOST RECENT row as the "real" data
+  if (row.created_at > grouped[id].latest_created_at) {
+    console.log("📌 Newer row found for issue:", id);
+
+    grouped[id] = {
+      ...row,
+      latest_created_at: row.created_at,
+      _rfp: grouped[id]._rfp,
+      _proposals: grouped[id]._proposals,
+    };
+  }
+
+  // Always merge RFP + proposals
+  if (Array.isArray(row.rfp)) grouped[id]._rfp.push(...row.rfp);
+  if (Array.isArray(row.proposals)) grouped[id]._proposals.push(...row.proposals);
+}
+
+const issueBlocks = Object.values(grouped);
+
+console.log("📦 Final grouped blocks:", issueBlocks);
 
   // -----------------------------------------
   // INVITATION PAGE
@@ -200,16 +229,19 @@ export default function MyInvitation({ goBackMI }) {
             <div className="refer-block">
               <div className="referrer-div">
                 <div className="referby-div">Refer By:</div>
-                {Array.isArray(inv.referrers) &&
+              <div className="referrernameblock-div" > 
+               {Array.isArray(inv.referrers) &&
                 inv.referrers.length > 0 ? (
                   inv.referrers.map((r, idx) => (
                     <div className="referrername-div" key={idx}>
                       {r.referrer_first_name} {r.referrer_last_name}
                     </div>
                   ))
+                 
                 ) : (
-                  <div>—</div>
+                  <div>""</div>
                 )}
+                 </div>
               </div>
 
               <div className="referree-div">
@@ -232,49 +264,56 @@ export default function MyInvitation({ goBackMI }) {
             </div>
 
             <div className="rfp-block">
-              <label className="rfp-label">RFP:</label>
-              <textarea
+              <label className="rfp-label" htmlFor="rfp-textarea">RFP:</label>
+               <div className="rfptextarea-div">
+               <textarea
+                id="rfp-textarea"
                 className="rfp-textarea"
                 defaultValue={combinedText}
                 rows="6"
                 readOnly
               />
+               </div>
             </div>
 
             <div className="proposal-block">
-              <label className="proposal-label">New Proposal:</label>
-
+              <label className="proposal-label" htmlFor="proposal-textarea">New Proposal:</label>
+              <div className="proposaltextarea-div">
               <textarea
+                id="proposal-textarea"
                 className="proposal-textarea"
                 ref={(el) => (newProposalRefs.current[inv.id] = el)}
                 placeholder="Write your new proposal..."
                 rows="4"
               />
+               </div>
             </div>
 
             <div className="price-div">
-              <span className="price-span">Price:</span>
-
+              <label className="price-label" htmlFor="priceinput" >Price:</label>
+              
+               <div className="priceinput-div">
               <input
-                className="price-amount"
-                type="text"
+                id="priceinput"
+                className="priceinput"
+                type="number"
                 defaultValue={inv.price || ""}
-                placeholder="500"
+                placeholder="100"
                 ref={(el) => (priceRefs.current[inv.id] = el)}
               />
-
+              </div>
               <span className="currency-span">USD</span>
             </div>
 
             <div className="actions">
               <button
-                className="submit-btn"
+                className="submitinvite-btn"
                 onClick={() => handleSubmitProposal(inv)}
               >
                 Submit
               </button>
 
-              <button className="back-btn" onClick={goBackMI}>
+              <button className="backinvite-btn" onClick={goBackMI}>
                 Back
               </button>
             </div>

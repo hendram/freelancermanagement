@@ -1,4 +1,4 @@
-import React, { useRef, useReducer, useEffect, useState } from "react";
+import React, { useRef, useReducer, useEffect } from "react";
 import { invoke } from "@forge/bridge";
 import AddResume from "./AddResume";
 import UpdateResume from "./UpdateResume";
@@ -17,8 +17,19 @@ export default function AppHome() {
   const forceUpdate = useForceUpdate();
   const userRole = useRef(null); // "admin" | "manager" | "user"
 
-  const [freelancers, setFreelancers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const res = await invoke("checkuser");
+        userRole.current = res?.role || "user";
+      } catch (err) {
+        userRole.current = "user";
+        console.log("err", err);
+      }
+      forceUpdate();
+    };
+    check();
+  }, []);
 
   const pages = useRef({
     main: true,
@@ -34,15 +45,8 @@ export default function AppHome() {
 
   const switchPage = (page) => {
     const role = userRole.current;
-    const adminOnly = [
-      "addResume",
-      "updateResume",
-      "updateAction",
-      "reputationCatalog",
-      "assignReputation",
-      "addReferrer",
-      "updateReferrer",
-    ];
+
+    const adminOnly = ["addResume", "updateResume", "updateAction", "reputationCatalog", "assignReputation", "addReferrer", "updateReferrer"];
     if (role === "user" && adminOnly.includes(page)) return;
 
     Object.keys(pages.current).forEach((k) => (pages.current[k] = false));
@@ -53,90 +57,24 @@ export default function AppHome() {
   // ----------------------------
   // Selected resume for update
   // ----------------------------
-  const [selectedResume, setSelectedResume] = useState(null);
+  const [selectedResume, setSelectedResume] = React.useState(null);
 
   const updateResume = (resumeData) => {
-    setSelectedResume(resumeData);
+    setSelectedResume(resumeData); // store selected resume
     switchPage("updateResume");
   };
 
-  // ----------------------------
-  // Check user role
-  // ----------------------------
-  useEffect(() => {
-    const check = async () => {
-      try {
-        const res = await invoke("checkuser");
-        userRole.current = res?.role || "user";
-      } catch (err) {
-        userRole.current = "user";
-        console.log("err", err);
-      }
-      forceUpdate();
-    };
-    check();
-  }, []);
+  const freelancers = [
+    { id: 1, name: "John Smith", photo: "./photos/johnsmith.png", skills: "React, Node.js", reputation: 4.8, referrer: "Alice" },
+    { id: 2, name: "Maria Tan", photo: "./photos/mariatan.png", skills: "Python, FastAPI", reputation: 4.6, referrer: "Kevin" },
+    { id: 3, name: "Ahmed Noor", photo: "./photos/ahmednoor.png", skills: "Golang, DevOps", reputation: 4.9, referrer: "Sarah" },
+  ];
 
-  // ----------------------------
-  // Fetch freelancers dynamically
-  // ----------------------------
-  useEffect(() => {
-    const fetchFreelancers = async () => {
-      setLoading(true);
-      try {
-        const resumes = await invoke("getalldatafrontend"); // returns array of resumes
-        const enrichedFreelancers = [];
-
-        for (let resume of resumes) {
-          const { resume_id, first_name, last_name, skills, photo, reputation } = resume;
-
-          // get invitations for this resume
-          const invitations = await invoke("getinvitations", { resumeId: resume_id });
-          const dealYesInvitations = (invitations?.data || []).filter((i) => i.deal_yes);
-
-          // get issues for each deal_yes invitation
-          const issuesData = [];
-          for (let inv of dealYesInvitations) {
-            const issue = await invoke("getissue", { issueId: inv.issue_id });
-            if (issue) {
-              issuesData.push({
-                issue_key: issue.issue_key,
-                summary: issue.summary,
-              });
-            }
-          }
-
-          enrichedFreelancers.push({
-            id: resume_id,
-            name: `${first_name} ${last_name}`,
-            photo: photo || "./photos/default.png",
-            skills,
-            reputation: reputation || 0,
-            referrer: resume.referrer || "",
-            issues: issuesData,
-          });
-        }
-
-        setFreelancers(enrichedFreelancers);
-      } catch (err) {
-        console.error("Error fetching freelancers:", err);
-      }
-      setLoading(false);
-    };
-
-    fetchFreelancers();
-  }, []);
-
-  // ----------------------------
-  // MainPage component
-  // ----------------------------
   const MainPage = () => {
     const role = userRole.current;
-
-    if (loading) return <div className="homecontainer">Loading freelancers...</div>;
-
     return (
       <div className="homecontainer">
+
         <div className="hometop-menu">
           {(role === "admin" || role === "manager") && (
             <>
@@ -180,25 +118,11 @@ export default function AppHome() {
               <div className="homeinfo">
                 <h2>{item.name}</h2>
                 <p>{item.skills}</p>
-                {item.issues.length > 0 && (
-                  <div className="homeissues">
-                    <strong>Deals:</strong>
-                    <ul>
-                      {item.issues.map((iss, idx) => (
-                        <li key={idx}>
-                          {iss.issue_key}: {iss.summary}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
               </div>
 
               <div className="homeactions">
                 {(role === "admin" || role === "manager") && (
-                  <button className="homebtn_resume" onClick={() => updateResume(item)}>
-                    Resume
-                  </button>
+                  <button className="homebtn_resume" onClick={() => updateResume(item)}>Resume</button>
                 )}
 
                 {(role === "admin" || role === "manager") && (
@@ -206,6 +130,7 @@ export default function AppHome() {
                     Reputation ({item.reputation})
                   </button>
                 )}
+
               </div>
             </div>
           ))}
@@ -218,20 +143,19 @@ export default function AppHome() {
     <>
       {pages.current.main && <MainPage />}
       {pages.current.addResume && <AddResume goBack={() => switchPage("main")} />}
-
+      
+      {/* Pass selectedResume to UpdateResume */}
       {pages.current.updateResume && (
         <UpdateResume
           goBackU={() => switchPage("main")}
           onSelectResumeForUpdate={(resumeData) => {
-            setSelectedResume(resumeData);
-            switchPage("updateAction");
+            setSelectedResume(resumeData); // capture selected resume from UpdateResume
+            switchPage("updateAction"); // open UpdateAction page
           }}
         />
       )}
 
-      {pages.current.updateAction && (
-        <UpdateAction goBackUA={() => switchPage("updateResume")} resumeData={selectedResume} />
-      )}
+      {pages.current.updateAction && <UpdateAction goBackUA={() => switchPage("updateResume")} resumeData={selectedResume} />}
       {pages.current.reputationCatalog && <ReputationCatalog goBackRC={() => switchPage("main")} />}
       {pages.current.assignReputation && <AssignReputation goBackAR={() => switchPage("main")} />}
       {pages.current.addReferrer && <AddReferrer goBackAR={() => switchPage("main")} />}
