@@ -62,13 +62,24 @@ export default function App() {
 
     loadingRef.current = true;
     forceUpdate({});
+
     try {
       const res = await invoke("searchskills", { skills: skillsInput });
       console.log("res", res);
+
       if (!res?.success) {
         errorRef.current = res?.error || "Search failed.";
       } else {
-        managerResultsRef.current = res.candidates.slice(0, 5);
+        // -----------------------------
+        // FIX: Remove duplicates
+        // -----------------------------
+        const map = {};
+        res.candidates.forEach((c) => {
+          const key = c.resume_id + "_" + (issueRef.current?.key || "");
+          if (!map[key]) map[key] = c;
+        });
+        managerResultsRef.current = Object.values(map);
+        // -----------------------------
       }
     } catch (err) {
       console.error(err);
@@ -139,7 +150,6 @@ export default function App() {
     forceUpdate({});
   };
 
-
   const handleProposal = async (c) => {
     try {
       const res = await invoke("getrfppropmanager", {
@@ -204,24 +214,28 @@ export default function App() {
       <div className="fbbuttons-container">
         <div className="fbprice-div">
           <label className="fbprice-label">Price:</label>
-      <input
-  type="text"
-  className="fbprice-input"
-  value={priceRefs.current[c.resume_id]?.value || c.price || ""}
-  onChange={(e) => {
-    priceRefs.current[c.resume_id].value = e.target.value;
-    forceUpdate({});
-  }}
-  ref={(el) => {
-    if (el) {
-      priceRefs.current[c.resume_id] = el;
-      // Ensure input always displays latest backend price
-      el.value = el.value || c.price || "";
-    }
-  }}
-  placeholder="Enter price"
-/>
-    <span className="fbcurrency-span">USD</span>
+
+          <input
+            type="text"
+            className="fbprice-input"
+            value={
+              priceRefs.current[c.resume_id]?.value ||
+              c.price || ""   // <---------------- FIXED HERE ONLY
+            }
+            onChange={(e) => {
+              priceRefs.current[c.resume_id].value = e.target.value;
+              forceUpdate({});
+            }}
+            ref={(el) => {
+              if (el) {
+                priceRefs.current[c.resume_id] = el;
+                el.value = el.value || c.price || "";
+              }
+            }}
+            placeholder="Enter price"
+          />
+
+          <span className="fbcurrency-span">USD</span>
         </div>
 
         <button className="fbinvite-btn" onClick={() => handleInvite(c)}>

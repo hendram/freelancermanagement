@@ -3,7 +3,6 @@ import { invoke } from "@forge/bridge";
 import "./MyInvitation.css";
 import RefereeEditor from "./RefereeEditor";
 
-
 function useForceUpdate() {
   return useReducer(() => ({}), {})[1];
 }
@@ -19,24 +18,13 @@ export default function MyInvitation({ goBackMI }) {
 
   const newProposalRefs = useRef({});
   const priceRefs = useRef({});
-  const priceUnitRefs = useRef({});
 
-  const priceUnits = [
-    "per/hour",
-    "per/day",
-    "per/week",
-    "per/month",
-    "per/task",
-    "per/bug",
-    "per/userstory",
-  ];
 
   // -----------------------------------------
-  // EMAIL SUBMIT (THE ONLY ENTRY POINT)
+  // EMAIL SUBMIT
   // -----------------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     loadingRef.current = true;
     errorRef.current = null;
     invitationsRef.current = [];
@@ -44,7 +32,6 @@ export default function MyInvitation({ goBackMI }) {
     forceUpdate();
 
     const email = emailRef.current.value.trim();
-
     if (!email) {
       errorRef.current = "Please enter your email.";
       loadingRef.current = false;
@@ -53,9 +40,9 @@ export default function MyInvitation({ goBackMI }) {
     }
 
     try {
-      // First: verify the email → get resume ID
       const resumeCheck = await invoke("checkresumebyemail", { email });
-   console.log("resumeCheck", resumeCheck);
+      console.log("resumeCheck", resumeCheck);
+
       if (!resumeCheck?.exists || !resumeCheck.resumeId) {
         errorRef.current = "No resume found for this email.";
         loadingRef.current = false;
@@ -63,15 +50,14 @@ export default function MyInvitation({ goBackMI }) {
         return;
       }
 
-      // Second: load invitations
       const inv = await invoke("getinvitations", {
         resumeId: resumeCheck.resumeId,
       });
 
       console.log("inv", inv);
+
       invitationsRef.current = Array.isArray(inv?.data) ? inv.data : [];
       verifiedRef.current = true;
-       
     } catch (err) {
       errorRef.current = "Unexpected server error.";
     }
@@ -80,7 +66,6 @@ export default function MyInvitation({ goBackMI }) {
     forceUpdate();
   };
 
-  // Reset form
   const handleReset = () => {
     emailRef.current.value = "";
     invitationsRef.current = [];
@@ -93,10 +78,11 @@ export default function MyInvitation({ goBackMI }) {
   // SUBMIT PROPOSAL
   // -----------------------------------------
   const handleSubmitProposal = async (inv) => {
-    const newProposal = newProposalRefs.current[inv.id]?.value.trim() || "";
-    const price = priceRefs.current[inv.id]?.value.trim() || "";
-    const priceUnit = priceUnitRefs.current[inv.id]?.value || "per/task";
-
+    const newProposal =
+      newProposalRefs.current[inv.id]?.value.trim() || "";
+    const price =
+      priceRefs.current[inv.id]?.value.trim() || "";
+ 
     try {
       await invoke("sendpriceproposal", {
         issueId: inv.issue_id,
@@ -104,7 +90,11 @@ export default function MyInvitation({ goBackMI }) {
         newProposal,
         price,
         referrers: Array.isArray(inv.referrers) ? inv.referrers : [],
-        referees: Array.isArray(inv.referees) ? inv.referees : []
+        referees: inv.refereesEdited
+          ? inv.refereesEdited
+          : Array.isArray(inv.referees)
+          ? inv.referees
+          : [],
       });
 
       alert("Submitted.");
@@ -120,7 +110,6 @@ export default function MyInvitation({ goBackMI }) {
     return (
       <div className="email-verification">
         <h2>Enter your email to access invitations</h2>
-
         <form onSubmit={handleSubmit}>
           <input
             type="email"
@@ -128,17 +117,17 @@ export default function MyInvitation({ goBackMI }) {
             ref={emailRef}
             required
           />
-
           <button type="submit" disabled={loadingRef.current}>
             {loadingRef.current ? "Verifying..." : "Submit"}
           </button>
-
           <button type="button" onClick={handleReset}>
             Reset
           </button>
         </form>
 
-        {errorRef.current && <p className="error">{errorRef.current}</p>}
+        {errorRef.current && (
+          <p className="error">{errorRef.current}</p>
+        )}
 
         <button className="back-btn" onClick={goBackMI}>
           Back
@@ -147,82 +136,104 @@ export default function MyInvitation({ goBackMI }) {
     );
   }
 
+  // ======================================================
+  //            GROUP BY issue_id  (ONE BLOCK)
+  // ======================================================
+  const grouped = {};
+
+  for (const row of invitationsRef.current) {
+    if (!grouped[row.issue_id]) {
+      grouped[row.issue_id] = {
+        ...row,
+        _rfp: [],
+        _proposals: [],
+      };
+    }
+
+    if (Array.isArray(row.rfp)) grouped[row.issue_id]._rfp.push(...row.rfp);
+    if (Array.isArray(row.proposals))
+      grouped[row.issue_id]._proposals.push(...row.proposals);
+
+    if (
+      row.rfp_prop_id &&
+      (!grouped[row.issue_id].rfp_prop_id ||
+        row.rfp_prop_id > grouped[row.issue_id].rfp_prop_id)
+    ) {
+      grouped[row.issue_id].rfp_prop_id = row.rfp_prop_id;
+      grouped[row.issue_id].price = row.price;
+    }
+  }
+
+  const issueBlocks = Object.values(grouped);
+
   // -----------------------------------------
   // INVITATION PAGE
   // -----------------------------------------
   return (
     <div className="myinvitation-container">
-
-      {invitationsRef.current.length === 0 && (
+      {issueBlocks.length === 0 && (
         <div className="noinvitation-div">No invitations found.</div>
       )}
 
-      {invitationsRef.current.map((inv) => {
-
-
-        const rfpArr = Array.isArray(inv.rfp) ? inv.rfp : [];
-        const proposalsArr = Array.isArray(inv.proposals) ? inv.proposals : [];
-
+      {issueBlocks.map((inv) => {
         const interleaved = [];
-        const max = Math.max(rfpArr.length, proposalsArr.length);
+        const max = Math.max(inv._rfp.length, inv._proposals.length);
+
         for (let i = 0; i < max; i++) {
-          if (rfpArr[i]) interleaved.push(rfpArr[i]);
-          if (proposalsArr[i]) interleaved.push(proposalsArr[i]);
+          if (inv._rfp[i]) interleaved.push(inv._rfp[i]);
+          if (inv._proposals[i]) interleaved.push(inv._proposals[i]);
         }
 
         const combinedText = interleaved.join("\n");
 
         return (
           <div key={inv.id} className="invitation-block">
-
             <div className="issue-container">
-              <div className="issuetype-div">
-                {inv.issue_type}
-              </div>
-            <div className="issuekeysummary-div">
-              <div className="issuekey-div">
-                {inv.issue_key}
-              </div>
-              <div className="issuesummary-div">
-                {inv.issue_summary}
+              <div className="issuetype-div">{inv.issue_type}</div>
+
+              <div className="issuekeysummary-div">
+                <div className="issuekey-div">{inv.issue_key}</div>
+                <div className="issuesummary-div">{inv.issue_summary}</div>
               </div>
             </div>
+
+            <div className="refer-block">
+              <div className="referrer-div">
+                <div className="referby-div">Refer By:</div>
+                {Array.isArray(inv.referrers) &&
+                inv.referrers.length > 0 ? (
+                  inv.referrers.map((r, idx) => (
+                    <div className="referrername-div" key={idx}>
+                      {r.referrer_first_name} {r.referrer_last_name}
+                    </div>
+                  ))
+                ) : (
+                  <div>—</div>
+                )}
+              </div>
+
+              <div className="referree-div">
+                <div className="referto-div">Refer To:</div>
+
+                <RefereeEditor
+                  initialReferees={
+                    Array.isArray(inv.referees)
+                      ? inv.referees.map(
+                          (r) =>
+                            `${r.referrer_first_name} ${r.referrer_last_name}`
+                        )
+                      : []
+                  }
+                  onChange={(newReferees) => {
+                    inv.refereesEdited = newReferees;
+                  }}
+                />
+              </div>
             </div>
-
-        <div className="refer-block">
-          <div className="referrer-div">
-  <div className="referby-div">Refer By:</div>
-  {Array.isArray(inv.referrers) && inv.referrers.length > 0 ? (
-    inv.referrers.map((r, idx) => (
-      <div className="referrername-div" key={idx}>
-        {r.referrer_first_name} {r.referrer_last_name}
-      </div>
-    ))
-  ) : (
-    <div>—</div>
-  )}
-</div>
-
-<div className="referree-div">
-  <div className="referto-div">Refer To:</div>
-  <RefereeEditor
-      initialReferees={
-        Array.isArray(inv.referees)
-          ? inv.referees.map(r => `${r.referrer_first_name} ${r.referrer_last_name}`)
-          : []
-      }
-      onChange={(newReferees) => {
-        // save edited referees in inv object for later submission
-        inv.refereesEdited = newReferees;
-      }}
-    />
-</div>
- </div>    
 
             <div className="rfp-block">
-              <label className="rfp-label" htmlFor="rfp-textarea" >RFP:</label>
+              <label className="rfp-label">RFP:</label>
               <textarea
-                id="rfp-textarea"
                 className="rfp-textarea"
                 defaultValue={combinedText}
                 rows="6"
@@ -231,9 +242,9 @@ export default function MyInvitation({ goBackMI }) {
             </div>
 
             <div className="proposal-block">
-              <label className="proposal-label" htmlFor="proposal-textarea">New Proposal:</label>
+              <label className="proposal-label">New Proposal:</label>
+
               <textarea
-                id="proposal-textarea"
                 className="proposal-textarea"
                 ref={(el) => (newProposalRefs.current[inv.id] = el)}
                 placeholder="Write your new proposal..."
@@ -253,7 +264,6 @@ export default function MyInvitation({ goBackMI }) {
               />
 
               <span className="currency-span">USD</span>
-
             </div>
 
             <div className="actions">
@@ -263,15 +273,14 @@ export default function MyInvitation({ goBackMI }) {
               >
                 Submit
               </button>
+
               <button className="back-btn" onClick={goBackMI}>
                 Back
               </button>
             </div>
-
           </div>
         );
       })}
-
     </div>
   );
 }

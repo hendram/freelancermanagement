@@ -3,68 +3,78 @@ export default async function searchskills({ payload, sql }) {
   const { skills } = payload;
 
   if (!skills || !skills.trim()) {
-    console.log(">>> searchskills: No skills provided");
     return { success: false, error: "No skills provided" };
   }
 
-  // normalize search term
   const skillQuery = skills.toLowerCase().replace(/\s+/g, '');
-  console.log(">>> searchskills: normalized skillQuery =", skillQuery);
+  console.log(">>> searchskills normalized =", skillQuery);
 
   try {
-    // Correct table is myinvitation, NOT invitation
-    const query = `
-      SELECT 
-        r.id AS resume_id,
-        r.first_name,
-        r.last_name,
-        r.skills,
-        i.price,
-        i.invite_status,
-        i.deal        -- added
-      FROM resumes r
-      LEFT JOIN myinvitation i
-        ON i.resume_id = r.id AND i.invite_status = 'yes'
-      WHERE REPLACE(LOWER(r.skills), ' ', '') LIKE ?
+    //-------------------------------------
+    // 1. BASIC SKILL SEARCH (NO JOIN)
+    //-------------------------------------
+    const baseQuery = `
+      SELECT id AS resume_id, first_name, last_name, skills
+      FROM resumes
+      WHERE REPLACE(LOWER(skills), ' ', '') LIKE ?
       LIMIT 20
     `;
 
-    console.log(">>> searchskills: SQL Query =", query);
-
-    const result = await sql
-      .prepare(query)
+    const baseResult = await sql
+      .prepare(baseQuery)
       .bindParams(`%${skillQuery}%`)
       .execute();
 
-    console.log(">>> searchskills: raw result =", result);
+    const rows = Array.isArray(baseResult.rows) ? baseResult.rows : [];
 
-    const rows = Array.isArray(result.rows) ? result.rows : [];
-    console.log(">>> searchskills: rows length =", rows.length);
+    //-------------------------------------
+    // 2. FOR EACH RESUME → GET LATEST INVITATION
+    //-------------------------------------
+    const candidates = [];
 
-    const candidates = rows.map(r => {
-      let cleanedSkills = [];
+    for (const row of rows) {
+      const resumeId = row.resume_id;
 
-      if (typeof r.skills === "string") {
-        cleanedSkills = r.skills
-          .replace(/[\[\]\"]/g, "")
-          .split(",")
-          .map(s => s.trim())
-          .filter(Boolean);
-      }
+      const invQuery = `
+        SELECT price, invite_status, deal, created_at
+        FROM myinvitation
+        WHERE resume_id = ?
+        ORDER BY created_at DESC
+        LIMIT 1
+      `;
 
-      return {
-        resume_id: r.resume_id,
-        first_name: r.first_name,
-        last_name: r.last_name,
+        console.log("invQuerysearchskills", invQuery);
+
+      const invResult = await sql
+        .prepare(invQuery)
+        .bindParams(resumeId)
+        .execute();
+
+      const inv = invResult.rows?.[0] || {};
+
+      // Clean skills
+      const cleanedSkills = typeof row.skills === "string"
+        ? row.skills.replace(/[\[\]"]/g, "")
+            .split(",")
+            .map(s => s.trim())
+            .filter(Boolean)
+        : [];
+
+      candidates.push({
+        resume_id: resumeId,
+        first_name: row.first_name,
+        last_name: row.last_name,
         skills: cleanedSkills,
-        price: r.price || null,      // price from myinvitation
-        deal: r.deal || null,        // <-- added deal value
-        invited: r.invite_status === 'yes' ? true : false
-      };
-    });
 
-    console.log(">>> searchskills: candidates =", candidates);
+        // latest invitation
+        price: inv.price || null,
+        deal: inv.deal || null,
+        invited: inv.invite_status === "yes",
+        created_at: inv.created_at || null
+      });
+    }
 
+    console.log("candidates", candidates);
     return { success: true, candidates };
 
   } catch (e) {
