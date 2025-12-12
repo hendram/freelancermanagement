@@ -139,12 +139,6 @@ export default function App() {
     forceUpdate({});
   };
 
-  const handlePass = (c) => {
-    managerResultsRef.current = managerResultsRef.current.filter(
-      (x) => x.resume_id !== c.resume_id
-    );
-    forceUpdate({});
-  };
 
   const handleProposal = async (c) => {
     try {
@@ -152,6 +146,8 @@ export default function App() {
         issueId: issueRef.current?.key,
         resumeId: c.resume_id,
       });
+
+      console.log("resproposal", res);
 
       if (!res?.success) {
         console.error("Failed fetching proposals:", res?.error);
@@ -208,14 +204,24 @@ export default function App() {
       <div className="fbbuttons-container">
         <div className="fbprice-div">
           <label className="fbprice-label">Price:</label>
-          <input
-            type="text"
-            className="fbprice-input"
-            defaultValue={c.price || ""}
-            ref={(el) => (priceRefs.current[c.resume_id] = el)}
-            placeholder="Enter price"
-          />
-          <span className="fbcurrency-span">USD</span>
+      <input
+  type="text"
+  className="fbprice-input"
+  value={priceRefs.current[c.resume_id]?.value || c.price || ""}
+  onChange={(e) => {
+    priceRefs.current[c.resume_id].value = e.target.value;
+    forceUpdate({});
+  }}
+  ref={(el) => {
+    if (el) {
+      priceRefs.current[c.resume_id] = el;
+      // Ensure input always displays latest backend price
+      el.value = el.value || c.price || "";
+    }
+  }}
+  placeholder="Enter price"
+/>
+    <span className="fbcurrency-span">USD</span>
         </div>
 
         <button className="fbinvite-btn" onClick={() => handleInvite(c)}>
@@ -228,10 +234,6 @@ export default function App() {
 
         <button className="fbproposal-btn" onClick={() => handleProposal(c)}>
           Proposal
-        </button>
-
-        <button className="fbpass-btn" onClick={() => handlePass(c)}>
-          Pass
         </button>
 
         {c.price && (

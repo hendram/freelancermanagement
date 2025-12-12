@@ -103,7 +103,6 @@ export default function MyInvitation({ goBackMI }) {
         resumeId: inv.resume_id,
         newProposal,
         price,
-        priceUnit,
         referrers: Array.isArray(inv.referrers) ? inv.referrers : [],
         referees: Array.isArray(inv.referees) ? inv.referees : []
       });

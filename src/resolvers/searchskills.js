@@ -12,20 +12,23 @@ export default async function searchskills({ payload, sql }) {
   console.log(">>> searchskills: normalized skillQuery =", skillQuery);
 
   try {
-    // 1. Search resumes by skills, join with invitation for price
+    // Correct table is myinvitation, NOT invitation
     const query = `
       SELECT 
         r.id AS resume_id,
         r.first_name,
         r.last_name,
         r.skills,
-        i.price
+        i.price,
+        i.invite_status,
+        i.deal        -- added
       FROM resumes r
-      LEFT JOIN invitation i
+      LEFT JOIN myinvitation i
         ON i.resume_id = r.id AND i.invite_status = 'yes'
       WHERE REPLACE(LOWER(r.skills), ' ', '') LIKE ?
       LIMIT 20
     `;
+
     console.log(">>> searchskills: SQL Query =", query);
 
     const result = await sql
@@ -54,7 +57,9 @@ export default async function searchskills({ payload, sql }) {
         first_name: r.first_name,
         last_name: r.last_name,
         skills: cleanedSkills,
-        price: r.price || null,
+        price: r.price || null,      // price from myinvitation
+        deal: r.deal || null,        // <-- added deal value
+        invited: r.invite_status === 'yes' ? true : false
       };
     });
 

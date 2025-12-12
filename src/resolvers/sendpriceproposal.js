@@ -7,8 +7,6 @@ export default async function sendpriceproposal({ payload, sql }) {
     resumeId,
     newProposal,
     price,
-    priceUnit,
-
     referrers = [],
     referees = []
   } = payload;
@@ -107,15 +105,15 @@ export default async function sendpriceproposal({ payload, sql }) {
     // ---------------------------------------------------
     // 5) Update price + price_unit
     // ---------------------------------------------------
-    console.log(">>> DEBUG: Updating price:", { price, priceUnit });
+    console.log(">>> DEBUG: Updating price:", { price });
 
     await sql
       .prepare(
         `UPDATE myinvitation
-         SET price = ?, price_unit = ?
+         SET price = ?
          WHERE id = ?`
       )
-      .bindParams(price || null, priceUnit || null, invite.id)
+      .bindParams(price || null, invite.id)
       .execute();
 
     //
@@ -132,16 +130,23 @@ export default async function sendpriceproposal({ payload, sql }) {
     const issueSummary = invite.issue_summary || "";
 
     if (Array.isArray(referees) && referees.length > 0) {
-      for (const full of referees) {
-        console.log(">>> DEBUG: Handling referee name:", full);
 
-        if (!full || !String(full).trim()) {
-          console.log(">>> DEBUG: Skipped empty name");
-          continue;
-        }
+for (const full of referees) {
+  console.log(">>> DEBUG: Handling referee name:", full);
 
-        const clean = full.trim();
-        const parts = clean.split(/\s+/);
+  // Ensure the value is a string
+  if (typeof full !== "string") {
+    console.log(">>> DEBUG: Non-string referee skipped:", full);
+    continue;
+  }
+
+  const clean = full.trim();
+  if (!clean) {
+    console.log(">>> DEBUG: Empty string after trim, skipped");
+    continue;
+  }
+
+      const parts = clean.split(/\s+/);
         const first = parts.shift() || "";
         const last = parts.join(" ") || "";
 
