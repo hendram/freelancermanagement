@@ -2,18 +2,22 @@
 display: flex;
  flex-direction: row;
  justify-content: flex-start;
- align-self: center;
+ align-self: flex-start;
+ align-items: flex-start;
  width:85vw;
  min-height: 8vh;
+ gap: 1.5vw;
+ flex-wrap: wrap;
+ white-space: nowrap;
 }
 
 .referee-tag {
 display: flex;
  flex-direction: row;
- justify-content: flex-start;
- align-self: center;
- min-width:8vw;
- height: 4vh;
+ justify-content: center;
+ align-items: center;
+ min-width:5vw;
+ height: 5vh;
  border: 1px solid black;
   border-radius: 6vw;
   cursor: pointer;
@@ -21,6 +25,10 @@ display: flex;
 font-size: calc(1.5vw + 0.01vh);
   font-weight: 500;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  padding-left: 1vw;
+ padding-right: 1vw;
+ background-color: #ff991f;
+  color: black;
 }
 
 .referee-tag:hover {
@@ -30,13 +38,15 @@ font-size: calc(1.5vw + 0.01vh);
 .referee-input {
 display: flex;
  flex-direction: row;
- justify-content: flex-start;
- align-self: center;
- min-width:8vw;
+ justify-content: center;
+ align-items: center;
+ min-width:5vw;
  height: 4vh;
   border: none;
   outline: none;
 font-size: calc(1.5vw + 0.01vh);
   font-weight: 500;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  padding-left: 1vw;
+  padding-right: 1vw;
 }

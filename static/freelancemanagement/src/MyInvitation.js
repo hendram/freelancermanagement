@@ -218,7 +218,8 @@ console.log("📦 Final grouped blocks:", issueBlocks);
         return (
           <div key={inv.id} className="invitation-block">
             <div className="issue-container">
-              <div className="issuetype-div">{inv.issue_type}</div>
+              <div className="issuetype-div">
+               <span className="issuetype-span">{inv.issue_type}</span></div>
 
               <div className="issuekeysummary-div">
                 <div className="issuekey-div">{inv.issue_key}</div>
@@ -264,7 +265,9 @@ console.log("📦 Final grouped blocks:", issueBlocks);
             </div>
 
             <div className="rfp-block">
+               <div className="rfplabel-div">
               <label className="rfp-label" htmlFor="rfp-textarea">RFP:</label>
+                 </div>
                <div className="rfptextarea-div">
                <textarea
                 id="rfp-textarea"
@@ -277,7 +280,9 @@ console.log("📦 Final grouped blocks:", issueBlocks);
             </div>
 
             <div className="proposal-block">
+             <div className="proposallabel-div">
               <label className="proposal-label" htmlFor="proposal-textarea">New Proposal:</label>
+              </div>
               <div className="proposaltextarea-div">
               <textarea
                 id="proposal-textarea"
@@ -290,8 +295,9 @@ console.log("📦 Final grouped blocks:", issueBlocks);
             </div>
 
             <div className="price-div">
-              <label className="price-label" htmlFor="priceinput" >Price:</label>
-              
+             <div className="pricelabel-div"> 
+             <label className="price-label" htmlFor="priceinput" >Price:</label>
+              </div>
                <div className="priceinput-div">
               <input
                 id="priceinput"

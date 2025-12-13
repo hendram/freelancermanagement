@@ -1,7 +1,7 @@
 body {
   margin: 0;
   font-family: "Inter", sans-serif;
-  background: #f3f4f7;
+  background-color: white;
 }
 
 /* MAIN CONTAINER */
@@ -11,6 +11,7 @@ body {
   align-items: center;
   width: 100vw;
   min-height: 100vh;
+  background-color:white;
 }
 
 /* TITLE */

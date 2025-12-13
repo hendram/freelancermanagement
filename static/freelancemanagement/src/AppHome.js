@@ -28,7 +28,6 @@ export default function AppHome() {
     reputationCatalog: false,
     assignReputation: false,
     addReferrer: false,
-    updateReferrer: false,
     myInvitation: false,
   });
 
@@ -41,7 +40,6 @@ export default function AppHome() {
       "reputationCatalog",
       "assignReputation",
       "addReferrer",
-      "updateReferrer",
     ];
     if (role === "user" && adminOnly.includes(page)) return;
 
@@ -160,7 +158,6 @@ export default function AppHome() {
                 <button className="homemenu-btn">Referrer ▼</button>
                 <div className="homesubmenu">
                   <button onClick={() => switchPage("addReferrer")}>Add Referrer</button>
-                  <button onClick={() => switchPage("updateReferrer")}>Update Referrer</button>
                 </div>
               </div>
             </>

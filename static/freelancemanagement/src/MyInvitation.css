@@ -7,6 +7,7 @@
   justify-content: center;
   align-items: center;
   background-color: white;
+  gap: 1.5vh;
 }
 
 .emaillabel {
@@ -40,7 +41,7 @@ font-size: calc(1.5vw + 0.01vh);
 .email {
   display: flex;
   flex-direction: row;
-  width: 18vw;
+  width: 48vw;
   height: 4vh;
   justify-content: center;
   align-items: center;
@@ -74,7 +75,7 @@ font-size: calc(1.5vw + 0.01vh);
   justify-content: center;
   align-items: center;
   font-size: calc(1.5vw + 0.01vh);
-  font-weight: 500;
+  font-weight: 600;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: white;
   cursor: pointer;
@@ -136,13 +137,33 @@ font-size: calc(1.5vw + 0.01vh);
   display: flex;
   flex-direction: row;
   width: 100vw;
-  height: 7vh;
+  height: 8vh;
   justify-content: flex-start;
+  align-items: center;
+  position: relative;
+}
+
+.issuetype-div::after {
+  content: "";
+  position: absolute;
+  left: 0.8vw;                   /* gap from left */
+  right: 0.8vw;                  /* gap from right */
+  bottom: 0;
+  height: 0;                   /* important */
+  border-bottom: 2px solid black;
+}
+
+.issuetype-span {
+  display: flex;
+  flex-direction: row;
+  width: 6vw;
+  height: 7vh;
+  justify-content: center;
   align-items: center;
  font-size: calc(2.1vw + 0.01vh);
   font-weight: 700;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  border-bottom: 2px solid black;
+  border: none;
 }
 
 .issuekeysummary-div {
@@ -195,17 +216,18 @@ font-size: calc(1.5vw + 0.01vh);
   flex-direction: row;
   width: 100vw;
   min-height: 10vh;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 2vw;
 }
 
 .referto-div,
 .referby-div {
  display: flex;
   flex-direction: row;
-  width: 15vw;
-  height: 8vh;
-  justify-content: flex-start;
+  width: 8vw;
+  height: 5vh;
+  justify-content: center;
   align-items: center;
 font-size: calc(1.5vw + 0.01vh);
   font-weight: 700;
@@ -215,24 +237,32 @@ font-size: calc(1.5vw + 0.01vh);
 .referrernameblock-div {
  display: flex;
   flex-direction: row;
-  width: 85vw;
+  width: 91vw;
   min-height: 8vh;
   justify-content: flex-start;
-  align-items: center;
-  gap: 1vw;
+  align-items: flex-start;
+  gap: 2vw;
+  flex-wrap: wrap;
+  white-space: nowrap;
 }
 
 
 .referrername-div {
  display: flex;
   flex-direction: row;
-  min-width: 8vw;
+  min-width: 5vw;
   height: 5vh;
   justify-content: center;
   align-items: center;
 font-size: calc(1.5vw + 0.01vh);
   font-weight: 500;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  border: 1px solid black;
+  border-radius: 3vw;
+  background-color: #ff991f;
+  color: black;
+  padding-left: 1vw;
+  padding-right: 1vw;
 }
 
 
@@ -248,18 +278,44 @@ display: flex;
   gap: 2vh;
 }
 
-.rfp-label,
-.proposal-label {
+.rfplabel-div,
+.proposallabel-div {
 display: flex;
   flex-direction: row;
   width: 100vw;
   height: 8vh;
   justify-content: flex-start;
   align-items: center;
+  position: relative;
+}
+
+.rfplabel-div::after,
+.proposallabel-div::after {
+  border-bottom: 1px solid black;
+content: "";
+  position: absolute;
+  left: 0.8vw;                   /* gap from left */
+  right: 0.8vw;                  /* gap from right */
+  bottom: 0;
+  height: 0;
+}
+
+.rfp-label,
+.proposal-label {
+display: flex;
+  flex-direction: row;
+  width: 5vw;
+  height: 7vh;
+  justify-content: center;
+  align-items: center;
   font-weight: bolder;
 font-size: calc(1.5vw + 0.01vh);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  border-bottom: 1px solid black;
+  border: none;
+}
+
+.proposal-label {
+  width: 13vw;
 }
 
 .rfptextarea-div,
@@ -302,18 +358,27 @@ display: flex;
   gap: 1vw;
 }
 
+.pricelabel-div {
+display: flex;
+  flex-direction: row;
+  width: 6vw;
+  height: 8vh;
+  justify-content: flex-start;
+  align-items: center;
+}
+
 .price-label {
 display: flex;
   flex-direction: row;
   width: 5vw;
-  height: 8vh;
-  justify-content: flex-start;
+  height: 7vh;
+  justify-content: center;
   align-items: center;
-  font-weight: bolder;
    font-size: calc(1.5vw + 0.01vh);
   font-weight: 600;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
+
 
 .priceinput-div {
 display: flex;
@@ -324,6 +389,7 @@ display: flex;
   align-items: center;
   border: 1px solid black;
   border-radius: 60vw;
+  overflow: hidden;
 }
 
 .priceinput {
