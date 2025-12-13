@@ -15,7 +15,7 @@ function useForceUpdate() {
 
 export default function AppHome() {
   const forceUpdate = useForceUpdate();
-  const userRole = useRef(null); // "admin" | "manager" | "user"
+  const userRole = useRef(null);
 
   const [freelancers, setFreelancers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,9 +48,6 @@ export default function AppHome() {
     forceUpdate();
   };
 
-  // ----------------------------
-  // Selected resume for update
-  // ----------------------------
   const [selectedResume, setSelectedResume] = useState(null);
 
   const updateResume = (resumeData) => {
@@ -76,57 +73,37 @@ export default function AppHome() {
   }, []);
 
   // ----------------------------
-  // Fetch freelancers dynamically
+  // Fetch freelancers
   // ----------------------------
-  useEffect(() => {
-    const fetchFreelancers = async () => {
-      setLoading(true);
-      try {
-        const resumes = await invoke("getalldatafrontend"); // returns array of resumes
-        const enrichedFreelancers = [];
+useEffect(() => {
+  const fetchFreelancers = async () => {
+    setLoading(true);
+    try {
+      const resumes = await invoke("getalldatafrontend");
 
-        for (let resume of resumes) {
-          const { resume_id, first_name, last_name, skills, photo, reputation } = resume;
+      const enrichedFreelancers = resumes.map((resume) => ({
+        id: resume.resume_id,
+        name: `${resume.first_name} ${resume.last_name}`,
+        photo: resume.photo || "./photos/default.png",
+        skills: resume.skills,
+        reputation: resume.reputation || 0,
+        referrer: resume.referrer || "",
+        issues: resume.issues || [],
+      }));
 
-          // get invitations for this resume
-          const invitations = await invoke("getinvitations", { resumeId: resume_id });
-          const dealYesInvitations = (invitations?.data || []).filter((i) => i.deal_yes);
-
-          // get issues for each deal_yes invitation
-          const issuesData = [];
-          for (let inv of dealYesInvitations) {
-            const issue = await invoke("getissue", { issueId: inv.issue_id });
-            if (issue) {
-              issuesData.push({
-                issue_key: issue.issue_key,
-                summary: issue.summary,
-              });
-            }
-          }
-
-          enrichedFreelancers.push({
-            id: resume_id,
-            name: `${first_name} ${last_name}`,
-            photo: photo || "./photos/default.png",
-            skills,
-            reputation: reputation || 0,
-            referrer: resume.referrer || "",
-            issues: issuesData,
-          });
-        }
-
-        setFreelancers(enrichedFreelancers);
-      } catch (err) {
-        console.error("Error fetching freelancers:", err);
-      }
+      setFreelancers(enrichedFreelancers);
+    } catch (err) {
+      console.error("Error fetching freelancers:", err);
+    } finally {
       setLoading(false);
-    };
+    }
+  };
 
-    fetchFreelancers();
-  }, []);
+  fetchFreelancers();
+}, []);
 
   // ----------------------------
-  // MainPage component
+  // MainPage
   // ----------------------------
   const MainPage = () => {
     const role = userRole.current;
@@ -141,30 +118,34 @@ export default function AppHome() {
               <div className="homemenu-btn-wrapper">
                 <button className="homemenu-btn">Resume ▼</button>
                 <div className="homesubmenu">
-                  <button onClick={() => switchPage("addResume")}>Add Resume</button>
-                  <button onClick={() => switchPage("updateResume")}>Update Resume</button>
+                  <button className="addresume-btn" onClick={() => switchPage("addResume")}>Add Resume</button>
+                  <button className="updateresume-btn" onClick={() => switchPage("updateResume")}>Update Resume</button>
                 </div>
               </div>
 
               <div className="homemenu-btn-wrapper">
                 <button className="homemenu-btn">Reputation ▼</button>
                 <div className="homesubmenu">
-                  <button onClick={() => switchPage("reputationCatalog")}>Reputation Catalog</button>
-                  <button onClick={() => switchPage("assignReputation")}>Assign Reputation</button>
+                  <button className="reputationcatalog-btn" onClick={() => switchPage("reputationCatalog")}>
+                    Reputation Catalog
+                  </button>
+                  <button className="assignreputation-btn" onClick={() => switchPage("assignReputation")}>
+                    Assign Reputation
+                  </button>
                 </div>
               </div>
 
               <div className="homemenu-btn-wrapper">
                 <button className="homemenu-btn">Referrer ▼</button>
                 <div className="homesubmenu">
-                  <button onClick={() => switchPage("addReferrer")}>Add Referrer</button>
+                  <button className="addreferrer-btn" onClick={() => switchPage("addReferrer")}>Add Referrer</button>
                 </div>
               </div>
             </>
           )}
 
           <div className="homemenu-btn-wrapper">
-            <button className="homemenu-btn" onClick={() => switchPage("myInvitation")}>
+            <button className="myinvitation-btn" onClick={() => switchPage("myInvitation")}>
               My Invitation
             </button>
           </div>
@@ -177,6 +158,7 @@ export default function AppHome() {
               <div className="homeinfo">
                 <h2>{item.name}</h2>
                 <p>{item.skills}</p>
+
                 {item.issues.length > 0 && (
                   <div className="homeissues">
                     <strong>Deals:</strong>
@@ -191,19 +173,7 @@ export default function AppHome() {
                 )}
               </div>
 
-              <div className="homeactions">
-                {(role === "admin" || role === "manager") && (
-                  <button className="homebtn_resume" onClick={() => updateResume(item)}>
-                    Resume
-                  </button>
-                )}
-
-                {(role === "admin" || role === "manager") && (
-                  <button className="homebtn_rep" onClick={() => switchPage("assignReputation")}>
-                    Reputation ({item.reputation})
-                  </button>
-                )}
-              </div>
+              {/* 🔴 INTENTIONALLY EMPTY — NO BUTTONS ON FREELANCER CARD */}
             </div>
           ))}
         </div>
@@ -215,7 +185,6 @@ export default function AppHome() {
     <>
       {pages.current.main && <MainPage />}
       {pages.current.addResume && <AddResume goBack={() => switchPage("main")} />}
-
       {pages.current.updateResume && (
         <UpdateResume
           goBackU={() => switchPage("main")}
@@ -225,12 +194,15 @@ export default function AppHome() {
           }}
         />
       )}
-
       {pages.current.updateAction && (
         <UpdateAction goBackUA={() => switchPage("updateResume")} resumeData={selectedResume} />
       )}
-      {pages.current.reputationCatalog && <ReputationCatalog goBackRC={() => switchPage("main")} />}
-      {pages.current.assignReputation && <AssignReputation goBackAR={() => switchPage("main")} />}
+      {pages.current.reputationCatalog && (
+        <ReputationCatalog goBackRC={() => switchPage("main")} />
+      )}
+      {pages.current.assignReputation && (
+        <AssignReputation goBackAR={() => switchPage("main")} />
+      )}
       {pages.current.addReferrer && <AddReferrer goBackAR={() => switchPage("main")} />}
       {pages.current.myInvitation && <MyInvitation goBackMI={() => switchPage("main")} />}
     </>
