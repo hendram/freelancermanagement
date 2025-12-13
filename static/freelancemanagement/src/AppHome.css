@@ -38,12 +38,15 @@ body {
 }
 
 /* MAIN MENU BUTTON */
-.homemenu-btn, myinvitation-btn {
+.resume-btn,
+.reputation-btn,
+.referrer-btn, 
+.myinvitation-btn {
   display:flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  width: 6vw;
+  min-width: 6vw;
   height: 5vh;
   font-weight: 600;
    background-color: #1868db;
@@ -53,6 +56,8 @@ body {
   color: white;
 font-size: calc(1.5vw + 0.01vh);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  padding-left: 1vw;
+  padding-right: 1vw;
 }
 
 .homemenu-btn:hover {
@@ -60,7 +65,9 @@ font-size: calc(1.5vw + 0.01vh);
 }
 
 /* SUBMENU */
-.homesubmenu {
+.addupdateresume-div,
+.reputationcatassign-div,
+.addreferrer-div {
   position: absolute;
   top: 100%;
  left: 50%;
@@ -69,11 +76,16 @@ font-size: calc(1.5vw + 0.01vh);
   min-width: 5vw;
   display: none;
   flex-direction: column;
-  gap: 1vh;
+  gap: 0.5vh;
   z-index: 20;
+  padding-left: 1vw;
+  padding-right: 1vw;
 }
 
-.homemenu-btn-wrapper:hover .homesubmenu {
+.homemenu-btn-wrapper:hover .addupdateresume-div,
+.homemenu-btn-wrapper:hover .reputationcatassign-div,
+.homemenu-btn-wrapper:hover .addreferrer-div,
+ {
   display: flex;
 }
 
@@ -86,7 +98,7 @@ display: flex;
 flex-direction: row;
 justify-content: center;
 align-items: center;
-min-width: 5vw;
+width: 14vw;
 height: 4.5vh;
 padding-left: 1vw;
 padding-right: 1vw;
@@ -98,6 +110,15 @@ border-radius: 4vw;
 font-size: calc(1.5vw + 0.01vh);
   font-weight: 500;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.assignreputation-btn,
+.reputationcatalog-btn {
+width: 17vw;
+}
+
+.addreferrer-btn {
+width: 12vw;
 }
 
 /* FREELANCER LIST */

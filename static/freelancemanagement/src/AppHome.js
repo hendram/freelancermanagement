@@ -116,16 +116,16 @@ useEffect(() => {
           {(role === "admin" || role === "manager") && (
             <>
               <div className="homemenu-btn-wrapper">
-                <button className="homemenu-btn">Resume ▼</button>
-                <div className="homesubmenu">
+                <button className="resume-btn">Resume ▼</button>
+                <div className="addupdateresume-div">
                   <button className="addresume-btn" onClick={() => switchPage("addResume")}>Add Resume</button>
                   <button className="updateresume-btn" onClick={() => switchPage("updateResume")}>Update Resume</button>
                 </div>
               </div>
 
               <div className="homemenu-btn-wrapper">
-                <button className="homemenu-btn">Reputation ▼</button>
-                <div className="homesubmenu">
+                <button className="reputation-btn">Reputation ▼</button>
+                <div className="reputationcatassign-div">
                   <button className="reputationcatalog-btn" onClick={() => switchPage("reputationCatalog")}>
                     Reputation Catalog
                   </button>
@@ -136,8 +136,8 @@ useEffect(() => {
               </div>
 
               <div className="homemenu-btn-wrapper">
-                <button className="homemenu-btn">Referrer ▼</button>
-                <div className="homesubmenu">
+                <button className="referrer-btn">Referrer ▼</button>
+                <div className="addreferrer-div">
                   <button className="addreferrer-btn" onClick={() => switchPage("addReferrer")}>Add Referrer</button>
                 </div>
               </div>
