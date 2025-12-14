@@ -163,10 +163,10 @@ export default function AddReferrer({ goBackAR }) {
       <table className="addreferrer-table">
         <thead className="thead">
           <tr className="theadtr">
-            <th className="trth">Full Name</th>
-            <th className="trth">Referrer</th>
-            <th className="trth">Issue</th>
-            <th className="trth"></th>
+            <th className="trth-fullname">Full Name</th>
+            <th className="trth-referrer">Referrer</th>
+            <th className="trth-issue">Issue</th>
+            <th className="trth-button"></th>
           </tr>
         </thead>
 
@@ -175,13 +175,13 @@ export default function AddReferrer({ goBackAR }) {
             row.rows.map((cell, cellIdx) => (
               <tr className="tbodytr" key={`${row.resume_id}-${cellIdx}`}>
                 {cellIdx === 0 && (
-                  <td className="trtd" rowSpan={row.rows.length}>{row.fullName}</td>
+                  <td className="trtd-fullname" rowSpan={row.rows.length}>{row.fullName}</td>
                 )}
 
                 {/* Referrer */}
-                <td className="trtd" >
+                <td className="trtd-referrer" >
                   {cell.isFixed ? (
-                    <span>{cell.referrer}</span>
+                    <span className="trtdreferrer-span">{cell.referrer}</span>
                   ) : (
                     <select className="select"
                       value={cell.referrer}
@@ -202,7 +202,7 @@ export default function AddReferrer({ goBackAR }) {
                 </td>
 
                 {/* Issue */}
-                <td className="trtd">
+                <td className="trtd-issue">
                   {cell.isFixed ? (
                     <span className="issuekeysummary-span">
                       {cell.issue_key} - {cell.issue_summary}
@@ -237,7 +237,7 @@ export default function AddReferrer({ goBackAR }) {
                 </td>
 
                 {/* Add button */}
-                <td className="trtd">
+                <td className="trtd-button">
                   {!cell.isFixed && cellIdx === row.rows.length - 1 && (
                     <button className="add-btn" type="button" onClick={() => addRow(rowIdx)}>
                       +

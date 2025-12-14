@@ -1,112 +1,173 @@
-/* --------------------------- */
-/* AddReferrer Container       */
-/* --------------------------- */
-.addreferrer-container {
-  display: flex;
-  flex-direction: column;
-  width: 100vw;
-  min-height: 100vh;
-  justify-content: flex-start;
-  align-items: flex-start;
-  background-color: white;
-}
+/* ============================= */
+/* TABLE WRAPPER                 */
+/* ============================= */
 
-/* --------------------------- */
-/* Table Styling               */
-/* --------------------------- */
 .addreferrer-table {
-    display: flex;
-  flex-direction: column;
-  width: 100vw;
-  min-height: 10vh;
-  justify-content: flex-start;
-  align-items: flex-start;
+  width: 98vw;
+  margin: 1vh auto;
+  table-layout: fixed;
+
+  border-collapse: separate;
+  border-spacing: 0;
+
+  border: 1px solid #4c7dff;
+  border-radius: 1vw;
+  overflow: hidden;
+
+  font-size: 0.95rem;
+  background: white;
 }
 
-.thead {
-    display: flex;
-  flex-direction: row;
-  width: 100vw;
-  height: 5vh;
-  justify-content: center;
-  align-items: center;
+/* ============================= */
+/* HEADER                        */
+/* ============================= */
+
+.theadtr th {
+  background: #e9f1ff;
+  font-weight: 600;
+  text-align: left;
+
+  padding: 1vh 0.8vw;
+  border-bottom: 1px solid #4c7dff;
 }
 
-.theadtr {
-    display: flex;
-  flex-direction: row;
-  width: 100vw;
-  height: 5vh;
-  justify-content: center;
-  align-items: center
+/* HEADER WIDTH LOCK (VW) */
+.trth-fullname { width: 18vw; }
+.trth-referrer { width: 20vw; }
+.trth-issue    { width: 55vw; }
+.trth-button   { width: 5vw; }
+
+/* ============================= */
+/* BODY ROWS                     */
+/* ============================= */
+
+.tbodytr {
+  min-height: 5vh;
+  transition: background 0.15s ease;
 }
 
-.trth,
-.trtd{
-    display: flex;
-  flex-direction: row;
-  width: 30vw;
-  height: 5vh;
-  justify-content: center;
-  align-items: center;
-border: 1px solid black;
+/* Zebra striping */
+.tbodytr:nth-child(even) {
+  background: #f5f9ff;
 }
 
-.select {
-
+/* Hover */
+.tbodytr:hover {
+  background: #dbe8ff;
 }
+
+/* ============================= */
+/* BODY CELLS                    */
+/* ============================= */
+
+.trtd-fullname,
+.trtd-referrer,
+.trtd-issue,
+.trtd-button {
+  padding: 1vh 0.8vw;
+  vertical-align: middle;
+
+  border-bottom: 1px solid #c6d6ff;
+  border-right: 1px solid #c6d6ff;
+
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+/* Remove extra border on last column */
+.trtd-button {
+  border-right: none;
+  text-align: center;
+}
+
+/* Remove bottom border on last row */
+.tbodytr:last-child td {
+  border-bottom: none;
+}
+
+/* ============================= */
+/* FULL NAME COLUMN              */
+/* ============================= */
+
+.trtd-fullname {
+  font-weight: 500;
+  background: #f0f6ff;
+}
+
+/* ============================= */
+/* ISSUE TEXT                    */
+/* ============================= */
 
 .issuekeysummary-span {
-
+  display: block;
+  line-height: 1.4;
+  word-break: break-word;
 }
+
+/* ============================= */
+/* SELECTS                       */
+/* ============================= */
+
+.select {
+  width: 100%;
+  height: 4vh;
+  font-size: 0.9rem;
+}
+
+/* ============================= */
+/* ADD (+) BUTTON                */
+/* ============================= */
 
 .add-btn {
+  width: 2.5vw;
+  height: 4vh;
+  border-radius: 0.8vw;
+  border: 1px solid #4c7dff;
+  background: white;
+  color: #4c7dff;
+  cursor: pointer;
 }
 
+.add-btn:hover {
+  background: #4c7dff;
+  color: white;
+}
 
+/* ============================= */
+/* ACTION BUTTONS (BOTTOM RIGHT) */
+/* ============================= */
 
-/* --------------------------- */
-/* Buttons                     */
-/* --------------------------- */
 .addreferrer-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 1vw;
+  margin: 2vh 2vw;
 }
 
-.addreferrer-actions button,
-.addreferrer-table button {
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
+.submit-btn,
+.close-btn {
+  padding: 0.8vh 1.8vw;
+  border-radius: 999px;
+  font-size: 0.95rem;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
+  border: none;
 }
 
-.addreferrer-actions button:hover,
-.addreferrer-table button:hover {
-  background-color: #0056b3;
+/* Jira blue */
+.submit-btn {
+  background: #0052cc;
+  color: white;
 }
 
-/* Plus button inside table */
-.addreferrer-table button {
-  padding: 4px 8px;
-  font-weight: bold;
+.submit-btn:hover {
+  background: #0747a6;
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-  .addreferrer-table th,
-  .addreferrer-table td {
-    font-size: 12px;
-    padding: 6px;
-  }
+.close-btn {
+  background: #e6efff;
+  color: #0052cc;
+}
 
-  .addreferrer-actions button {
-    padding: 5px 10px;
-    font-size: 12px;
-  }
+.close-btn:hover {
+  background: #cfe0ff;
 }
