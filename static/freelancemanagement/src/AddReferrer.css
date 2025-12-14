@@ -2,64 +2,68 @@
 /* AddReferrer Container       */
 /* --------------------------- */
 .addreferrer-container {
-  width: 100%;
-  max-width: 900px;
-  margin: 20px auto;
-  font-family: Arial, sans-serif;
-}
-
-.addreferrer-container h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #333;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  min-height: 100vh;
+  justify-content: flex-start;
+  align-items: flex-start;
+  background-color: white;
 }
 
 /* --------------------------- */
 /* Table Styling               */
 /* --------------------------- */
 .addreferrer-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
+    display: flex;
+  flex-direction: column;
+  width: 100vw;
+  min-height: 10vh;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
-.addreferrer-table th,
-.addreferrer-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
+.thead {
+    display: flex;
+  flex-direction: row;
+  width: 100vw;
+  height: 5vh;
+  justify-content: center;
+  align-items: center;
 }
 
-.addreferrer-table th {
-  background-color: #f4f4f4;
-  color: #333;
-  font-weight: bold;
+.theadtr {
+    display: flex;
+  flex-direction: row;
+  width: 100vw;
+  height: 5vh;
+  justify-content: center;
+  align-items: center
 }
 
-.addreferrer-table tr:nth-child(even) {
-  background-color: #fafafa;
+.trth,
+.trtd{
+    display: flex;
+  flex-direction: row;
+  width: 30vw;
+  height: 5vh;
+  justify-content: center;
+  align-items: center;
+border: 1px solid black;
 }
 
-.addreferrer-table tr:hover {
-  background-color: #f1f1f1;
+.select {
+
 }
 
-/* --------------------------- */
-/* Inputs and Selects          */
-/* --------------------------- */
-.addreferrer-table input,
-.addreferrer-table select {
-  width: 100%;
-  padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
-  box-sizing: border-box;
+.issuekeysummary-span {
+
 }
 
-.addreferrer-table select {
-  background-color: #fff;
+.add-btn {
 }
+
+
 
 /* --------------------------- */
 /* Buttons                     */

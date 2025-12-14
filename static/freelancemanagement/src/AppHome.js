@@ -154,24 +154,36 @@ useEffect(() => {
         <div className="homelist">
           {freelancers.map((item) => (
             <div key={item.id} className="homecard">
+              <div className="homeimginfo">
               <img src={item.photo} className="homephoto" alt="avatar" />
               <div className="homeinfo">
-                <h2>{item.name}</h2>
-                <p>{item.skills}</p>
+                <div className="homefreelancername">{item.name}</div>
+                <div className="homeskills">{item.skills}</div>
+               </div>
+                 </div>
 
                 {item.issues.length > 0 && (
                   <div className="homeissues">
-                    <strong>Deals:</strong>
-                    <ul>
                       {item.issues.map((iss, idx) => (
-                        <li key={idx}>
-                          {iss.issue_key}: {iss.summary}
-                        </li>
+                        <div className="issuekeysummary-div"  key={idx}>
+                         <div className="issuekey-div">
+                            {iss.issue_key}  </div>:
+                          <div className="issuesummary-div" >
+                                 {iss.summary} </div>
+                          <div className="issuestatus-div">
+ {(() => {
+    const invited = iss.invite_status === "yes";
+    const deal = iss.deal === "yes";
+
+    if (invited && deal) return "deal";
+    if (invited && !deal) return "negotiation";
+    return "";
+  })()}
+                           </div>
+                        </div>
                       ))}
-                    </ul>
                   </div>
                 )}
-              </div>
 
               {/* 🔴 INTENTIONALLY EMPTY — NO BUTTONS ON FREELANCER CARD */}
             </div>

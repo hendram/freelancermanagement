@@ -160,32 +160,30 @@ export default function AddReferrer({ goBackAR }) {
   // ------------------------------------------------------------
   return (
     <div className="addreferrer-container">
-      <h2>Add Referrer</h2>
-
       <table className="addreferrer-table">
-        <thead>
-          <tr>
-            <th>Full Name</th>
-            <th>Referrer</th>
-            <th>Issue</th>
-            <th></th>
+        <thead className="thead">
+          <tr className="theadtr">
+            <th className="trth">Full Name</th>
+            <th className="trth">Referrer</th>
+            <th className="trth">Issue</th>
+            <th className="trth"></th>
           </tr>
         </thead>
 
-        <tbody>
+        <tbody className="tbody">
           {rows.map((row, rowIdx) =>
             row.rows.map((cell, cellIdx) => (
-              <tr key={`${row.resume_id}-${cellIdx}`}>
+              <tr className="tbodytr" key={`${row.resume_id}-${cellIdx}`}>
                 {cellIdx === 0 && (
-                  <td rowSpan={row.rows.length}>{row.fullName}</td>
+                  <td className="trtd" rowSpan={row.rows.length}>{row.fullName}</td>
                 )}
 
                 {/* Referrer */}
-                <td>
+                <td className="trtd" >
                   {cell.isFixed ? (
                     <span>{cell.referrer}</span>
                   ) : (
-                    <select
+                    <select className="select"
                       value={cell.referrer}
                       onChange={e =>
                         updateInput(rowIdx, cellIdx, "referrer", e.target.value)
@@ -204,13 +202,13 @@ export default function AddReferrer({ goBackAR }) {
                 </td>
 
                 {/* Issue */}
-                <td>
+                <td className="trtd">
                   {cell.isFixed ? (
-                    <span>
+                    <span className="issuekeysummary-span">
                       {cell.issue_key} - {cell.issue_summary}
                     </span>
                   ) : (
-                    <select
+                    <select className="select"
                       value={cell.issue_key}
                       disabled={!cell.referrer}
                       onChange={e => {
@@ -239,9 +237,9 @@ export default function AddReferrer({ goBackAR }) {
                 </td>
 
                 {/* Add button */}
-                <td>
+                <td className="trtd">
                   {!cell.isFixed && cellIdx === row.rows.length - 1 && (
-                    <button type="button" onClick={() => addRow(rowIdx)}>
+                    <button className="add-btn" type="button" onClick={() => addRow(rowIdx)}>
                       +
                     </button>
                   )}
@@ -253,8 +251,8 @@ export default function AddReferrer({ goBackAR }) {
       </table>
 
       <div className="addreferrer-actions">
-        <button onClick={submit}>Submit</button>
-        <button onClick={() => goBackAR && goBackAR()}>Close</button>
+        <button className="submit-btn" onClick={submit}>Submit</button>
+        <button className="close-btn" onClick={() => goBackAR && goBackAR()}>Close</button>
       </div>
     </div>
   );
