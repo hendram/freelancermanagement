@@ -80,32 +80,43 @@ useEffect(() => {
   // -----------------------------
   // SUBMIT UPDATED DATA
   // -----------------------------
-  const submitUpdate = async () => {
-    const payload = {
-      id: resumeData?.id, // important
-      bio: {
-        firstName: firstNameRef.current.value,
-        lastName: lastNameRef.current.value,
-        ...bio,
-      },
-      experience: experiences,
-      skills,
-    };
+ const submitUpdate = async () => {
+  if (!resumeData?.id) {
+    alert("Invalid resume ID");
+    return;
+  }
 
-    try {
-      await invoke("updateresume", payload);
-      alert("Resume updated successfully!");
-      if (goBackUA) goBackUA();
-    } catch (err) {
-      alert("Failed to update resume");
-    }
+  const cleanedExperiences = experiences.filter(
+    (exp) =>
+      exp.company ||
+      exp.position ||
+      exp.workingPeriod ||
+      exp.jobDescription
+  );
+
+  const payload = {
+    id: resumeData.id,
+    bio: {
+      firstName: firstNameRef.current.value,
+      lastName: lastNameRef.current.value,
+      ...bio,
+    },
+    experience: cleanedExperiences,
+    skills,
   };
+
+  try {
+    await invoke("updateaction", payload);
+    alert("Resume updated successfully!");
+    if (goBackUA) goBackUA();
+  } catch (err) {
+    alert("Failed to update resume");
+  }
+};
 
   // UI FORM
   return  (
   <div className="container-addresumeua">
-    <h2 className="sectiontitle-h2ua">Update Resume</h2>
-
     {/* BIO */}
     <h3 className="sectiontitle-h3ua">Bio Information</h3>
 
@@ -198,7 +209,7 @@ useEffect(() => {
       <div className="inputemail-divua">
         <input
           id="ua_input_email"
-          className="input_email-ua"
+          className="input_emailua"
           value={bio.email}
           onChange={(e) => updateBio("email", e.target.value)}
         />

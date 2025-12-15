@@ -94,8 +94,12 @@ CREATE INDEX IF NOT EXISTS idx_assignreputation_resume_id ON assignreputation(re
 const CREATE_RFP_PROPOSAL_TABLE = `
 CREATE TABLE IF NOT EXISTS rfp_proposals (
   id INT PRIMARY KEY AUTO_INCREMENT,
+  rfp_prop_id CHAR(36) NOT NULL,
   rfp_message TEXT,
-  proposals TEXT
+  proposals TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE INDEX idx_rfp_prop_id (rfp_prop_id)
 );
 `;
 
@@ -121,13 +125,16 @@ CREATE TABLE IF NOT EXISTS myinvitation (
   first_name TEXT NOT NULL,
   last_name TEXt,
   invite_status TEXT,
-  rfp_prop_id INT,
+  rfp_prop_id CHAR(36) NOT NULL,
   price FLOAT,
   deal TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE(issue_id, resume_id),
+
   CONSTRAINT fk_myinvitation_resume FOREIGN KEY (resume_id) REFERENCES resumes(id) ON DELETE CASCADE,
   CONSTRAINT fk_rfpproposals FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE,
-  CONSTRAINT fk_issues FOREIGN KEY (rfp_prop_id) REFERENCES rfp_proposals(id) ON DELETE CASCADE
+  CONSTRAINT fk_issues FOREIGN KEY (rfp_prop_id) REFERENCES rfp_proposals(rfp_prop_id) ON DELETE CASCADE
 );
 `;
 

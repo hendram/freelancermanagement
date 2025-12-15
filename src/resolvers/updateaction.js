@@ -1,23 +1,10 @@
-export default async function updateaction(req) {
+// resolvers/updateaction.js
+export default async function updateaction({ payload, sql }) {
+  const { id, bio, experience, skills } = payload;
+
   try {
-    const data = req.payload;
-
-    const {
-      id,
-      firstName,
-      lastName,
-      dateOfBirth,
-      placeOfBirth,
-      address,
-      religion,
-      contact,
-      email,
-      nationality,
-      github,
-      skills
-    } = data;
-
-    const updateQuery = await sql.prepare(`
+    // 1. Update resume bio
+    await sql.prepare(`
       UPDATE resumes
       SET
         first_name = ?,
@@ -32,72 +19,53 @@ export default async function updateaction(req) {
         github = ?,
         skills = ?
       WHERE id = ?
-      RETURNING
-        id,
-        first_name,
-        last_name,
-        date_of_birth,
-        place_of_birth,
-        address,
-        religion,
-        contact,
-        email,
-        nationality,
-        github,
-        skills,
-        created_at
     `)
     .bindParams(
-      firstName,
-      lastName,
-      dateOfBirth,
-      placeOfBirth,
-      address,
-      religion,
-      contact,
-      email,
-      nationality,
-      github,
+      bio.firstName,
+      bio.lastName,
+      bio.dateOfBirth,
+      bio.placeOfBirth,
+      bio.address,
+      bio.religion,
+      bio.contact,
+      bio.email,
+      bio.nationality,
+      bio.github,
       skills,
       id
     )
     .execute();
 
-    const updatedResume = updateQuery.rows?.[0] || null;
+    // 2. Remove old experiences
+    await sql.prepare(`
+      DELETE FROM experiences
+      WHERE resume_id = ?
+    `)
+    .bindParams(id)
+    .execute();
 
-    let experiences = [];
-    if (updatedResume) {
-      const expQuery = await sql.prepare(`
-        SELECT
-          id,
-          company,
-          position,
-          working_period,
-          job_description,
-          created_at
-        FROM experiences
-        WHERE resume_id = ?
-        ORDER BY created_at DESC
+    // 3. Insert updated experiences
+    for (const exp of experience) {
+      await sql.prepare(`
+        INSERT INTO experiences
+        (id, resume_id, company, position, working_period, job_description)
+        VALUES (?, ?, ?, ?, ?, ?)
       `)
-      .bindParams(updatedResume.id)
+      .bindParams(
+        crypto.randomUUID(),
+        id,
+        exp.company,
+        exp.position,
+        exp.workingPeriod,
+        exp.jobDescription
+      )
       .execute();
-
-      experiences = expQuery.rows || [];
     }
 
-    return {
-      success: true,
-      resume: {
-        ...updatedResume,
-        experiences
-      }
-    };
+    return { success: true };
 
   } catch (err) {
     console.error(">>> SQL ERROR STACK (updateaction):", err.stack);
-    return {
-      success: false,
-      resume: null
-    };
+    return { success: false };
   }
 }

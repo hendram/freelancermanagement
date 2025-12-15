@@ -9,9 +9,9 @@ const resolver = new Resolver();
 import addresume from "./resolvers/addresume.js";
 import updateresume from "./resolvers/updateresume.js";
 
-import updateAction from "./resolvers/updateaction.js";
-import deleteResume from "./resolvers/deleteresume.js";
-import reputationCatalog from "./resolvers/reputationcatalog.js";
+import updateaction from "./resolvers/updateaction.js";
+import deleteresume from "./resolvers/deleteresume.js";
+import reputationcatalog from "./resolvers/reputationcatalog.js";
 import reputationcatalogsave from './resolvers/reputationcatalogsave.js';
 import getreputation from './resolvers/getreputation.js';
 import assignreputation from './resolvers/assignreputation.js';
@@ -37,15 +37,15 @@ resolver.define("updateresume", async (args) =>
 );
 
 resolver.define("updateaction", async (args) =>
-  updateAction({ ...args, sql })
+  updateaction({ ...args, sql })
 );
 
 resolver.define("deleteresume", async (args) =>
-  deleteResume({ ...args, sql })
+  deleteresume({ ...args, sql })
 );
 
 resolver.define("reputationcatalog", async (args) =>
-  reputationCatalog({ ...args, sql })
+  reputationcatalog({ ...args, sql })
 );
 
 resolver.define("reputationcatalogsave", async (args) =>

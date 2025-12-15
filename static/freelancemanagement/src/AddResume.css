@@ -2,7 +2,7 @@
 /* CONTAINER */
 /* ============================= */
 
-.container-addresume {
+.container-addresumear {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -15,7 +15,7 @@
   gap: 1vh;
 }
 
-.sectiontitle-h3 {
+.sectiontitle-h3ar {
   display:flex;
  flex-direction: row;
   justify-content: flex-start;
@@ -28,7 +28,7 @@ font-size: calc(2.2vw + 0.01vh);
   color: black;
 }
 
-.section-separator {
+.section-separatorar {
   width: 96vw;
   background-color: grey;
   margin-left: auto;
@@ -36,25 +36,25 @@ font-size: calc(2.2vw + 0.01vh);
 }
 
 /* BIO labels */
-.firstnamelabel,
-.lastnamelabel,
-.birthlabel,
-.poblabel,
-.addresslabel,
-.religionlabel,
-.contactnumberlabel,
-.emaillabel,
-.nationalitylabel,
-.githublabel,
+.firstnamelabelar,
+.lastnamelabelar,
+.birthlabelar,
+.poblabelar,
+.addresslabelar,
+.religionlabelar,
+.contactnumberlabelar,
+.emaillabelar,
+.nationalitylabelar,
+.githublabelar,
 
 /* EXPERIENCE labels */
-.companylabel,
-.positionlabel,
-.workingperiodlabel,
-.jobdesclabel,
+.companylabelar,
+.positionlabelar,
+.workingperiodlabelar,
+.jobdesclabelar,
 
 /* SKILLS labels */
-.skillslabel {
+.skillslabelar {
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -67,21 +67,21 @@ font-size: calc(1.5vw + 0.01vh);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-.inputfirstname-div,
-.inputlastname-div,
-.inputdob-div,
-.inputpob-div,
-.inputaddress-div,
-.inputreligion-div,
-.inputcontact-div,
-.inputemail-div,
-.inputnationality-div,
-.inputgithub-div,
-.inputcompany-div,
-.inputposition-div,
-.inputworkingperiod-div,
-.inputjobdesc-div, 
-.inputskills-div {
+.inputfirstname-divar,
+.inputlastname-divar,
+.inputdob-divar,
+.inputpob-divar,
+.inputaddress-divar,
+.inputreligion-divar,
+.inputcontact-divar,
+.inputemail-divar,
+.inputnationality-divar,
+.inputgithub-divar,
+.inputcompany-divar,
+.inputposition-divar,
+.inputworkingperiod-divar,
+.inputjobdesc-divar, 
+.inputskills-divar {
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -95,36 +95,35 @@ font-size: calc(1.5vw + 0.01vh);
   overflow: hidden;
 }
 
-
-.inputfirstname-div,
-.inputlastname-div {
+.inputfirstname-divar,
+.inputlastname-divar {
   width: 48vw;
 }
 
-.inputjobdesc-div {
+.inputjobdesc-divar {
   min-height: 14vh;
   border-radius: 1vw;
 }
 
-.input_firstname,
-.input_lastname,
-.input_dob,
-.input_pob,
-.input_address,
-.input_religion,
-.input_contact,
-.input_email,
-.input_nationality,
-.input_github,
+.input_firstnamear,
+.input_lastnamear,
+.input_dobar,
+.input_pobar,
+.input_addressar,
+.input_religionar,
+.input_contactar,
+.input_emailar,
+.input_nationalityar,
+.input_githubar,
 
 /* EXPERIENCE */
-.input_company,
-.input_position,
-.input_workingperiod,
-.input_jobdesc,
+.input_companyar,
+.input_positionar,
+.input_workingperiodar,
+.input_jobdescar,
 
 /* SKILLS */
-.input_skills {
+.input_skillsar {
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -138,25 +137,25 @@ font-size: calc(1.5vw + 0.01vh);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-.input_firstname,
-.input_lastname {
+.input_firstnamear,
+.input_lastnamear {
   width: 47vw;
 }
 
-.input_jobdesc {
+.input_jobdescar {
   min-height: 12vh;
-  resize: none;              /* Disable user resize */
-  overflow-y: auto;          /* Show vertical bar only when needed */
-  overflow-x: hidden;        /* Never horizontal bar */
-  white-space: pre-wrap;     /* Auto wrap */
-  word-wrap: break-word;     /* Force wrap long words */
+  resize: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 /* ============================= */
 /* FIRST + LAST NAME */
 /* ============================= */
 
-.firstlastname_div {
+.firstlastname_divar {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -166,8 +165,8 @@ font-size: calc(1.5vw + 0.01vh);
   gap: 2vw;
 }
 
-.firstname_div,
-.lastname_div {
+.firstname_divar,
+.lastname_divar {
    display: flex;
   flex-direction: column;
   justify-content: center;
@@ -181,14 +180,14 @@ font-size: calc(1.5vw + 0.01vh);
 /* BIO FIELDS */
 /* ============================= */
 
-.birth_div,
-.placebirth_div,
-.address_div,
-.religion_div,
-.contactnumber_div,
-.email_div,
-.nationality_div,
-.github_div {
+.birth_divar,
+.placebirth_divar,
+.address_divar,
+.religion_divar,
+.contactnumber_divar,
+.email_divar,
+.nationality_divar,
+.github_divar {
     display: flex;
   flex-direction: column;
   justify-content: center;
@@ -202,7 +201,7 @@ font-size: calc(1.5vw + 0.01vh);
 /* EXPERIENCE BLOCK */
 /* ============================= */
 
-.experience_block_div {
+.experience_block_divar {
       display: flex;
   flex-direction: column;
   justify-content: center;
@@ -212,10 +211,10 @@ font-size: calc(1.5vw + 0.01vh);
   gap: 1vh;
 }
 
-.company_div,
-.position_div,
-.workingperiod_div,
-.jobdesc_div {
+.company_divar,
+.position_divar,
+.workingperiod_divar,
+.jobdesc_divar {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -225,12 +224,12 @@ font-size: calc(1.5vw + 0.01vh);
   gap: 1vh;
 }
 
-.jobdesc_div {
+.jobdesc_divar {
   height: 25vh;
 }
 
 /* Add experience button */
-.addremoveexperiencebtn_div {
+.addremoveexperiencebtn_divar {
   display: flex;
  flex-direction: row;
   justify-content: flex-end;
@@ -240,9 +239,8 @@ font-size: calc(1.5vw + 0.01vh);
   gap: 2vw;
 }  
 
-
-.addexperience_btn,
-.removeexperience_btn {
+.addexperience_btnar,
+.removeexperience_btnar {
  display: flex;
   flex-direction: row;
   justify-content: center;
@@ -266,7 +264,7 @@ font-size: calc(1.5vw + 0.01vh);
 /* SKILLS */
 /* ============================= */
 
-.skills_div {
+.skills_divar {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -280,7 +278,7 @@ font-size: calc(1.5vw + 0.01vh);
 /* BUTTON GROUPS */
 /* ============================= */
 
-.submitresetclose_div {
+.submitresetclose_divar {
  display: flex;
   flex-direction: row;
   justify-content: center;
@@ -290,9 +288,9 @@ font-size: calc(1.5vw + 0.01vh);
   gap: 1vw;
  }
 
-.submitresume_btn,
-.resetresume_btn,
-.closeresume_btn {
+.submitresume_btnar,
+.resetresume_btnar,
+.closeresume_btnar {
  display: flex;
   flex-direction: row;
   justify-content: center;
@@ -309,7 +307,7 @@ font-size: calc(1.5vw + 0.01vh);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-.closeresume_btn {
+.closeresume_btnar {
   width: 6vw;
   border-radius: 4vw;
 }

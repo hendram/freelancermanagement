@@ -1,4 +1,4 @@
-export default async function deleteresume({ payload }) {
+export default async function deleteresume({ payload, sql }) {
   const { id } = payload;
 
   if (!id) {

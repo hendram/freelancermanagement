@@ -66,34 +66,34 @@ const removeLastExperienceBlock = () => {
 
   const [skills, setSkills] = useState("");
 
-  return  (
-  <div className="container-addresume">
+  return (
+  <div className="container-addresumear">
 
     {/* BIO */}
-    <h3 className="sectiontitle-h3">Bio Information</h3>
-    <hr class="section-separator" />
+    <h3 className="sectiontitle-h3ar">Bio Information</h3>
+    <hr className="section-separatorar" />
 
-    <div className="firstlastname_div">
-      <div className="firstname_div">
-        <label className="firstnamelabel" htmlFor="input_firstname">First Name:</label>
-        <div className="inputfirstname-div">
+    <div className="firstlastname_divar">
+      <div className="firstname_divar">
+        <label className="firstnamelabelar" htmlFor="input_firstname">First Name:</label>
+        <div className="inputfirstname-divar">
           <input
             id="input_firstname"
             type="text"
-            className="input_firstname"
+            className="input_firstnamear"
             placeholder="First Name"
             ref={firstNameRef}
           />
         </div>
       </div>
 
-      <div className="lastname_div">
-        <label className="lastnamelabel" htmlFor="input_lastname">Last Name:</label>
-        <div className="inputlastname-div">
+      <div className="lastname_divar">
+        <label className="lastnamelabelar" htmlFor="input_lastname">Last Name:</label>
+        <div className="inputlastname-divar">
           <input
             id="input_lastname"
             type="text"
-            className="input_lastname"
+            className="input_lastnamear"
             placeholder="Last Name"
             ref={lastNameRef}
           />
@@ -101,13 +101,13 @@ const removeLastExperienceBlock = () => {
       </div>
     </div>
 
-    <div className="birth_div">
-      <label className="birthlabel" htmlFor="input_dob">Date of Birth:</label>
-      <div className="inputdob-div">
+    <div className="birth_divar">
+      <label className="birthlabelar" htmlFor="input_dob">Date of Birth:</label>
+      <div className="inputdob-divar">
         <input
           id="input_dob"
           type="text"
-          className="input_dob"
+          className="input_dobar"
           placeholder="Date of Birth"
           value={bio.dateOfBirth}
           onChange={(e) => updateBio("dateOfBirth", e.target.value)}
@@ -115,13 +115,13 @@ const removeLastExperienceBlock = () => {
       </div>
     </div>
 
-    <div className="placebirth_div">
-      <label className="poblabel" htmlFor="input_pob">Place of Birth:</label>
-      <div className="inputpob-div">
+    <div className="placebirth_divar">
+      <label className="poblabelar" htmlFor="input_pob">Place of Birth:</label>
+      <div className="inputpob-divar">
         <input
           id="input_pob"
           type="text"
-          className="input_pob"
+          className="input_pobar"
           placeholder="Place of Birth"
           value={bio.placeOfBirth}
           onChange={(e) => updateBio("placeOfBirth", e.target.value)}
@@ -129,13 +129,13 @@ const removeLastExperienceBlock = () => {
       </div>
     </div>
 
-    <div className="address_div">
-      <label className="addresslabel" htmlFor="input_address">Address:</label>
-      <div className="inputaddress-div">
+    <div className="address_divar">
+      <label className="addresslabelar" htmlFor="input_address">Address:</label>
+      <div className="inputaddress-divar">
         <input
           id="input_address"
           type="text"
-          className="input_address"
+          className="input_addressar"
           placeholder="Address"
           value={bio.address}
           onChange={(e) => updateBio("address", e.target.value)}
@@ -143,13 +143,13 @@ const removeLastExperienceBlock = () => {
       </div>
     </div>
 
-    <div className="religion_div">
-      <label className="religionlabel" htmlFor="input_religion">Religion:</label>
-      <div className="inputreligion-div">
+    <div className="religion_divar">
+      <label className="religionlabelar" htmlFor="input_religion">Religion:</label>
+      <div className="inputreligion-divar">
         <input
           id="input_religion"
           type="text"
-          className="input_religion"
+          className="input_religionar"
           placeholder="Religion"
           value={bio.religion}
           onChange={(e) => updateBio("religion", e.target.value)}
@@ -157,13 +157,13 @@ const removeLastExperienceBlock = () => {
       </div>
     </div>
 
-    <div className="contactnumber_div">
-      <label className="contactnumberlabel" htmlFor="input_contact">Contact Number:</label>
-      <div className="inputcontact-div">
+    <div className="contactnumber_divar">
+      <label className="contactnumberlabelar" htmlFor="input_contact">Contact Number:</label>
+      <div className="inputcontact-divar">
         <input
           id="input_contact"
           type="text"
-          className="input_contact"
+          className="input_contactar"
           placeholder="Contact Number"
           value={bio.contact}
           onChange={(e) => updateBio("contact", e.target.value)}
@@ -171,13 +171,13 @@ const removeLastExperienceBlock = () => {
       </div>
     </div>
 
-    <div className="email_div">
-      <label className="emaillabel" htmlFor="input_email">Email:</label>
-      <div className="inputemail-div">
+    <div className="email_divar">
+      <label className="emaillabelar" htmlFor="input_email">Email:</label>
+      <div className="inputemail-divar">
         <input
           id="input_email"
           type="text"
-          className="input_email"
+          className="input_emailar"
           placeholder="Email"
           value={bio.email}
           onChange={(e) => updateBio("email", e.target.value)}
@@ -185,13 +185,13 @@ const removeLastExperienceBlock = () => {
       </div>
     </div>
 
-    <div className="nationality_div">
-      <label className="nationalitylabel" htmlFor="input_nationality">Nationality:</label>
-      <div className="inputnationality-div">
+    <div className="nationality_divar">
+      <label className="nationalitylabelar" htmlFor="input_nationality">Nationality:</label>
+      <div className="inputnationality-divar">
         <input
           id="input_nationality"
           type="text"
-          className="input_nationality"
+          className="input_nationalityar"
           placeholder="Nationality"
           value={bio.nationality}
           onChange={(e) => updateBio("nationality", e.target.value)}
@@ -199,13 +199,13 @@ const removeLastExperienceBlock = () => {
       </div>
     </div>
 
-    <div className="github_div">
-      <label className="githublabel" htmlFor="input_github">GitHub URL:</label>
-      <div className="inputgithub-div">
+    <div className="github_divar">
+      <label className="githublabelar" htmlFor="input_github">GitHub URL:</label>
+      <div className="inputgithub-divar">
         <input
           id="input_github"
           type="text"
-          className="input_github"
+          className="input_githubar"
           placeholder="GitHub URL"
           value={bio.github}
           onChange={(e) => updateBio("github", e.target.value)}
@@ -214,18 +214,18 @@ const removeLastExperienceBlock = () => {
     </div>
 
     {/* EXPERIENCE */}
-    <h3 className="sectiontitle-h3">Experience</h3>
-<hr class="section-separator" />
+    <h3 className="sectiontitle-h3ar">Experience</h3>
+    <hr className="section-separatorar" />
 
     {experiences.map((exp, index) => (
-      <div className="experience_block_div" key={index}>
-        <div className="company_div">
-          <label className="companylabel" htmlFor={`input_company_${index}`}>Company:</label>
-          <div className="inputcompany-div">
+      <div className="experience_block_divar" key={index}>
+        <div className="company_divar">
+          <label className="companylabelar" htmlFor={`input_company_${index}`}>Company:</label>
+          <div className="inputcompany-divar">
             <input
               id={`input_company_${index}`}
               type="text"
-              className="input_company"
+              className="input_companyar"
               placeholder="Company"
               value={exp.company}
               onChange={(e) => updateExp(index, "company", e.target.value)}
@@ -233,13 +233,13 @@ const removeLastExperienceBlock = () => {
           </div>
         </div>
 
-        <div className="position_div">
-          <label className="positionlabel" htmlFor={`input_position_${index}`}>Position:</label>
-          <div className="inputposition-div">
+        <div className="position_divar">
+          <label className="positionlabelar" htmlFor={`input_position_${index}`}>Position:</label>
+          <div className="inputposition-divar">
             <input
               id={`input_position_${index}`}
               type="text"
-              className="input_position"
+              className="input_positionar"
               placeholder="Position"
               value={exp.position}
               onChange={(e) => updateExp(index, "position", e.target.value)}
@@ -247,13 +247,13 @@ const removeLastExperienceBlock = () => {
           </div>
         </div>
 
-        <div className="workingperiod_div">
-          <label className="workingperiodlabel" htmlFor={`input_workperiod_${index}`}>Working Period:</label>
-          <div className="inputworkingperiod-div">
+        <div className="workingperiod_divar">
+          <label className="workingperiodlabelar" htmlFor={`input_workperiod_${index}`}>Working Period:</label>
+          <div className="inputworkingperiod-divar">
             <input
               id={`input_workperiod_${index}`}
               type="text"
-              className="input_workingperiod"
+              className="input_workingperiodar"
               placeholder="e.g. 2019–2022"
               value={exp.workingPeriod}
               onChange={(e) => updateExp(index, "workingPeriod", e.target.value)}
@@ -261,12 +261,12 @@ const removeLastExperienceBlock = () => {
           </div>
         </div>
 
-        <div className="jobdesc_div">
-          <label className="jobdesclabel" htmlFor={`input_jobdesc_${index}`}>Job Description:</label>
-          <div className="inputjobdesc-div">
+        <div className="jobdesc_divar">
+          <label className="jobdesclabelar" htmlFor={`input_jobdesc_${index}`}>Job Description:</label>
+          <div className="inputjobdesc-divar">
             <textarea
               id={`input_jobdesc_${index}`}
-              className="input_jobdesc"
+              className="input_jobdescar"
               placeholder="Job Description"
               value={exp.jobDescription}
               onChange={(e) =>
@@ -278,27 +278,27 @@ const removeLastExperienceBlock = () => {
       </div>
     ))}
 
-    <div className="addremoveexperiencebtn_div">
-      <button className="addexperience_btn" onClick={addExperienceBlock}>
+    <div className="addremoveexperiencebtn_divar">
+      <button className="addexperience_btnar" onClick={addExperienceBlock}>
         + Add Experience
       </button>
 
-      <button className="removeexperience_btn" onClick={removeLastExperienceBlock}>
+      <button className="removeexperience_btnar" onClick={removeLastExperienceBlock}>
         - Remove Experience
       </button>
     </div>
 
     {/* SKILLS */}
-    <h3 className="sectiontitle-h3">Skills</h3>
-   <hr class="section-separator" />
+    <h3 className="sectiontitle-h3ar">Skills</h3>
+    <hr className="section-separatorar" />
 
-    <div className="skills_div">
-      <label className="skillslabel" htmlFor="input_skills">Skills:</label>
-      <div className="inputskills-div">
+    <div className="skills_divar">
+      <label className="skillslabelar" htmlFor="input_skills">Skills:</label>
+      <div className="inputskills-divar">
         <input
           id="input_skills"
           type="text"
-          className="input_skills"
+          className="input_skillsar"
           placeholder="Skills (comma separated)"
           value={skills}
           onChange={(e) => setSkills(e.target.value)}
@@ -306,18 +306,18 @@ const removeLastExperienceBlock = () => {
       </div>
     </div>
 
-    <div className="submitresetclose_div">
-      <button className="submitresume_btn" onClick={submitData}>Submit Resume</button>
-
-      <button className="resetresume_btn" onClick={submitData}>Reset Resume</button>
+    <div className="submitresetclose_divar">
+      <button className="submitresume_btnar" onClick={submitData}>Submit Resume</button>
+      <button className="resetresume_btnar" onClick={submitData}>Reset Resume</button>
 
       {goBack && (
-        <button className="closeresume_btn" onClick={goBack}>
+        <button className="closeresume_btnar" onClick={goBack}>
           Close
         </button>
       )}
     </div>
   </div>
 );
+
 
 }
