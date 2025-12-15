@@ -109,12 +109,11 @@ export default async function invitation({ payload, sql }) {
       await sql
         .prepare(`
           INSERT INTO rfp_proposals
-          (rfp_prop_id, sender, rfp_message, proposal)
-          VALUES (?, ?, ?, NULL)
+          (rfp_prop_id, rfp_message, proposal )
+          VALUES (?, ?, NULL)
         `)
         .bindParams(
           rfpPropId,
-          "manager",
           String(rfpMessage).trim()
         )
         .execute();

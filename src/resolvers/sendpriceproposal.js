@@ -35,7 +35,7 @@ export default async function sendpriceproposal({ payload, sql }) {
         FROM myinvitation mi
         JOIN issues i ON mi.issue_id = i.id
         WHERE mi.issue_id = ? AND mi.resume_id = ?
-        ORDER BY mi.id DESC
+        ORDER BY mi.id 
         LIMIT 1
       `)
       .bindParams(issueId, resumeId)
@@ -67,7 +67,7 @@ export default async function sendpriceproposal({ payload, sql }) {
     console.log(">>> DEBUG: Loading RFP row for id:", invite.rfp_prop_id);
 
     const rfpRes = await sql
-      .prepare(`SELECT id, proposals FROM rfp_proposals WHERE id = ?`)
+      .prepare(`SELECT id, proposals FROM rfp_proposals WHERE rfp_prop_id = ?`)
       .bindParams(invite.rfp_prop_id)
       .execute();
 
@@ -76,7 +76,7 @@ export default async function sendpriceproposal({ payload, sql }) {
     if (rfpRes.rows.length === 0)
       return { success: false, error: "RFP row missing" };
 
-    const rfpRow = rfpRes.rows[0];
+   const rfpRow = rfpRes.rows[rfpRes.rows.length - 1];
     const trimmed = String(newProposal).trim();
 
     //
@@ -125,7 +125,6 @@ export default async function sendpriceproposal({ payload, sql }) {
     const referrerFirst = invite.first_name || "";
     const referrerLast = invite.last_name || "";
 
-    // NEW — no user_story.
     const issueKey = invite.issue_key || "";
     const issueSummary = invite.issue_summary || "";
 

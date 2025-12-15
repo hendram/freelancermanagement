@@ -91,7 +91,7 @@ export default async function getinvitations({ payload, sql }) {
       let proposals = [];
       if (inv.rfp_prop_id) {
         const rfpRows = await sql
-          .prepare(`SELECT rfp_message, proposals FROM rfp_proposals WHERE id = ?`)
+          .prepare(`SELECT rfp_message, proposals FROM rfp_proposals WHERE rfp_prop_id = ?`)
           .bindParams(inv.rfp_prop_id)
           .execute();
 

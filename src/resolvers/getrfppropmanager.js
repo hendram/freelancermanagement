@@ -80,7 +80,7 @@ export default async function getrfppropmanager({ payload, sql }) {
           `
           SELECT rfp_message, proposals
           FROM rfp_proposals
-          WHERE id = ?
+          WHERE rfp_prop_id = ?
         `
         )
         .bindParams(inv.rfp_prop_id)
