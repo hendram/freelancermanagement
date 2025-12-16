@@ -13,8 +13,6 @@ export default async function sendpriceproposal({ payload, sql }) {
 
   if (!issueId) return { success: false, error: "Missing issueId" };
   if (!resumeId) return { success: false, error: "Missing resumeId" };
-  if (!newProposal || !String(newProposal).trim())
-    return { success: false, error: "Empty proposal" };
 
   try {
     //
@@ -50,60 +48,62 @@ export default async function sendpriceproposal({ payload, sql }) {
 
     //
     // ---------------------------------------------------
-    // 2) Enforce RFP exists
+    // 2) Update proposal ONLY if newProposal exists
     // ---------------------------------------------------
-    if (!invite.rfp_prop_id) {
-      console.log(">>> DEBUG: No RFP found on myinvitation row");
-      return {
-        success: false,
-        error: "No RFP exists; manager must send RFP first."
-      };
-    }
+    if (newProposal && String(newProposal).trim() !== "") {
+      if (!invite.rfp_prop_id) {
+        console.log(">>> DEBUG: No RFP found on myinvitation row");
+        return {
+          success: false,
+          error: "No RFP exists; manager must send RFP first."
+        };
+      }
 
-    //
-    // ---------------------------------------------------
-    // 3) Load RFP row
-    // ---------------------------------------------------
-    console.log(">>> DEBUG: Loading RFP row for id:", invite.rfp_prop_id);
+      console.log(">>> DEBUG: Loading RFP row for id:", invite.rfp_prop_id);
+ 
+const rfpRes = await sql
+  .prepare(`
+    SELECT id, proposals
+    FROM rfp_proposals
+    WHERE rfp_prop_id = ?
+    ORDER BY round_no DESC
+    LIMIT 1
+  `)
+  .bindParams(invite.rfp_prop_id)
+  .execute();
 
-    const rfpRes = await sql
-      .prepare(`SELECT id, proposals FROM rfp_proposals WHERE rfp_prop_id = ?`)
-      .bindParams(invite.rfp_prop_id)
-      .execute();
+      console.log(">>> DEBUG: RFP row:", rfpRes.rows);
 
-    console.log(">>> DEBUG: RFP row:", rfpRes.rows);
+      if (rfpRes.rows.length === 0)
+        return { success: false, error: "RFP row missing" };
+   
+      const rfpRow = rfpRes.rows[0];
+      const trimmed = String(newProposal).trim();
 
-    if (rfpRes.rows.length === 0)
-      return { success: false, error: "RFP row missing" };
+      console.log(">>> DEBUG: Appending proposal text");
 
-   const rfpRow = rfpRes.rows[rfpRes.rows.length - 1];
-    const trimmed = String(newProposal).trim();
-
-    //
-    // ---------------------------------------------------
-    // 4) Append proposal text
-    // ---------------------------------------------------
-    console.log(">>> DEBUG: Appending proposal text");
-
-    if (!rfpRow.proposals || String(rfpRow.proposals).trim() === "") {
-      await sql
-        .prepare(`UPDATE rfp_proposals SET proposals = ? WHERE id = ?`)
-        .bindParams(trimmed, rfpRow.id)
-        .execute();
+      if (!rfpRow.proposals || String(rfpRow.proposals).trim() === "") {
+        await sql
+          .prepare(`UPDATE rfp_proposals SET proposals = ? WHERE id = ?`)
+          .bindParams(trimmed, rfpRow.id)
+          .execute();
+      } else {
+        await sql
+          .prepare(
+            `UPDATE rfp_proposals
+             SET proposals = CONCAT(COALESCE(proposals,''), '\n', ?)
+             WHERE id = ?`
+          )
+          .bindParams(trimmed, rfpRow.id)
+          .execute();
+      }
     } else {
-      await sql
-        .prepare(
-          `UPDATE rfp_proposals
-           SET proposals = CONCAT(COALESCE(proposals,''), '\n', ?)
-           WHERE id = ?`
-        )
-        .bindParams(trimmed, rfpRow.id)
-        .execute();
+      console.log(">>> DEBUG: No newProposal submitted, skipping RFP update");
     }
 
     //
     // ---------------------------------------------------
-    // 5) Update price + price_unit
+    // 3) Update price (always)
     // ---------------------------------------------------
     console.log(">>> DEBUG: Updating price:", { price });
 
@@ -118,7 +118,7 @@ export default async function sendpriceproposal({ payload, sql }) {
 
     //
     // ---------------------------------------------------
-    // 6) REFERRERS TABLE LOGIC (updated)
+    // 4) REFERRERS TABLE LOGIC
     // ---------------------------------------------------
     console.log(">>> DEBUG: Processing referees[]:", referees);
 
@@ -129,27 +129,24 @@ export default async function sendpriceproposal({ payload, sql }) {
     const issueSummary = invite.issue_summary || "";
 
     if (Array.isArray(referees) && referees.length > 0) {
+      for (const full of referees) {
+        console.log(">>> DEBUG: Handling referee name:", full);
 
-for (const full of referees) {
-  console.log(">>> DEBUG: Handling referee name:", full);
+        if (typeof full !== "string") {
+          console.log(">>> DEBUG: Non-string referee skipped:", full);
+          continue;
+        }
 
-  // Ensure the value is a string
-  if (typeof full !== "string") {
-    console.log(">>> DEBUG: Non-string referee skipped:", full);
-    continue;
-  }
+        const clean = full.trim();
+        if (!clean) {
+          console.log(">>> DEBUG: Empty string after trim, skipped");
+          continue;
+        }
 
-  const clean = full.trim();
-  if (!clean) {
-    console.log(">>> DEBUG: Empty string after trim, skipped");
-    continue;
-  }
-
-      const parts = clean.split(/\s+/);
+        const parts = clean.split(/\s+/);
         const first = parts.shift() || "";
         const last = parts.join(" ") || "";
 
-        // lookup referee resume
         const found = await sql
           .prepare(
             `SELECT id AS resume_id, first_name, last_name
@@ -176,7 +173,6 @@ for (const full of referees) {
           issueSummary
         });
 
-        // NEW SCHEMA — no user_story
         await sql
           .prepare(
             `
@@ -211,7 +207,7 @@ for (const full of referees) {
     // ---------------------------------------------------
     console.log(">>> DEBUG: Finished sendpriceproposal OK");
 
-    return { success: true, rfpPropId: rfpRow.id };
+    return { success: true, rfpPropId: invite.rfp_prop_id || null };
   } catch (e) {
     console.error(">>> SQL ERROR (sendpriceproposal):", e);
     return { success: false, error: e.message || String(e) };

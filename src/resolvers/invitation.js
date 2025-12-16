@@ -51,7 +51,7 @@ export default async function invitation({ payload, sql }) {
       issueId = reselect.rows[0].id;
     }
 
-    /* ---------------- load or create invitation ---------------- */
+    /* ---------------- load invitation ---------------- */
     const invRes = await sql
       .prepare(`
         SELECT *
@@ -62,11 +62,28 @@ export default async function invitation({ payload, sql }) {
       .bindParams(issueId, resumeId)
       .execute();
 
-    let invitationRow = invRes.rows[0] || null;
+    const invitationRow = invRes.rows[0] || null;
     let rfpPropId;
 
+    /* ---------------- HARD LOCK: DEAL FINALIZED ---------------- */
+    if (invitationRow && invitationRow.deal === "yes") {
+      if (deal === "yes") {
+        return {
+          success: true,
+          issueId,
+          rfpPropId: invitationRow.rfp_prop_id
+        };
+      }
+
+      return {
+        success: false,
+        error: "Deal already finalized. No further changes allowed."
+      };
+    }
+
+    /* ---------------- CREATE OR UPDATE INVITATION ---------------- */
     if (!invitationRow) {
-      // first time → create thread
+      // CREATE
       rfpPropId = crypto.randomUUID();
 
       await sql
@@ -80,43 +97,98 @@ export default async function invitation({ payload, sql }) {
           resumeId,
           first_name,
           last_name,
-          inviteStatus,
-          inviteStatus === "yes" ? price || null : null,
-          inviteStatus === "yes" ? deal || null : null,
+          inviteStatus ?? null,
+          price ?? null,
+          deal === "yes" ? "yes" : null,
           rfpPropId
         )
         .execute();
     } else {
+      // UPDATE
       rfpPropId = invitationRow.rfp_prop_id;
 
-      await sql
-        .prepare(`
-          UPDATE myinvitation
-          SET invite_status = ?, price = ?, deal = ?
-          WHERE id = ?
-        `)
-        .bindParams(
-          inviteStatus,
-          inviteStatus === "yes" ? price || null : null,
-          inviteStatus === "yes" ? deal || null : null,
-          invitationRow.id
-        )
-        .execute();
+      if (deal === "yes") {
+        // FINALIZE DEAL ONLY
+        await sql
+          .prepare(`
+            UPDATE myinvitation
+            SET deal = 'yes'
+            WHERE id = ?
+          `)
+          .bindParams(invitationRow.id)
+          .execute();
+      } else {
+        // NORMAL UPDATE (NO WIPE)
+        await sql
+          .prepare(`
+            UPDATE myinvitation
+            SET
+              invite_status = COALESCE(?, invite_status),
+              price         = COALESCE(?, price)
+            WHERE id = ?
+          `)
+          .bindParams(
+            inviteStatus ?? null,
+            price ?? null,
+            invitationRow.id
+          )
+          .execute();
+      }
     }
 
     /* ---------------- append RFP message ---------------- */
     if (hasRfp) {
-      await sql
+      const openRes = await sql
         .prepare(`
-          INSERT INTO rfp_proposals
-          (rfp_prop_id, rfp_message, proposal )
-          VALUES (?, ?, NULL)
+          SELECT id, round_no, rfp_message
+          FROM rfp_proposals
+          WHERE rfp_prop_id = ?
+            AND proposals IS NULL
+          ORDER BY round_no DESC
+          LIMIT 1
         `)
-        .bindParams(
-          rfpPropId,
-          String(rfpMessage).trim()
-        )
+        .bindParams(rfpPropId)
         .execute();
+
+      if (openRes.rows.length) {
+        const row = openRes.rows[0];
+        const newMessage = row.rfp_message
+          ? row.rfp_message + "\n\n" + String(rfpMessage).trim()
+          : String(rfpMessage).trim();
+
+        await sql
+          .prepare(`
+            UPDATE rfp_proposals
+            SET rfp_message = ?
+            WHERE id = ?
+          `)
+          .bindParams(newMessage, row.id)
+          .execute();
+      } else {
+        const roundRes = await sql
+          .prepare(`
+            SELECT COALESCE(MAX(round_no), 0) AS max_round
+            FROM rfp_proposals
+            WHERE rfp_prop_id = ?
+          `)
+          .bindParams(rfpPropId)
+          .execute();
+
+        const nextRound = (roundRes.rows[0]?.max_round || 0) + 1;
+
+        await sql
+          .prepare(`
+            INSERT INTO rfp_proposals
+            (rfp_prop_id, round_no, rfp_message, proposals)
+            VALUES (?, ?, ?, NULL)
+          `)
+          .bindParams(
+            rfpPropId,
+            nextRound,
+            String(rfpMessage).trim()
+          )
+          .execute();
+      }
     }
 
     return {

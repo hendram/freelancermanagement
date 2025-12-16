@@ -19,6 +19,12 @@ export default function MyInvitation({ goBackMI }) {
   const newProposalRefs = useRef({});
   const priceRefs = useRef({});
 
+  const submitStatusRef = useRef({}); // { [inv.id]: "idle" | "submitting" | "submitted" }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("email");
+    if (input) input.value = "";
+  });
 
   // -----------------------------------------
   // EMAIL SUBMIT
@@ -75,14 +81,19 @@ export default function MyInvitation({ goBackMI }) {
   };
 
   // -----------------------------------------
-  // SUBMIT PROPOSAL
+  // SUBMIT PROPOSAL (LOCKED IF DEAL = YES)
   // -----------------------------------------
   const handleSubmitProposal = async (inv) => {
+    if (inv.deal === "yes") return; // HARD LOCK
+
+    submitStatusRef.current[inv.id] = "submitting";
+    forceUpdate();
+
     const newProposal =
       newProposalRefs.current[inv.id]?.value.trim() || "";
     const price =
       priceRefs.current[inv.id]?.value.trim() || "";
- 
+
     try {
       await invoke("sendpriceproposal", {
         issueId: inv.issue_id,
@@ -97,9 +108,17 @@ export default function MyInvitation({ goBackMI }) {
           : [],
       });
 
-      alert("Submitted.");
+      submitStatusRef.current[inv.id] = "submitted";
+      forceUpdate();
+
+      setTimeout(() => {
+        submitStatusRef.current[inv.id] = "idle";
+        forceUpdate();
+      }, 1500);
     } catch (err) {
       alert("Failed to submit.");
+      submitStatusRef.current[inv.id] = "idle";
+      forceUpdate();
     }
   };
 
@@ -108,118 +127,64 @@ export default function MyInvitation({ goBackMI }) {
   // -----------------------------------------
   if (!verifiedRef.current) {
     return (
-    <div className="email-verification">
-  <label className="emaillabel" htmlFor="email">
-    Please enter your email to access invitations:
-  </label>
- <div className="email-div">
-  <input
-    id="email"
-    className="email"
-    type="email"
-    placeholder="you@example.com"
-    ref={emailRef}
-    required
-  />
-</div>
-<div className="ebuttons-btn">
-  <button
-    className="elogin-btn"
-    onClick={(e) => handleSubmit(e)}
-    disabled={loadingRef.current}
-  >
-    {loadingRef.current ? "Verifying..." : "Submit"}
-  </button>
-  <button className="ereset-btn" onClick={handleReset}>
-    Reset
-  </button>
-  <button className="eback-btn" onClick={goBackMI}>
-    Back
-  </button>
-</div>
-  {errorRef.current && <p className="error">{errorRef.current}</p>}
-</div>
+      <div className="email-verification">
+        <label className="emaillabel" htmlFor="email">
+          Please enter your email to access invitations:
+        </label>
+
+        <div className="email-div">
+          <input
+            id="email"
+            className="email"
+            type="email"
+            placeholder="you@example.com"
+            ref={emailRef}
+            required
+          />
+        </div>
+
+        <div className="ebuttons-btn">
+          <button
+            className="elogin-btn"
+            onClick={(e) => handleSubmit(e)}
+            disabled={loadingRef.current}
+          >
+            {loadingRef.current ? "Verifying..." : "Submit"}
+          </button>
+          <button className="ereset-btn" onClick={handleReset}>
+            Reset
+          </button>
+          <button className="eback-btn" onClick={goBackMI}>
+            Back
+          </button>
+        </div>
+
+        {errorRef.current && <p className="error">{errorRef.current}</p>}
+      </div>
     );
   }
-
-  // ======================================================
-  //            GROUP BY issue_id  (ONE BLOCK)
-  // ======================================================
-// ======================================================
-//        GROUP BY issue_id — ALWAYS PICK LATEST ROW
-// ======================================================
-const grouped = {};
-
-console.log("🔍 Grouping invitations");
-
-for (const row of invitationsRef.current) {
-  console.log("Row:", row);
-
-  const id = row.issue_id;
-
-  // Skip rows with null invite_status (invalid garbage history)
-  if (!row.invite_status) {
-    console.log("⛔ Skipping null invite_status row:", row);
-    continue;
-  }
-
-  // If first row for this issue_id → assign
-  if (!grouped[id]) {
-    grouped[id] = {
-      ...row,
-      latest_created_at: row.created_at,
-      _rfp: Array.isArray(row.rfp) ? [...row.rfp] : [],
-      _proposals: Array.isArray(row.proposals) ? [...row.proposals] : [],
-    };
-    continue;
-  }
-
-  // Pick the MOST RECENT row as the "real" data
-  if (row.created_at > grouped[id].latest_created_at) {
-    console.log("📌 Newer row found for issue:", id);
-
-    grouped[id] = {
-      ...row,
-      latest_created_at: row.created_at,
-      _rfp: grouped[id]._rfp,
-      _proposals: grouped[id]._proposals,
-    };
-  }
-
-  // Always merge RFP + proposals
-  if (Array.isArray(row.rfp)) grouped[id]._rfp.push(...row.rfp);
-  if (Array.isArray(row.proposals)) grouped[id]._proposals.push(...row.proposals);
-}
-
-const issueBlocks = Object.values(grouped);
-
-console.log("📦 Final grouped blocks:", issueBlocks);
 
   // -----------------------------------------
   // INVITATION PAGE
   // -----------------------------------------
   return (
     <div className="myinvitation-container">
-      {issueBlocks.length === 0 && (
+      {invitationsRef.current.length === 0 && (
         <div className="noinvitation-div">No invitations found.</div>
       )}
 
-      {issueBlocks.map((inv) => {
-        const interleaved = [];
-        const max = Math.max(inv._rfp.length, inv._proposals.length);
+      {invitationsRef.current.map((inv) => {
+        const hasNegotiation =
+          Array.isArray(inv.negotiation) && inv.negotiation.length > 0;
 
-        for (let i = 0; i < max; i++) {
-          if (inv._rfp[i]) interleaved.push(inv._rfp[i]);
-          if (inv._proposals[i]) interleaved.push(inv._proposals[i]);
-        }
-
-        const combinedText = interleaved.join("\n");
+        const dealLocked = inv.deal === "yes";
 
         return (
           <div key={inv.id} className="invitation-block">
             <div className="issue-container">
               <div className="issuetype-div">
-               <span className="issuetype-span">{inv.issue_type}</span></div>
+                <span className="issuetype-span">{inv.issue_type}</span>
+              </div>
 
               <div className="issuekeysummary-div">
                 <div className="issuekey-div">{inv.issue_key}</div>
@@ -227,96 +192,93 @@ console.log("📦 Final grouped blocks:", issueBlocks);
               </div>
             </div>
 
-            <div className="refer-block">
-              <div className="referrer-div">
-                <div className="referby-div">Refer By:</div>
-              <div className="referrernameblock-div" > 
-               {Array.isArray(inv.referrers) &&
-                inv.referrers.length > 0 ? (
-                  inv.referrers.map((r, idx) => (
-                    <div className="referrername-div" key={idx}>
-                      {r.referrer_first_name} {r.referrer_last_name}
-                    </div>
-                  ))
-                 
-                ) : (
-                  <div>""</div>
-                )}
-                 </div>
+            {/* ---------------- RFP HISTORY ---------------- */}
+            {hasNegotiation && (
+              <div className="rfp-block">
+                <label className="rfp-label">RFP:</label>
+                 <div className="rfptextarea-div">
+                <textarea
+                  className="rfp-textarea"
+  value={
+    (() => {
+      let rfpCount = 0;
+      let proposalCount = 0;
+
+      return inv.negotiation
+        .map((round) => {
+          const rfps = round.rfp.map((r) => {
+            rfpCount++;
+            return `RFP${rfpCount}: ${r}`;
+          });
+
+          const proposals = round.proposals.map((p) => {
+            proposalCount++;
+            return `Proposal${proposalCount}: ${p}`;
+          });
+
+          return [...rfps, ...proposals].join("\n");
+        })
+        .join("\n\n\n");
+    })()   
+  }
+
+                  rows="8"
+                  readOnly
+                />
+  </div>
               </div>
+            )}
 
-              <div className="referree-div">
-                <div className="referto-div">Refer To:</div>
-
-                <RefereeEditor
-                  initialReferees={
-                    Array.isArray(inv.referees)
-                      ? inv.referees.map(
-                          (r) =>
-                            `${r.referrer_first_name} ${r.referrer_last_name}`
-                        )
-                      : []
-                  }
-                  onChange={(newReferees) => {
-                    inv.refereesEdited = newReferees;
-                  }}
+            {/* ---------------- NEW PROPOSAL ---------------- */}
+            {!dealLocked && hasNegotiation && (
+              <div className="proposal-block">
+                <label className="proposal-label">New Proposal:</label>
+                   <div className="proposaltextarea-div">
+                   <textarea
+                  className="proposal-textarea"
+                  ref={(el) => (newProposalRefs.current[inv.id] = el)}
+                  placeholder="Write your new proposal..."
+                  rows="4"
                 />
               </div>
-            </div>
-
-            <div className="rfp-block">
-               <div className="rfplabel-div">
-              <label className="rfp-label" htmlFor="rfp-textarea">RFP:</label>
-                 </div>
-               <div className="rfptextarea-div">
-               <textarea
-                id="rfp-textarea"
-                className="rfp-textarea"
-                defaultValue={combinedText}
-                rows="6"
-                readOnly
-              />
-               </div>
-            </div>
-
-            <div className="proposal-block">
-             <div className="proposallabel-div">
-              <label className="proposal-label" htmlFor="proposal-textarea">New Proposal:</label>
               </div>
-              <div className="proposaltextarea-div">
-              <textarea
-                id="proposal-textarea"
-                className="proposal-textarea"
-                ref={(el) => (newProposalRefs.current[inv.id] = el)}
-                placeholder="Write your new proposal..."
-                rows="4"
-              />
-               </div>
-            </div>
+            )}
 
+            {/* ---------------- PRICE ---------------- */}
             <div className="price-div">
-             <div className="pricelabel-div"> 
-             <label className="price-label" htmlFor="priceinput" >Price:</label>
-              </div>
+              <label className="price-label">Price:</label>
+
+              {dealLocked ? (
+                <div className="price-locked">
+                  {inv.price} USD
+                </div>
+              ) : (
                <div className="priceinput-div">
-              <input
-                id="priceinput"
-                className="priceinput"
-                type="number"
-                defaultValue={inv.price || ""}
-                placeholder="100"
-                ref={(el) => (priceRefs.current[inv.id] = el)}
-              />
-              </div>
-              <span className="currency-span">USD</span>
+                <input
+                  className="priceinput"
+                  type="number"
+                  defaultValue={inv.price || ""}
+                  placeholder="100"
+                  ref={(el) => (priceRefs.current[inv.id] = el)}
+                />
+                </div>
+              )}
             </div>
 
+            {/* ---------------- ACTIONS ---------------- */}
             <div className="actions">
               <button
                 className="submitinvite-btn"
+                disabled={dealLocked}
                 onClick={() => handleSubmitProposal(inv)}
               >
-                Submit
+                {dealLocked
+                  ? "Deal Locked"
+                  : submitStatusRef.current[inv.id] === "submitting"
+                  ? "Submitting..."
+                  : submitStatusRef.current[inv.id] === "submitted"
+                  ? "Submitted"
+                  : "Submit"}
               </button>
 
               <button className="backinvite-btn" onClick={goBackMI}>

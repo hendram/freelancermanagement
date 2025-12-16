@@ -1,4 +1,6 @@
-/* Container */
+/* =========================
+   Container
+========================= */
 .fb-container {
   display: flex;
   flex-direction: column;
@@ -9,9 +11,11 @@
   background-color: white;
 }
 
-/* Issue section */
+/* =========================
+   Issue section
+========================= */
 .fbissue-container {
-   display: flex;
+  display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: flex-start;
@@ -20,36 +24,40 @@
 }
 
 .fbissuekey-span {
-     display: flex;
-  flex-direction: row;
+  display: flex;
   justify-content: center;
   align-items: center;
   width: 30vw;
   min-height: 8vh;
+  font-weight: bold;
 }
 
 .fbissuesummary-span {
-    display: flex;
-  flex-direction: row;
+  display: flex;
   justify-content: center;
   align-items: center;
   width: 70vw;
   min-height: 8vh;
 }
 
-/* Error */
+/* =========================
+   Error
+========================= */
 .fberror {
   color: #d32f2f;
   margin-bottom: 15px;
   font-weight: bold;
 }
 
-/* Manager search */
+/* =========================
+   Manager search
+========================= */
 .fbmanager-search {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 25px;
+  width: 100%;
 }
 
 .fbmanager-search label {
@@ -75,28 +83,34 @@
   transition: background-color 0.2s;
 }
 
+.fbsearch-btn:hover:not(:disabled) {
+  background-color: #005ea3;
+}
+
 .fbsearch-btn:disabled {
   background-color: #a0c4e8;
   cursor: not-allowed;
 }
 
-.fbsearch-btn:hover:not(:disabled) {
-  background-color: #005ea3;
-}
-
-/* Candidate row */
+/* =========================
+   Candidate card (FULL WIDTH)
+========================= */
 .fbcandidate-container {
+  width: 100vw;
+  box-sizing: border-box;
   border: 1px solid #ddd;
   padding: 15px;
   border-radius: 6px;
   margin-bottom: 15px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   background-color: #fff;
 }
 
-/* Candidate info */
+/* =========================
+   Candidate info
+========================= */
 .fbfullname-div {
   display: flex;
   flex-direction: column;
@@ -113,7 +127,33 @@
   color: #555;
 }
 
-/* Buttons */
+/* =========================
+   Price input
+========================= */
+.fbprice-div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fbprice-label {
+  font-weight: bold;
+}
+
+.fbprice-input {
+  width: 90px;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.fbcurrency-span {
+  font-weight: bold;
+}
+
+/* =========================
+   Buttons
+========================= */
 .fbbuttons-container {
   display: flex;
   flex-wrap: wrap;
@@ -134,7 +174,6 @@
   background-color: #4caf50;
   color: white;
 }
-
 .fbinvite-btn:hover {
   background-color: #388e3c;
 }
@@ -143,7 +182,6 @@
   background-color: #0288d1;
   color: white;
 }
-
 .fbrfp-btn:hover {
   background-color: #01579b;
 }
@@ -152,44 +190,38 @@
   background-color: #fbc02d;
   color: white;
 }
-
 .fbproposal-btn:hover {
   background-color: #f9a825;
-}
-
-.fbpass-btn {
-  background-color: #9e9e9e;
-  color: white;
-}
-
-.fbpass-btn:hover {
-  background-color: #616161;
 }
 
 .fbdeal-btn {
   background-color: #e64a19;
   color: white;
 }
-
 .fbdeal-btn:hover {
   background-color: #bf360c;
 }
 
-/* Open RFP box */
+/* =========================
+   RFP open box
+========================= */
 .fbopenrfp-div {
   margin-top: 10px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  width: 100%;
 }
 
 .fbrfptextarea {
   width: 100%;
-  resize: vertical;
-  padding: 8px;
-  border-radius: 4px;
+  min-height: 8rem;
+  resize: none;
+  padding: 10px;
+  border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 0.95rem;
+  box-sizing: border-box;
 }
 
 .fbrfp-submitbtn {
@@ -201,12 +233,11 @@
   background-color: #0288d1;
   color: white;
   border: none;
-  padding: 6px 14px;
+  padding: 6px 16px;
   border-radius: 4px;
   font-weight: bold;
   cursor: pointer;
 }
-
 .fbsubmit-btn:hover {
   background-color: #01579b;
 }
@@ -215,12 +246,57 @@
   background-color: #9e9e9e;
   color: white;
   border: none;
-  padding: 6px 14px;
+  padding: 6px 16px;
   border-radius: 4px;
   font-weight: bold;
   cursor: pointer;
 }
-
 .fbcancel-btn:hover {
   background-color: #616161;
+}
+
+/* =========================
+   Proposal view
+========================= */
+.fbopenproposal-div {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.fbproposaltextarea {
+  width: 100%;
+  min-height: 8rem;
+  resize: none;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  background-color: #f9f9f9;
+  box-sizing: border-box;
+}
+
+/* =========================
+   Close button (proposal)
+========================= */
+.fbproposal-closebtn {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.fbclose-btn {
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.fbclose-btn:hover {
+  background-color: #b71c1c;
 }

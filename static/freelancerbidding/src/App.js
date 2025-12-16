@@ -214,26 +214,24 @@ export default function App() {
       <div className="fbbuttons-container">
         <div className="fbprice-div">
           <label className="fbprice-label">Price:</label>
-
-          <input
-            type="text"
-            className="fbprice-input"
-            value={
-              priceRefs.current[c.resume_id]?.value ||
-              c.price || ""   // <---------------- FIXED HERE ONLY
-            }
-            onChange={(e) => {
-              priceRefs.current[c.resume_id].value = e.target.value;
-              forceUpdate({});
-            }}
-            ref={(el) => {
-              if (el) {
-                priceRefs.current[c.resume_id] = el;
-                el.value = el.value || c.price || "";
-              }
-            }}
-            placeholder="Enter price"
-          />
+<input
+  type="text"
+  inputMode="numeric"
+  pattern="[0-9]*"
+  className="fbprice-input"
+  defaultValue={c.price ?? ""}
+  placeholder="Enter price"
+  onChange={(e) => {
+    // allow only digits
+    e.target.value = e.target.value.replace(/\D/g, "");
+    priceRefs.current[c.resume_id] = e.target.value;
+  }}
+  ref={(el) => {
+    if (el && priceRefs.current[c.resume_id] === undefined) {
+      priceRefs.current[c.resume_id] = el.value;
+    }
+  }}
+/>
 
           <span className="fbcurrency-span">USD</span>
         </div>
@@ -264,7 +262,7 @@ export default function App() {
             ref={(el) => (proposalContentRef.currentEl = el)}
             defaultValue={proposalContentRef.current}
             readOnly
-            rows={6}
+            rows={8}
           />
           <div className="fbproposal-closebtn">
             <button
@@ -288,7 +286,7 @@ export default function App() {
             ref={(el) => (rfpMessageRef.currentEl = el)}
             defaultValue={rfpMessageRef.current}
             placeholder="Enter your RFP message..."
-            rows={3}
+            rows={8}
           />
           <div className="fbrfp-submitbtn">
             <button

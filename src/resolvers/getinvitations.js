@@ -87,22 +87,36 @@ export default async function getinvitations({ payload, sql }) {
       // ------------------------------------
       // RFP / proposals
       // ------------------------------------
-      let rfp = [];
-      let proposals = [];
-      if (inv.rfp_prop_id) {
-        const rfpRows = await sql
-          .prepare(`SELECT rfp_message, proposals FROM rfp_proposals WHERE rfp_prop_id = ?`)
-          .bindParams(inv.rfp_prop_id)
-          .execute();
+     let negotiation = [];
 
-        console.log(`📄 RFP for invitation ${inv.invitation_id}:`, rfpRows.rows.length);
+if (inv.rfp_prop_id) {
+  const rfpRows = await sql
+    .prepare(`
+      SELECT
+        round_no,
+        rfp_message,
+        proposals,
+        created_at
+      FROM rfp_proposals
+      WHERE rfp_prop_id = ?
+      ORDER BY round_no ASC
+    `)
+    .bindParams(inv.rfp_prop_id)
+    .execute();
 
-        if (rfpRows.rows.length > 0) {
-          const row = rfpRows.rows[0];
-          rfp = row.rfp_message ? row.rfp_message.split(/\r?\n/) : [];
-          proposals = row.proposals ? row.proposals.split(/\r?\n/) : [];
-        }
-      }
+  for (const row of rfpRows.rows) {
+    negotiation.push({
+      round_no: row.round_no,
+      rfp: row.rfp_message
+        ? row.rfp_message.split(/\r?\n/)
+        : [],
+      proposals: row.proposals
+        ? row.proposals.split(/\r?\n/)
+        : [],
+      created_at: row.created_at
+    });
+  }
+}
 
       // ------------------------------------
       // Referrers per invitation
@@ -186,9 +200,7 @@ export default async function getinvitations({ payload, sql }) {
         price: invited ? inv.price : null,
         deal: invited ? inv.deal : null,
 
-        rfp,
-        proposals,
-
+        negotiation,
         referrers,
         referees,
 
