@@ -81,15 +81,17 @@ useEffect(() => {
     try {
       const resumes = await invoke("getalldatafrontend");
 
-      const enrichedFreelancers = resumes.map((resume) => ({
-        id: resume.resume_id,
-        name: `${resume.first_name} ${resume.last_name}`,
-        photo: resume.photo || "./photos/default.png",
-        skills: resume.skills,
-        reputation: resume.reputation || 0,
-        referrer: resume.referrer || "",
-        issues: resume.issues || [],
-      }));
+const enrichedFreelancers = resumes.map((resume) => ({
+  id: resume.resume_id,
+  name: `${resume.first_name} ${resume.last_name}`,
+  photo: resume.photo_base64
+    ? `data:image/jpeg;base64,${resume.photo_base64}`
+    : "./photos/default.png",
+  skills: resume.skills,
+  reputation: resume.reputation || 0,
+  referrer: resume.referrer || "",
+  issues: resume.issues || [],
+}));
 
       setFreelancers(enrichedFreelancers);
     } catch (err) {

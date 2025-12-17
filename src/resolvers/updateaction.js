@@ -1,12 +1,14 @@
 // resolvers/updateaction.js
 export default async function updateaction({ payload, sql }) {
   const { id, bio, experience, skills } = payload;
+const { photoBase64 } = bio;
 
   try {
     // 1. Update resume bio
     await sql.prepare(`
       UPDATE resumes
       SET
+        photo_base64 = ?,
         first_name = ?,
         last_name = ?,
         date_of_birth = ?,
@@ -21,6 +23,7 @@ export default async function updateaction({ payload, sql }) {
       WHERE id = ?
     `)
     .bindParams(
+      bio.photoBase64 || null,
       bio.firstName,
       bio.lastName,
       bio.dateOfBirth,

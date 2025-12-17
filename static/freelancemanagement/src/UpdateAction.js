@@ -15,7 +15,9 @@ export default function UpdateAction({ goBackUA, resumeData }) {
     email: "",
     nationality: "",
     github: "",
+    photoBase64: ""
   });
+
 
   const [experiences, setExperiences] = useState([]);
   const [skills, setSkills] = useState("");
@@ -61,6 +63,7 @@ useEffect(() => {
     email: resumeData.email || "",
     nationality: resumeData.nationality || "",
     github: resumeData.github || "",
+      photoBase64: resumeData.photoBase64 || ""
   });
 
   setExperiences(
@@ -119,6 +122,41 @@ useEffect(() => {
   <div className="container-addresumeua">
     {/* BIO */}
     <h3 className="sectiontitle-h3ua">Bio Information</h3>
+
+<div className="photo_block_ua">
+  {bio.photoBase64 && (
+    <img
+      src={`data:image/jpeg;base64,${bio.photoBase64}`}
+      alt="Profile"
+      className="photo_preview_ua"
+    />
+  )}
+
+  <label className="changephoto_btnua">
+    Change Photo
+    <input
+      type="file"
+      accept="image/jpeg,image/png"
+      hidden
+      onChange={(e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 200 * 1024) {
+          alert("Image must be under 200KB");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result.split(",")[1];
+        updateBio("photoBase64", base64);
+        };
+        reader.readAsDataURL(file);
+      }}
+    />
+  </label>
+</div>
 
     <div className="firstlastname_divua">
       <div className="firstname_divua">

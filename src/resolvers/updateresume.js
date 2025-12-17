@@ -13,6 +13,7 @@ export default async function updateresume({ sql }) {
     const resumeQuery = await sql.prepare(`
       SELECT
         id,
+        photo_base64,         -- ✅ ADDED
         first_name,
         last_name,
         date_of_birth,
@@ -52,6 +53,7 @@ export default async function updateresume({ sql }) {
 
       finalList.push({
         id: r.id,
+        photoBase64: r.photo_base64 || null,   // ✅ ADDED
         firstName: r.first_name,
         lastName: r.last_name,
         dateOfBirth: r.date_of_birth,
@@ -67,6 +69,8 @@ export default async function updateresume({ sql }) {
         experiences: expQuery.rows || []
       });
     }
+
+    console.log("✅ updateresume fetched resumes:", finalList.length);
 
     return {
       totalCount,

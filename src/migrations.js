@@ -3,6 +3,7 @@ import { migrationRunner } from '@forge/sql';
 export const CREATE_RESUME_TABLE = `
   CREATE TABLE IF NOT EXISTS resumes (
   id VARCHAR(64) PRIMARY KEY,
+  photo_base64 LONGTEXT,
   first_name TEXT,
   last_name TEXT,
   date_of_birth TEXT,

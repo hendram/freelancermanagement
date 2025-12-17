@@ -6,6 +6,7 @@ export default async function getalldatafrontend({ sql }) {
       .prepare(`
         SELECT
           r.id           AS resume_id,
+          r.photo_base64,              -- ✅ ADDED
           r.first_name,
           r.last_name,
           r.skills,
@@ -21,7 +22,7 @@ export default async function getalldatafrontend({ sql }) {
 
         LEFT JOIN myinvitation mi
           ON mi.resume_id = r.id
-         AND mi.invite_status = 'yes'     -- ✅ only meaningful rows
+         AND mi.invite_status = 'yes'
 
         LEFT JOIN issues i
           ON i.id = mi.issue_id
@@ -38,6 +39,7 @@ export default async function getalldatafrontend({ sql }) {
       if (!map[row.resume_id]) {
         map[row.resume_id] = {
           resume_id: row.resume_id,
+          photo_base64: row.photo_base64,   // ✅ ADDED
           first_name: row.first_name,
           last_name: row.last_name,
           skills: row.skills,

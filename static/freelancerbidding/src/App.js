@@ -214,24 +214,30 @@ export default function App() {
       <div className="fbbuttons-container">
         <div className="fbprice-div">
           <label className="fbprice-label">Price:</label>
-<input
-  type="text"
-  inputMode="numeric"
-  pattern="[0-9]*"
-  className="fbprice-input"
-  defaultValue={c.price ?? ""}
-  placeholder="Enter price"
-  onChange={(e) => {
-    // allow only digits
-    e.target.value = e.target.value.replace(/\D/g, "");
-    priceRefs.current[c.resume_id] = e.target.value;
-  }}
-  ref={(el) => {
-    if (el && priceRefs.current[c.resume_id] === undefined) {
-      priceRefs.current[c.resume_id] = el.value;
-    }
-  }}
-/>
+
+{c.deal === "yes" ? (
+  <div className="fbprice-locked">
+    {c.price}
+  </div>
+) : (
+  <input
+    type="text"
+    inputMode="numeric"
+    pattern="[0-9]*"
+    className="fbprice-input"
+    defaultValue={c.price ?? ""}
+    placeholder="Enter price"
+    onChange={(e) => {
+      e.target.value = e.target.value.replace(/\D/g, "");
+      priceRefs.current[c.resume_id] = e.target.value;
+    }}
+    ref={(el) => {
+      if (el && priceRefs.current[c.resume_id] === undefined) {
+        priceRefs.current[c.resume_id] = el.value;
+      }
+    }}
+  />
+)}
 
           <span className="fbcurrency-span">USD</span>
         </div>

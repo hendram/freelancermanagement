@@ -69,7 +69,15 @@ export default function UpdateResume({ goBackU, onSelectResumeForUpdate }) {
       <div className="resumedivur">
         <div className="photobioboxur">
           <div className="photoboxur">
-            {/* will have img later on */}
+<img
+  src={
+    r.photoBase64
+      ? `data:image/jpeg;base64,${r.photoBase64}`
+      : "./photos/default.png"
+  }
+  alt="photo"
+  className="photour-img"
+/>
           </div>
 
           <div className="bioboxur">
