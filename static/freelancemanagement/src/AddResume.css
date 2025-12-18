@@ -35,7 +35,46 @@ font-size: calc(2.2vw + 0.01vh);
   margin-right: auto;
 }
 
+.photo_divar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.file-name {
+  flex: 1;
+  font-size: 14px;
+  color: #666;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-left: 8px;
+}
+
+.file-btn {
+  background: #0052cc;          /* Jira blue */
+  color: #fff;
+  font-size: 14px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-right: 8px;
+}
+
+.file-btn:hover {
+  background: #0747a6;
+}
+
+.photo-hint {
+  font-size: 12px;
+  color: #999;
+}
+
+
 /* BIO labels */
+.photolabelar,
 .firstnamelabelar,
 .lastnamelabelar,
 .birthlabelar,
@@ -65,8 +104,10 @@ font-size: calc(2.2vw + 0.01vh);
 font-size: calc(1.5vw + 0.01vh);
   font-weight: 600;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #111;
 }
 
+.inputphoto-divar,
 .inputfirstname-divar,
 .inputlastname-divar,
 .inputdob-divar,
@@ -95,6 +136,7 @@ font-size: calc(1.5vw + 0.01vh);
   overflow: hidden;
 }
 
+.inputphoto-divar,
 .inputfirstname-divar,
 .inputlastname-divar {
   width: 48vw;

@@ -1,0 +1,54 @@
+.alert-overlay {
+  position: fixed;
+  top: 72px; /* below Jira header */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+}
+
+.alert-box {
+  background-color: white; /* Jira error background */
+  border: 1px solid #1868db;
+  border-radius: 15px;
+  min-width: 420px;
+  max-width: 560px;
+  padding: 12px 40px 12px 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  color: #172B4D;
+  position: relative;
+}
+
+.alert-box.success {
+  background: #E3FCEF;
+  border-color: #ABF5D1;
+}
+
+.alert-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.alert-message {
+  font-size: 13px;
+  margin-top: 4px;
+  color: #42526E;
+}
+
+/* Close (X) button */
+.alert-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: none;
+  background-color: #1868db;
+  font-size: 16px;
+  cursor: pointer;
+  color: white;
+  line-height: 1;
+  border-radius: 6px;
+}
+
+.alert-close:hover {
+  color: #172B4D;
+}

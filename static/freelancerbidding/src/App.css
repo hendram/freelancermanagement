@@ -21,6 +21,7 @@
   align-items: flex-start;
   width: 100vw;
   min-height: 16vh;
+    margin-bottom: 1.5vh;
 }
 
 .fbissuekey-span {
@@ -134,6 +135,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+    margin-right: auto;
 }
 
 .fbprice-label {

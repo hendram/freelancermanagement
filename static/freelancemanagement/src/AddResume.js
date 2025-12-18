@@ -1,11 +1,13 @@
 import React, { useRef, useState } from "react";
 import { invoke } from "@forge/bridge";
 import "./AddResume.css";
+import Alert from "./Alert.js";
 
 export default function AddResume({ goBack }) {
   // BIO (Refs only for first/last name)
   const firstNameRef = useRef();
   const lastNameRef = useRef();
+const [uialert, setUiAlert] = useState(null);
 
   const [bio, setBio] = useState({
     dateOfBirth: "",
@@ -18,6 +20,8 @@ export default function AddResume({ goBack }) {
     github: "",
     photoBase64: "", // <<< ADDED
   });
+
+const [photoName, setPhotoName] = useState("");
 
   const updateBio = (key, val) =>
     setBio((prev) => ({ ...prev, [key]: val }));
@@ -52,7 +56,11 @@ const handlePhotoUpload = (e) => {
 
     // JPG/JPEG only
     if (!["image/jpeg", "image/jpg"].includes(file.type)) {
-      alert("Only JPG/JPEG images are allowed");
+setUiAlert({
+  type: "error",
+  title: "Invalid image",
+  message: "Only JPG/JPEG images are allowed",
+});
       e.target.value = "";
       return;
     }
@@ -63,6 +71,8 @@ const handlePhotoUpload = (e) => {
       e.target.value = "";
       return;
     }
+
+  setPhotoName(file.name);
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -106,19 +116,31 @@ const handlePhotoUpload = (e) => {
       {/* ===== UPLOAD PHOTO (ADDED ONLY) ===== */}
 
       {/* PHOTO UPLOAD */}
-      <div className="photo_divar">
-        <label className="photolabelar">Upload Photo:</label>
-        <div className="inputphoto-divar">
-          <input
-            type="file"
-            accept="image/jpeg,image/jpg"
-            onChange={handlePhotoUpload}
-          />
-          <div style={{ color: "#999", fontSize: "12px" }}>
-            JPG/JPEG only, max 200KB
-          </div>
-        </div>
-      </div>
+<div className="photo_divar">
+  <label className="photolabelar">Upload Photo:</label>
+
+  <div className="inputphoto-divar">
+    <input
+      id="photo-upload"
+      type="file"
+      accept="image/jpeg,image/jpg"
+      onChange={handlePhotoUpload}
+      hidden
+    />
+
+    <span className="file-name">
+      {photoName || "No file chosen"}
+    </span>
+
+    <label htmlFor="photo-upload" className="file-btn">
+      Choose File
+    </label>
+  </div>
+
+  <div className="photo-hint">
+    JPG/JPEG only, max 200KB
+  </div>
+</div>
 
       {/* ==================================== */}
 
@@ -365,6 +387,15 @@ const handlePhotoUpload = (e) => {
           </button>
         )}
       </div>
+{uialert && (
+  <Alert
+    type={uialert.type}
+    title={uialert.title}
+    message={uialert.message}
+    onClose={() => setUiAlert(null)}
+  />
+)}
+
     </div>
   );
 }

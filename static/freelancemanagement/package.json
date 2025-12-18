@@ -8,7 +8,8 @@
     "@forge/bridge": "^5.8.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^7.9.6"
+    "react-router-dom": "^7.9.6",
+    "sweetalert2": "^11.26.10"
   },
   "devDependencies": {
     "react-scripts": "5.0.1"
