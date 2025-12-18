@@ -48,47 +48,53 @@ export default function App() {
   // -----------------------------
   // 2. Search manager candidates
   // -----------------------------
-  const searchCandidates = async () => {
-    errorRef.current = "";
-    managerResultsRef.current = [];
+const searchCandidates = async () => {
+  errorRef.current = "";
+  managerResultsRef.current = [];
+  forceUpdate({});
+
+  if (!issueRef.current?.key) {
+    errorRef.current = "No Jira issue detected. Please open an issue first.";
     forceUpdate({});
+    return;
+  }
 
-    const skillsInput = managerSkillsRef.current.value.trim();
-    if (!skillsInput) {
-      errorRef.current = "Please enter skills to match.";
-      forceUpdate({});
-      return;
-    }
-
-    loadingRef.current = true;
+  const skillsInput = managerSkillsRef.current.value.trim();
+  if (!skillsInput) {
+    errorRef.current = "Please enter skills to match.";
     forceUpdate({});
+    return;
+  }
 
-    try {
-      const res = await invoke("searchskills", { skills: skillsInput });
-      console.log("res", res);
+  loadingRef.current = true;
+  forceUpdate({});
 
-      if (!res?.success) {
-        errorRef.current = res?.error || "Search failed.";
-      } else {
-        // -----------------------------
-        // FIX: Remove duplicates
-        // -----------------------------
-        const map = {};
-        res.candidates.forEach((c) => {
-          const key = c.resume_id + "_" + (issueRef.current?.key || "");
-          if (!map[key]) map[key] = c;
-        });
-        managerResultsRef.current = Object.values(map);
-        // -----------------------------
-      }
-    } catch (err) {
-      console.error(err);
-      errorRef.current = "Search error.";
-    } finally {
-      loadingRef.current = false;
-      forceUpdate({});
+  try {
+    const res = await invoke("searchskills", {
+      skills: skillsInput,
+      issueKey: issueRef.current.key, // make sure issueKey is passed
+    });
+    console.log("res", res);
+
+    if (!res?.success) {
+      errorRef.current = res?.error || "Search failed.";
+    } else {
+      // Remove duplicates
+      const map = {};
+      res.candidates.forEach((c) => {
+        const key = c.resume_id + "_" + issueRef.current.key;
+        if (!map[key]) map[key] = c;
+      });
+      managerResultsRef.current = Object.values(map);
     }
-  };
+  } catch (err) {
+    console.error(err);
+    errorRef.current = "Search error.";
+  } finally {
+    loadingRef.current = false;
+    forceUpdate({});
+  }
+};
 
   // -----------------------------
   // 3. Build payload

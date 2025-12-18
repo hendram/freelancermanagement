@@ -9,7 +9,7 @@
   --value-size: 1rem;
   --section-title-size: 1.25rem;
 
-  --label-color: #666;
+  --label-color: #8f9092;
   --value-color: #111;
   --muted: #999;
 
@@ -71,16 +71,25 @@
 /* ===============================
    PHOTO + BIO
 ================================ */
-
 .photobioboxur {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 330px 1fr;
   gap: 2rem;
+  align-items: end; /* align photo box to bottom of bio column */
 }
 
 .photoboxur {
   background: #f2f2f2;
   border-radius: 6px;
+  display: flex;
+  align-items: flex-end; /* bottom align inner img */
+  justify-content: center; /* horizontally center image */
+  padding: 0.5rem; /* optional: spacing around photo */
+  overflow: hidden; /* crop if image is too big */
+}
+
+.photour-img {
+  max-width: 100%;
 }
 
 /* ===============================
@@ -136,10 +145,11 @@
 .descriptionlabelur,
 .skillslabelur {
   font-size: var(--label-size);
-  font-weight: 500;
-  color: var(--label-color);
+  font-weight: 600;
+  color: #707070;
   line-height: 1.4;
   white-space: nowrap;
+ 
 }
 
 /* ===============================
