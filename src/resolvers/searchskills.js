@@ -16,23 +16,48 @@ export default async function searchskills({ payload, sql }) {
   console.log(">>> searchskills normalized =", skillQuery);
 
   try {
-    //-------------------------------------
-    // 1. FETCH JIRA ISSUE VIA FORGE API
-    //-------------------------------------
-  const res = await api.asApp().requestJira(
-      route`/rest/api/3/issue/${issueKey}`
-    );
+//-------------------------------------
+// 1. FETCH JIRA FIELDS (DYNAMIC)
+//-------------------------------------
+const fieldsRes = await api.asApp().requestJira(
+  route`/rest/api/3/field`
+);
 
-    if (!res.ok) {
-      return { success: false, error: `Jira API error: ${res.status}` };
-    }
-   
+if (!fieldsRes.ok) {
+  return { success: false, error: "Failed to fetch Jira fields" };
+}
 
-    const jiraIssue = await res.json();
-   console.log("jiraIssue", jiraIssue);
+const fields = await fieldsRes.json();
 
-    // === Adjust this field ID to your Jira's Story Points custom field ===
-    const storyPoints = jiraIssue.fields.customfield_10016 || 0;
+// Find Story Points field dynamically
+const storyPointsField = fields.find(
+  f => f.name === "Story Points"
+);
+
+if (!storyPointsField) {
+  return { success: false, error: "Story Points field not found" };
+}
+
+const storyPointsFieldId = storyPointsField.id;
+
+console.log(">>> Story Points field ID:", storyPointsFieldId);
+
+//-------------------------------------
+// 2. FETCH JIRA ISSUE
+//-------------------------------------
+const res = await api.asApp().requestJira(
+  route`/rest/api/3/issue/${issueKey}`
+);
+
+if (!res.ok) {
+  return { success: false, error: `Jira API error: ${res.status}` };
+}
+
+const jiraIssue = await res.json();
+console.log("jiraIssue", jiraIssue);
+
+// Read story points safely
+const storyPoints = jiraIssue.fields?.[storyPointsFieldId] || 0;
 
     // Extract priority
     const priorityMap = { "Lowest": 10, "Low": 20, "Medium": 30, "High": 40, "Highest": 50 };

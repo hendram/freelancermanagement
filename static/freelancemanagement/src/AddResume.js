@@ -67,7 +67,11 @@ setUiAlert({
 
     // max 200KB
     if (file.size > 200 * 1024) {
-      alert("Image must be 200KB or smaller");
+setUiAlert({
+  type: "error",
+  title: "Invalid image",
+  message: "Image must be 200KB or smaller",
+});
       e.target.value = "";
       return;
     }
@@ -97,10 +101,18 @@ setUiAlert({
 
     try {
       await invoke("addresume", payload);
-      alert("Resume submitted successfully!");
+setUiAlert({
+  type: "success",
+  title: "Submit success",
+  message: "Resume submitted successfully",
+});
       if (goBack) goBack();
     } catch (err) {
-      alert("Failed to submit resume");
+setUiAlert({
+  type: "error",
+  title: "Submit failed",
+  message: "Failed to submit resume",
+});
     }
   };
 
