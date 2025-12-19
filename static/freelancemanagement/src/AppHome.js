@@ -39,7 +39,6 @@ export default function AppHome() {
       "updateAction",
       "reputationCatalog",
       "assignReputation",
-      "addReferrer",
     ];
     if (role === "user" && adminOnly.includes(page)) return;
 
@@ -115,36 +114,37 @@ const enrichedFreelancers = resumes.map((resume) => ({
     return (
       <div className="homecontainer">
         <div className="hometop-menu">
-          {(role === "admin" || role === "manager") && (
-            <>
-              <div className="homemenu-btn-wrapper">
-                <button className="resume-btn">Resume ▼</button>
-                <div className="addupdateresume-div">
-                  <button className="addresume-btn" onClick={() => switchPage("addResume")}>Add Resume</button>
-                  <button className="updateresume-btn" onClick={() => switchPage("updateResume")}>Update Resume</button>
-                </div>
-              </div>
+        {(role === "admin" || role === "manager") && (
+  <>
+    <div className="homemenu-btn-wrapper">
+      <button className="resume-btn">Resume ▼</button>
+      <div className="addupdateresume-div">
+        <button className="addresume-btn" onClick={() => switchPage("addResume")}>Add Resume</button>
+        <button className="updateresume-btn" onClick={() => switchPage("updateResume")}>Update Resume</button>
+      </div>
+    </div>
 
-              <div className="homemenu-btn-wrapper">
-                <button className="reputation-btn">Reputation ▼</button>
-                <div className="reputationcatassign-div">
-                  <button className="reputationcatalog-btn" onClick={() => switchPage("reputationCatalog")}>
-                    Reputation Catalog
-                  </button>
-                  <button className="assignreputation-btn" onClick={() => switchPage("assignReputation")}>
-                    Assign Reputation
-                  </button>
-                </div>
-              </div>
+    <div className="homemenu-btn-wrapper">
+      <button className="reputation-btn">Reputation ▼</button>
+      <div className="reputationcatassign-div">
+        <button className="reputationcatalog-btn" onClick={() => switchPage("reputationCatalog")}>
+          Reputation Catalog
+        </button>
+        <button className="assignreputation-btn" onClick={() => switchPage("assignReputation")}>
+          Assign Reputation
+        </button>
+      </div>
+    </div>
+  </>
+)}
 
-              <div className="homemenu-btn-wrapper">
-                <button className="referrer-btn">Referrer ▼</button>
-                <div className="addreferrer-div">
-                  <button className="addreferrer-btn" onClick={() => switchPage("addReferrer")}>Add Referrer</button>
-                </div>
-              </div>
-            </>
-          )}
+<div className="homemenu-btn-wrapper">
+  <button className="referrer-btn">Referrer ▼</button>
+  <div className="addreferrer-div">
+    <button className="addreferrer-btn" onClick={() => switchPage("addReferrer")}>Add Referrer</button>
+  </div>
+</div>
+
 
           <div className="homemenu-btn-wrapper">
             <button className="myinvitation-btn" onClick={() => switchPage("myInvitation")}>

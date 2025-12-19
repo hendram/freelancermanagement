@@ -1,14 +1,28 @@
 /* =========================
    Container
 ========================= */
-.fb-container {
+.fb-container-before-search {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  align-items: stretch;
+  align-items: flex-start;
   width: 100%;
   background-color: white;
+  height: 50vh;
+  gap: 1.5vh;
 }
+
+.fb-container-after-search {
+ display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;  
+  background-color: white;
+  min-height: 30vh;
+  gap: 1.5vh;
+}
+
 
 /* =========================
    Issue section
@@ -19,8 +33,8 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  min-height: 8vh;
-    margin-bottom: 1.5vh;
+  height: 16vh;
+  margin-bottom: 1.5vh;
 }
 
 .fbissuekey-span {

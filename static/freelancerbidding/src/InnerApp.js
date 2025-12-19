@@ -326,7 +326,13 @@ const searchCandidates = async () => {
   // 6. Render main
   // -----------------------------
   return (
-    <div className="fb-container">
+ <div
+    className={
+      managerResultsRef.current.length > 0
+        ? "fb-container-after-search"
+        : "fb-container-before-search"
+    }
+  >
       {issueRef.current && (
         <div className="fbissue-container">
           <span className="fbissuekey-span">{issueRef.current.key}</span>
