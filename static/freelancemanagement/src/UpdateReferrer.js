@@ -4,6 +4,7 @@ import { invoke } from "@forge/bridge";
 export default function UpdateReferrer({ goBack }) {
   const [list, setList] = useState([]);
 
+
   const load = async () => {
     try {
       const r = await invoke("listReferrers");

@@ -1,6 +1,8 @@
 import React, { useRef, useState, useEffect } from "react";
 import { invoke } from "@forge/bridge";
 import "./UpdateAction.css";
+import Alert from "./Alert";
+
 
 export default function UpdateAction({ goBackUA, resumeData }) {
   const firstNameRef = useRef();
@@ -21,6 +23,8 @@ export default function UpdateAction({ goBackUA, resumeData }) {
 
   const [experiences, setExperiences] = useState([]);
   const [skills, setSkills] = useState("");
+const [uialert, setUiAlert] = useState(null);
+
 
   const updateBio = (key, val) =>
     setBio((prev) => ({ ...prev, [key]: val }));
@@ -85,7 +89,12 @@ useEffect(() => {
   // -----------------------------
  const submitUpdate = async () => {
   if (!resumeData?.id) {
-    alert("Invalid resume ID");
+setUiAlert({
+  type: "error",
+  title: "Invalid",
+  message: "Invalid resume ID",
+});
+
     return;
   }
 
@@ -110,10 +119,20 @@ useEffect(() => {
 
   try {
     await invoke("updateaction", payload);
-    alert("Resume updated successfully!");
+setUiAlert({
+  type: "success",
+  title: "Update success",
+  message: "Resume updated successfully"
+});
+  
     if (goBackUA) goBackUA();
   } catch (err) {
-    alert("Failed to update resume");
+setUiAlert({
+  type: "error",
+  title: "Update failed",
+  message: "Failed to update resume",
+});
+
   }
 };
 
@@ -143,7 +162,12 @@ useEffect(() => {
         if (!file) return;
 
         if (file.size > 200 * 1024) {
-          alert("Image must be under 200KB");
+setUiAlert({
+  type: "error",
+  title: "Upload failed",
+  message: "Image must be under 200KB",
+});
+         
           return;
         }
 
@@ -363,6 +387,15 @@ useEffect(() => {
         </button>
       )}
     </div>
+{uialert && (
+  <Alert
+    type={uialert.type}
+    title={uialert.title}
+    message={uialert.message}
+    onClose={() => setUiAlert(null)}
+  />
+)}
+
   </div>
 );
 

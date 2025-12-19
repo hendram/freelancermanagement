@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { invoke } from "@forge/bridge";
 import "./AssignReputation.css";
+import Alert from "./Alert";
 
 export default function AssignReputation({ goBackAR }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [uialert, setUiAlert] = useState(null);
+
 
   // -------------------------------------------------------
   // LOAD REPUTATION FROM BACKEND (getreputation)
@@ -75,12 +78,20 @@ export default function AssignReputation({ goBackAR }) {
           negId: r.negInput === "" ? null : Number(r.negInput)
         });
       }
+setUiAlert({
+  type: "success",
+  title: "Update success",
+  message: "Reputation updated successfully",
+});
 
-      alert("Reputation updated successfully!");
       if (goBackAR) goBackAR();
     } catch (err) {
+setUiAlert({
+  type: "error",
+  title: "Assign Failed",
+  message: "Assign reputation failed",
+});
       console.error("assignreputation failed:", err);
-      alert("Error assigning reputation.");
     }
   };
 
@@ -147,6 +158,15 @@ export default function AssignReputation({ goBackAR }) {
           <button className="btn-closear" onClick={goBackAR}>Close</button>
         )}
       </div>
+{uialert && (
+  <Alert
+    type={uialert.type}
+    title={uialert.title}
+    message={uialert.message}
+    onClose={() => setUiAlert(null)}
+  />
+)}
+
     </div>
   );
 }

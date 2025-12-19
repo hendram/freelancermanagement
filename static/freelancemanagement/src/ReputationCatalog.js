@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { invoke } from "@forge/bridge";
 import "./ReputationCatalog.css";
+import Alert from "./Alert";
+
 
 export default function ReputationCatalog({ goBackRC }) {
   const [posRange, setPosRange] = useState({ from: 1, to: 10000 });
@@ -8,6 +10,7 @@ export default function ReputationCatalog({ goBackRC }) {
 
   const [positiveReps, setPositiveReps] = useState([]);
   const [negativeReps, setNegativeReps] = useState([]);
+  const [uialert, setUiAlert] = useState(null);
 
   // -------------------------------------------------------
   // LOAD REPUTATION CATALOG FROM DB
@@ -135,14 +138,27 @@ setNegativeReps(neg);
       const res = await invoke("reputationcatalogsave", payload);
 
       if (res.success) {
-        alert("Reputation catalog saved successfully!");
+setUiAlert({
+  type: "success",
+  title: "Saved success",
+  message: "Reputation catalog saved successfully"
+});
+        
         if (goBackRC) goBackRC();
       } else {
-        alert("Failed to save catalog");
+setUiAlert({
+  type: "error",
+  title: "Save failed",
+  message: "Failed to save catalog"
+});
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to save catalog");
+setUiAlert({
+  type: "error",
+  title: "Save failed",
+  message: "Failed to save catalog"
+});
     }
   };
 
@@ -153,7 +169,7 @@ setNegativeReps(neg);
   <div className="container-rc">
     {/* ---------------- POSITIVE REPUTATION ---------------- */}
     <div className="positive-section">
-      <h3>Positive Reputation Range</h3>
+      <div className="positive-titlediv">Positive Reputation Range</div>
 
       <div className="positiveinputbut-div">
         <label className="definedpositiverangelabel" htmlFor="pos-from">
@@ -161,32 +177,38 @@ setNegativeReps(neg);
         </label>
 
         <div className="lowerposnumberinput-div">
-          <input
-            id="pos-from"
-            className="lowerposnumberinput"
-            type="number"
-            value={posRange.from}
-            onChange={e =>
-              setPosRange({ ...posRange, from: Number(e.target.value) })
-            }
-            placeholder="From"
-          />
-        </div>
+      <input
+  id="pos-from"
+  className="lowerposnumberinput"
+  type="text"
+  inputMode="numeric"
+  pattern="[0-9]*"
+  value={posRange.from}
+  onChange={(e) => {
+    const v = e.target.value.replace(/\D/g, "");
+    setPosRange({ ...posRange, from: v });
+  }}
+  placeholder="From"
+/>
+  </div>
 
         <label className="toposlabel" htmlFor="pos-to">To:</label>
 
         <div className="higherposnumberinput-div">
-          <input
-            id="pos-to"
-            className="higherposnumberinput"
-            type="number"
-            value={posRange.to}
-            onChange={e =>
-              setPosRange({ ...posRange, to: Number(e.target.value) })
-            }
-            placeholder="To"
-          />
-        </div>
+         <input
+  id="pos-to"
+  className="higherposnumberinput"
+  type="text"
+  inputMode="numeric"
+  pattern="[0-9]*"
+  value={posRange.to}
+  onChange={(e) => {
+    const v = e.target.value.replace(/\D/g, "");
+    setPosRange({ ...posRange, to: v });
+  }}
+  placeholder="To"
+/>
+   </div>
       </div>
 
       <div className="descriptionnumberposblock-div">
@@ -210,16 +232,19 @@ setNegativeReps(neg);
             </div>
 
             <div className="numberposinput-div">
-              <input
-                className="numberposinput"
-                type="number"
-                value={rep.value}
-                placeholder="Value"
-                onChange={e =>
-                  updatePositive(idx, "value", Number(e.target.value))
-                }
-              />
-            </div>
+            <input
+  className="numberposinput"
+  type="text"
+  inputMode="numeric"
+  pattern="[0-9]*"
+  value={rep.value}
+  placeholder="Value"
+  onChange={(e) => {
+    const v = e.target.value.replace(/\D/g, "");
+    updatePositive(idx, "value", v);
+  }}
+/>
+ </div>
           </div>
         ))}
       </div>
@@ -236,7 +261,7 @@ setNegativeReps(neg);
 
     {/* ---------------- NEGATIVE REPUTATION ---------------- */}
     <div className="negative-section">
-      <h3>Negative Reputation Range</h3>
+      <div className="negative-titlediv">Negative Reputation Range</div>
 
       <div className="negativeinputbut-div">
         <label className="definednegativerangelabel" htmlFor="neg-from">
@@ -244,32 +269,55 @@ setNegativeReps(neg);
         </label>
 
         <div className="lowernegnumberinput-div">
-          <input
-            id="neg-from"
-            className="lowernegnumberinput"
-            type="number"
-            value={negRange.from}
-            onChange={e =>
-              setNegRange({ ...negRange, from: Number(e.target.value) })
-            }
-            placeholder="From"
-          />
-        </div>
+      <input
+  id="neg-from"
+  className="lowernegnumberinput"
+  type="text"
+  inputMode="numeric"
+  pattern="[0-9]*"
+  value={negRange.from}
+ onChange={(e) => {
+  let v = e.target.value;
+
+  // allow digits and minus only
+  v = v.replace(/[^0-9-]/g, "");
+
+  // only one minus, only at start
+  v = v.replace(/(?!^)-/g, "");
+
+  // allow "-" while typing OR valid negative integer
+  if (v === "-" || /^-\d+$/.test(v)) {
+    setNegRange({ ...negRange, from: v });
+  }
+}}
+
+  placeholder="From"
+/>
+  </div>
 
         <label className="toneglabel" htmlFor="neg-to">To:</label>
 
         <div className="highernegnumberinput-div">
-          <input
-            id="neg-to"
-            className="highernegnumberinput"
-            type="number"
-            value={negRange.to}
-            onChange={e =>
-              setNegRange({ ...negRange, to: Number(e.target.value) })
-            }
-            placeholder="To"
-          />
-        </div>
+         <input
+  id="neg-to"
+  className="highernegnumberinput"
+  type="text"
+  inputMode="numeric"
+  pattern="[0-9]*"
+  value={negRange.to}
+  onChange={(e) => {
+  let v = e.target.value;
+
+  v = v.replace(/[^0-9-]/g, "");
+  v = v.replace(/(?!^)-/g, "");
+
+  if (v === "-" || /^-\d+$/.test(v)) {
+    setNegRange({ ...negRange, to: v });
+  }
+}}
+  placeholder="To"
+/>
+  </div>
       </div>
 
       <div className="descriptionnumbernegblock-div">
@@ -293,16 +341,26 @@ setNegativeReps(neg);
             </div>
 
             <div className="numberneginput-div">
-              <input
-                className="numberneginput"
-                type="number"
-                value={rep.value}
-                placeholder="Value"
-                onChange={e =>
-                  updateNegative(idx, "value", Number(e.target.value))
-                }
-              />
-            </div>
+            <input
+  className="numberneginput"
+  type="text"
+  inputMode="numeric"
+  pattern="[0-9]*"
+  value={rep.value}
+  placeholder="Value"
+onChange={(e) => {
+  let v = e.target.value;
+
+  v = v.replace(/[^0-9-]/g, "");
+  v = v.replace(/(?!^)-/g, "");
+
+  if (v === "-" || /^-\d+$/.test(v)) {
+    updateNegative(idx, "value", v);
+  }
+}}
+
+/>
+ </div>
           </div>
         ))}
       </div>
@@ -328,6 +386,15 @@ setNegativeReps(neg);
         </button>
       )}
     </div>
+{uialert && (
+  <Alert
+    type={uialert.type}
+    title={uialert.title}
+    message={uialert.message}
+    onClose={() => setUiAlert(null)}
+  />
+)}
+
   </div>
 )
 

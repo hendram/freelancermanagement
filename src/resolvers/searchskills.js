@@ -16,63 +16,78 @@ export default async function searchskills({ payload, sql }) {
   console.log(">>> searchskills normalized =", skillQuery);
 
   try {
-//-------------------------------------
-// 1. FETCH JIRA FIELDS (DYNAMIC)
-//-------------------------------------
-const fieldsRes = await api.asApp().requestJira(
-  route`/rest/api/3/field`
-);
+    //-------------------------------------
+    // 1. FETCH JIRA FIELDS (DYNAMIC)
+    //-------------------------------------
+    const fieldsRes = await api.asApp().requestJira(
+      route`/rest/api/3/field`
+    );
 
-if (!fieldsRes.ok) {
-  return { success: false, error: "Failed to fetch Jira fields" };
-}
+    if (!fieldsRes.ok) {
+      return { success: false, error: "Failed to fetch Jira fields" };
+    }
 
-const fields = await fieldsRes.json();
+    const fields = await fieldsRes.json();
 
-// Find Story Points field dynamically
-const storyPointsField = fields.find(
-  f => f.name === "Story Points"
-);
+    const storyPointsField = fields.find(
+      f => f.name === "Story Points"
+    );
 
-if (!storyPointsField) {
-  return { success: false, error: "Story Points field not found" };
-}
+    if (!storyPointsField) {
+      return { success: false, error: "Story Points field not found" };
+    }
 
-const storyPointsFieldId = storyPointsField.id;
+    const storyPointsFieldId = storyPointsField.id;
+    console.log(">>> Story Points field ID:", storyPointsFieldId);
 
-console.log(">>> Story Points field ID:", storyPointsFieldId);
+    //-------------------------------------
+    // 2. FETCH JIRA ISSUE
+    //-------------------------------------
+    const res = await api.asApp().requestJira(
+      route`/rest/api/3/issue/${issueKey}`
+    );
 
-//-------------------------------------
-// 2. FETCH JIRA ISSUE
-//-------------------------------------
-const res = await api.asApp().requestJira(
-  route`/rest/api/3/issue/${issueKey}`
-);
+    if (!res.ok) {
+      return { success: false, error: `Jira API error: ${res.status}` };
+    }
 
-if (!res.ok) {
-  return { success: false, error: `Jira API error: ${res.status}` };
-}
+    const jiraIssue = await res.json();
+    console.log("jiraIssue", jiraIssue);
 
-const jiraIssue = await res.json();
-console.log("jiraIssue", jiraIssue);
+    const storyPoints = jiraIssue.fields?.[storyPointsFieldId] || 0;
 
-// Read story points safely
-const storyPoints = jiraIssue.fields?.[storyPointsFieldId] || 0;
+    const priorityMap = {
+      "Lowest": 10,
+      "Low": 20,
+      "Medium": 30,
+      "High": 40,
+      "Highest": 50
+    };
 
-    // Extract priority
-    const priorityMap = { "Lowest": 10, "Low": 20, "Medium": 30, "High": 40, "Highest": 50 };
     const priorityName = jiraIssue.fields.priority?.name || "Medium";
     const priorityPoints = priorityMap[priorityName] || 30;
 
-    // Minimum points required to handle the issue
-    const minimumRequiredScore = storyPoints > 0 ? storyPoints * 10 : priorityPoints;
+    const minimumRequiredScore =
+      storyPoints > 0 ? storyPoints * 10 : priorityPoints;
 
     console.log(">>> Jira storyPoints:", storyPoints);
     console.log(">>> Jira priority:", priorityName, "points:", priorityPoints);
     console.log(">>> minimumRequiredScore:", minimumRequiredScore);
 
     //-------------------------------------
-    // 2. BASIC SKILL SEARCH
+    // 3. RESOLVE issue_key → issue_id
+    //-------------------------------------
+    const issueRow = await sql.prepare(`
+      SELECT id
+      FROM issues
+      WHERE issue_key = ?
+      LIMIT 1
+    `).bindParams(issueKey).execute();
+
+    const issueId = issueRow.rows?.[0]?.id || null;
+
+    //-------------------------------------
+    // 4. BASIC SKILL SEARCH
     //-------------------------------------
     const baseQuery = `
       SELECT id AS resume_id, first_name, last_name, skills
@@ -80,19 +95,30 @@ const storyPoints = jiraIssue.fields?.[storyPointsFieldId] || 0;
       WHERE REPLACE(LOWER(skills), ' ', '') LIKE ?
       LIMIT 50
     `;
-    const baseResult = await sql.prepare(baseQuery).bindParams(`%${skillQuery}%`).execute();
+    const baseResult = await sql
+      .prepare(baseQuery)
+      .bindParams(`%${skillQuery}%`)
+      .execute();
+
     const rows = Array.isArray(baseResult.rows) ? baseResult.rows : [];
     const candidates = [];
 
     //-------------------------------------
-    // 3. ENRICH EACH CANDIDATE
+    // 5. ENRICH EACH CANDIDATE
     //-------------------------------------
     for (const row of rows) {
       const resumeId = row.resume_id;
 
-      // Experience
-      const expQuery = `SELECT working_period FROM experiences WHERE resume_id = ?`;
-      const expResult = await sql.prepare(expQuery).bindParams(resumeId).execute();
+      const expQuery = `
+        SELECT working_period
+        FROM experiences
+        WHERE resume_id = ?
+      `;
+      const expResult = await sql
+        .prepare(expQuery)
+        .bindParams(resumeId)
+        .execute();
+
       let totalYears = 0;
       for (const exp of expResult.rows || []) {
         if (!exp.working_period) continue;
@@ -103,32 +129,58 @@ const storyPoints = jiraIssue.fields?.[storyPointsFieldId] || 0;
           if (end > start) totalYears += (end - start);
         }
       }
+
       const experienceScore = totalYears * 10;
 
-      // Reputation
-      const repQuery = `SELECT total_reputation_value FROM assignreputation WHERE resume_id = ? LIMIT 1`;
-      const repResult = await sql.prepare(repQuery).bindParams(resumeId).execute();
-      const reputationScore = repResult.rows?.[0]?.total_reputation_value || 0;
+      const repQuery = `
+        SELECT total_reputation_value
+        FROM assignreputation
+        WHERE resume_id = ?
+        LIMIT 1
+      `;
+      const repResult = await sql
+        .prepare(repQuery)
+        .bindParams(resumeId)
+        .execute();
+
+      const reputationScore =
+        repResult.rows?.[0]?.total_reputation_value || 0;
 
       const totalScore = experienceScore + reputationScore;
 
-      // Filter by minimum required score
       if (totalScore < minimumRequiredScore) continue;
 
-      // Latest invitation
-      const invQuery = `
-        SELECT price, invite_status, deal, created_at
-        FROM myinvitation
-        WHERE resume_id = ?
-        ORDER BY created_at DESC
-        LIMIT 1
-      `;
-      const invResult = await sql.prepare(invQuery).bindParams(resumeId).execute();
-      const inv = invResult.rows?.[0] || {};
+      //-------------------------------------
+      // 6. ISSUE-SCOPED INVITATION LOOKUP
+      //-------------------------------------
+      let inv = null;
 
-      const cleanedSkills = typeof row.skills === "string"
-        ? row.skills.replace(/[\[\]"]/g, "").split(",").map(s => s.trim()).filter(Boolean)
-        : [];
+      if (issueId) {
+        const invQuery = `
+          SELECT price, invite_status, deal, created_at
+          FROM myinvitation
+          WHERE resume_id = ?
+            AND issue_id = ?
+          ORDER BY created_at DESC
+          LIMIT 1
+        `;
+
+        const invResult = await sql
+          .prepare(invQuery)
+          .bindParams(resumeId, issueId)
+          .execute();
+
+        inv = invResult.rows?.[0] || null;
+      }
+
+      const cleanedSkills =
+        typeof row.skills === "string"
+          ? row.skills
+              .replace(/[\[\]"]/g, "")
+              .split(",")
+              .map(s => s.trim())
+              .filter(Boolean)
+          : [];
 
       candidates.push({
         resume_id: resumeId,
@@ -139,15 +191,15 @@ const storyPoints = jiraIssue.fields?.[storyPointsFieldId] || 0;
         reputation: reputationScore,
         total_score: totalScore,
         maxStoryPoints: Math.floor(totalScore / 10),
-        price: inv.price || null,
-        deal: inv.deal || null,
-        invited: inv.invite_status === "yes",
-        created_at: inv.created_at || null
+        price: inv ? inv.price : null,
+        deal: inv ? inv.deal : null,
+        invited: inv ? inv.invite_status === "yes" : false,
+        created_at: inv ? inv.created_at : null
       });
     }
 
     //-------------------------------------
-    // 4. SORT + LIMIT
+    // 7. SORT + LIMIT
     //-------------------------------------
     const topCandidates = candidates
       .sort((a, b) => b.total_score - a.total_score)

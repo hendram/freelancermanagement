@@ -1,7 +1,8 @@
-import React, { useRef, useReducer } from "react";
+import React, { useRef, useReducer, useState } from "react";
 import { invoke } from "@forge/bridge";
 import "./MyInvitation.css";
 import RefereeEditor from "./RefereeEditor";
+import Alert from "./Alert";
 
 function useForceUpdate() {
   return useReducer(() => ({}), {})[1];
@@ -15,6 +16,7 @@ export default function MyInvitation({ goBackMI }) {
   const verifiedRef = useRef(false);
   const loadingRef = useRef(false);
   const errorRef = useRef(null);
+  const [uialert, setUiAlert] = useState(null);
 
   const newProposalRefs = useRef({});
   const priceRefs = useRef({});
@@ -116,7 +118,11 @@ export default function MyInvitation({ goBackMI }) {
         forceUpdate();
       }, 1500);
     } catch (err) {
-      alert("Failed to submit.");
+setUiAlert({
+  type: "error",
+  title: "Submit failed",
+  message: "Failed to submit proposal"
+});
       submitStatusRef.current[inv.id] = "idle";
       forceUpdate();
     }
@@ -288,6 +294,16 @@ export default function MyInvitation({ goBackMI }) {
           </div>
         );
       })}
+
+{uialert && (
+  <Alert
+    type={uialert.type}
+    title={uialert.title}
+    message={uialert.message}
+    onClose={() => setUiAlert(null)}
+  />
+)}
+
     </div>
   );
 }

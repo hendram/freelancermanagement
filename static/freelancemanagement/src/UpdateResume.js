@@ -3,6 +3,7 @@ import { invoke } from "@forge/bridge";
 import "./UpdateResume.css";
 import LeftArrow from "./assets/leftarrow.svg";
 import RightArrow from "./assets/rightarrow.svg";
+import Alert from "./Alert";
 
 
 export default function UpdateResume({ goBackU, onSelectResumeForUpdate }) {
@@ -10,6 +11,8 @@ export default function UpdateResume({ goBackU, onSelectResumeForUpdate }) {
   const [index, setIndex] = useState(0);
   const [pageRange, setPageRange] = useState("1-10");
   const [totalCount, setTotalCount] = useState(10);
+const [uialert, setUiAlert] = useState(null);
+
 
   const loadResumes = async () => {
     try {
@@ -19,7 +22,12 @@ export default function UpdateResume({ goBackU, onSelectResumeForUpdate }) {
       setIndex(0);
     } catch (err) {
       console.error("ERROR loading resumes:", err);
-      alert("Failed to load resume data");
+setUiAlert({
+  type: "error",
+  title: "Load failed",
+  message: "Failed to load resume data"
+});
+      
     }
   };
 
@@ -228,6 +236,15 @@ export default function UpdateResume({ goBackU, onSelectResumeForUpdate }) {
   <img src={RightArrow} alt="Next" />
 </div>
     </div>
+{uialert && (
+  <Alert
+    type={uialert.type}
+    title={uialert.title}
+    message={uialert.message}
+    onClose={() => setUiAlert(null)}
+  />
+)}
+
   </div>
 );
 

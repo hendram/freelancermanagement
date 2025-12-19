@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { invoke } from "@forge/bridge";
 import "./AddReferrer.css";
+import Alert from "./Alert.js";
 
 export default function AddReferrer({ goBackAR }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+
+const [uialert, setUiAlert] = useState(null);
+
 
   const fullnameFromParts = (first, last) =>
     `${(first || "").trim()} ${(last || "").trim()}`.trim();
@@ -145,11 +149,21 @@ export default function AddReferrer({ goBackAR }) {
         }
       }
 
-      alert("Referrers assigned successfully!");
+setUiAlert({
+  type: "success",
+  title: "Success",
+  message: "Referrers assigned successfully",
+});
+
       goBackAR && goBackAR();
     } catch (err) {
       console.error("addreferrer failed:", err);
-      alert("Error assigning referrers.");
+setUiAlert({
+  type: "error",
+  title: "Failed Assign",
+  message: "Error assigning referrers",
+});
+
     }
   };
 
@@ -254,6 +268,15 @@ export default function AddReferrer({ goBackAR }) {
         <button className="submit-btn" onClick={submit}>Submit</button>
         <button className="close-btn" onClick={() => goBackAR && goBackAR()}>Close</button>
       </div>
+{uialert && (
+  <Alert
+    type={uialert.type}
+    title={uialert.title}
+    message={uialert.message}
+    onClose={() => setUiAlert(null)}
+  />
+)}
+
     </div>
   );
 }
