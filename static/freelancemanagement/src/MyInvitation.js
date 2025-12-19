@@ -128,6 +128,32 @@ setUiAlert({
     }
   };
 
+// -----------------------------------------
+// PASS INVITATION
+// -----------------------------------------
+const handlePass = async (inv) => {
+  try {
+    await invoke("passsend", {
+      issueKey: inv.issue_key,
+      issueId: inv.issue_id,
+      resumeId: inv.resume_id,
+      referees: Array.isArray(inv.referees) ? inv.referees : [],
+    });
+
+    invitationsRef.current = invitationsRef.current.filter(
+      (i) => i.id !== inv.id
+    );
+    forceUpdate();
+  } catch (err) {
+    setUiAlert({
+      type: "error",
+      title: "Pass failed",
+      message: "Unable to pass this invitation",
+    });
+  }
+};
+
+
   // -----------------------------------------
   // EMAIL PAGE
   // -----------------------------------------
@@ -197,6 +223,48 @@ setUiAlert({
                 <div className="issuesummary-div">{inv.issue_summary}</div>
               </div>
             </div>
+
+{/* ---------------- REFERRER / REFEREE ---------------- */}
+<div className="refer-block">
+
+  {/* -------- Refer From (READ ONLY) -------- */}
+  <div className="referrer-div">
+    <div className="referby-div">
+      Refer From:
+    </div>
+
+    <div className="referrernameblock-div">
+      {Array.isArray(inv.referrers) && inv.referrers.length > 0 ? (
+        inv.referrers.map((r, idx) => (
+          <div key={idx} className="referrername-div">
+            {r.referrer_first_name} {r.referrer_last_name}
+          </div>
+        ))
+      ) : (
+        <div className="referrername-div">
+          —
+        </div>
+      )}
+    </div>
+  </div>
+
+  {/* -------- Refer To (EDITABLE) -------- */}
+  <div className="referree-div">
+    <div className="referto-div">
+      Refer To:
+    </div>
+
+    <div className="referrernameblock-div">
+      <RefereeEditor
+        initialReferees={inv.referees || []}
+        onChange={(updated) => {
+          inv.refereesEdited = updated;
+        }}
+      />
+    </div>
+  </div>
+
+</div>
 
             {/* ---------------- RFP HISTORY ---------------- */}
             {hasNegotiation && (
@@ -271,6 +339,9 @@ setUiAlert({
               )}
             </div>
 
+
+
+
             {/* ---------------- ACTIONS ---------------- */}
             <div className="actions">
               <button
@@ -286,6 +357,16 @@ setUiAlert({
                   ? "Submitted"
                   : "Submit"}
               </button>
+
+ {!dealLocked && (
+    <button
+      className="passinvite-btn"
+      onClick={() => handlePass(inv)}
+    >
+      Pass
+    </button>
+  )}
+
 
               <button className="backinvite-btn" onClick={goBackMI}>
                 Back

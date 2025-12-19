@@ -27,6 +27,7 @@ import getinvitations from "./resolvers/getinvitations";
 import sendpriceproposal from "./resolvers/sendpriceproposal";
 import getrfppropmanager from "./resolvers/getrfppropmanager";
 import getalldatafrontend from "./resolvers/getalldatafrontend";
+import passsend from "./resolvers/passsend";
 
 resolver.define("addresume", async (args) =>
   addresume({ ...args, sql })
@@ -108,6 +109,10 @@ resolver.define("getrfppropmanager", async (args) =>
 
 resolver.define("getalldatafrontend", async (args) =>
   getalldatafrontend({ ...args, sql })
+);
+
+resolver.define("passsend", async (args) =>
+  passsend({ ...args, sql })
 );
 
 export const handler = resolver.getDefinitions();
