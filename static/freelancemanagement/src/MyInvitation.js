@@ -255,13 +255,20 @@ const handlePass = async (inv) => {
     </div>
 
     <div className="referrernameblock-div">
-      <RefereeEditor
-        initialReferees={inv.referees || []}
-        onChange={(updated) => {
-          inv.refereesEdited = updated;
-        }}
-      />
-    </div>
+    <RefereeEditor
+  initialReferees={
+    Array.isArray(inv.referees)
+      ? inv.referees.map(r => ({
+          first_name: r.first_name ?? r.referrer_first_name,
+          last_name:  r.last_name  ?? r.referrer_last_name,
+        }))
+      : []
+  }
+  onChange={(updated) => {
+    inv.refereesEdited = updated;
+  }}
+/>
+ </div>
   </div>
 
 </div>
