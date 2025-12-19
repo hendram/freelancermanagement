@@ -133,11 +133,17 @@ setUiAlert({
 // -----------------------------------------
 const handlePass = async (inv) => {
   try {
+  const refereesPayload = (inv.refereesEdited ?? inv.referees ?? []).map(r => ({
+  first_name: r.first_name ?? r.referrer_first_name,
+  last_name:  r.last_name  ?? r.referrer_last_name,
+}));
+
+
     await invoke("passsend", {
       issueKey: inv.issue_key,
       issueId: inv.issue_id,
       resumeId: inv.resume_id,
-      referees: Array.isArray(inv.referees) ? inv.referees : [],
+      referees: refereesPayload,
     });
 
     invitationsRef.current = invitationsRef.current.filter(
