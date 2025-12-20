@@ -207,7 +207,7 @@ font-size: calc(1.5vw + 0.01vh);
 
 .homeissuesah {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   width: 83vw;
   min-height: 12vh;
   justify-content: flex-start;
