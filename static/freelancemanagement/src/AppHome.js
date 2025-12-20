@@ -169,7 +169,7 @@ const enrichedFreelancers = resumes.map((resume) => ({
                       {item.issues.map((iss, idx) => (
                         <div className="issuekeysummary-divah"  key={idx}>
                          <div className="issuekey-divah">
-                            {iss.issue_key}  </div>:
+                            {iss.issue_key}  </div>
                           <div className="issuesummary-divah" >
                                  {iss.summary} </div>
                           <div className="issuestatus-divah">
