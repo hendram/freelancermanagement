@@ -3,6 +3,8 @@ export default async function updateaction({ payload, sql }) {
   const { id, bio, experience, skills } = payload;
 const { photoBase64 } = bio;
 
+console.log("photobase64updateaction", bio.photoBase64);
+
   try {
     // 1. Update resume bio
     await sql.prepare(`

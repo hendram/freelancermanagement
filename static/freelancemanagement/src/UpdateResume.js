@@ -49,7 +49,6 @@ setUiAlert({
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this resume?")) return;
     try {
       await invoke("deleteresume", { id });
       const updated = resumes.filter((r) => r.id !== id);

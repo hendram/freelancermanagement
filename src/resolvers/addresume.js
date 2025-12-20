@@ -5,6 +5,7 @@ export default async function addresume({ payload, sql }) {
   const { bio, experience, skills } = payload;
   const resumeId = crypto.randomUUID();
 
+  console.log("photobase64addresume", bio.photoBase64);
   try {
     // Insert resume bio
     await sql
