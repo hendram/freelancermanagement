@@ -5,7 +5,7 @@ issbody {
 }
 
 /* MAIN CONTAINER */
-.homecontainer {
+.homecontainerah {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -16,14 +16,14 @@ issbody {
 }
 
 /* TITLE */
-.hometitle {
+.hometitleah {
   font-size: 26px;
   margin: 30px 0 20px;
   font-weight: 700;
 }
 
 /* TOP MENU */
-.hometop-menu {
+.hometop-menuah {
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -34,7 +34,7 @@ issbody {
 }
 
 /* MENU BUTTON WRAPPER */
-.homemenu-btn-wrapper {
+.homemenu-btn-wrapperah {
 display: flex;
     flex-direction: column;
     justify-content: center;
@@ -46,10 +46,10 @@ display: flex;
 }
 
 /* MAIN MENU BUTTON */
-.resume-btn,
-.reputation-btn,
-.referrer-btn, 
-.myinvitation-btn {
+.resume-btnah,
+.reputation-btnah,
+.referrer-btnah, 
+.myinvitation-btnah {
   display:flex;
   flex-direction: row;
   justify-content: center;
@@ -68,14 +68,14 @@ font-size: calc(1.3vw + 0.01vh);
   padding-right: 1vw;
 }
 
-.homemenu-btn:hover {
+.homemenu-btnah:hover {
   background: #ccc;
 }
 
 /* SUBMENU */
-.addupdateresume-div,
-.reputationcatassign-div,
-.addreferrer-div {
+.addupdateresume-divah,
+.reputationcatassign-divah,
+.addreferrer-divah {
   position: absolute;
   top: 100%;
  left: 50%;
@@ -90,18 +90,18 @@ font-size: calc(1.3vw + 0.01vh);
   padding-right: 1vw;
 }
 
-.homemenu-btn-wrapper:hover .addupdateresume-div,
-.homemenu-btn-wrapper:hover .reputationcatassign-div,
-.homemenu-btn-wrapper:hover .addreferrer-div,
+.homemenu-btn-wrapperah:hover .addupdateresume-div,
+.homemenu-btn-wrapperah:hover .reputationcatassign-div,
+.homemenu-btn-wrapperah:hover .addreferrer-div,
  {
   display: flex;
 }
 
-.addresume-btn,
-.updateresume-btn,
-.reputationcatalog-btn,
-.assignreputation-btn,
-.addreferrer-btn {
+.addresume-btnah,
+.updateresume-btnah,
+.reputationcatalog-btnah,
+.assignreputation-btnah,
+.addreferrer-btnah {
 display: flex;
 flex-direction: row;
 justify-content: center;
@@ -120,17 +120,17 @@ font-size: calc(1.3vw + 0.01vh);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-.assignreputation-btn,
-.reputationcatalog-btn {
+.assignreputation-btnah,
+.reputationcatalog-btnah {
 width: 17vw;
 }
 
-.addreferrer-btn {
+.addreferrer-btnah {
 width: 12vw;
 }
 
 /* FREELANCER LIST */
-.homelist {
+.homelistah {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -142,7 +142,7 @@ width: 12vw;
 }
 
 /* CARD */
-.homecard {
+.homecardah {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -154,7 +154,7 @@ width: 12vw;
   gap: 1vh;
 }
 
-.homeimginfo {
+.homeimginfoah {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
@@ -165,7 +165,7 @@ width: 12vw;
   gap: 1vw;
 }
 
-.homephoto {
+.homephotoah {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -176,7 +176,7 @@ width: 12vw;
   border-radius: 1vw;
 }
 
-.homeinfo {
+.homeinfoah {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -185,7 +185,7 @@ width: 12vw;
   min-height: 10vh;
 }
 
-.homefreelancername {
+.homefreelancernameah {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -197,7 +197,7 @@ font-size: calc(1.5vw + 0.01vh);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-.homeskills {
+.homeskillsah {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -209,7 +209,7 @@ font-size: calc(1.5vw + 0.01vh);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-.homeissues {
+.homeissuesah {
   display: flex;
   flex-direction: row;
   width: 83vw;
@@ -219,7 +219,7 @@ font-size: calc(1.5vw + 0.01vh);
   align-self: flex-end;
 }
 
-.issuekeysummary-div {
+.issuekeysummary-divah {
   display: flex;
   flex-direction: row;
   width: 83vw;
@@ -228,7 +228,7 @@ font-size: calc(1.5vw + 0.01vh);
   align-items: center;
 }
 
-.issuekey-div {
+.issuekey-divah {
   display: flex;
   flex-direction: row;
   width: 10vw;
@@ -241,7 +241,7 @@ font-size: calc(1.5vw + 0.01vh);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-.issuesummary-div {
+.issuesummary-divah {
   display: flex;
   flex-direction: row;
   width: 63vw;
@@ -254,7 +254,7 @@ font-size: calc(1.5vw + 0.01vh);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-.issuestatus-div {
+.issuestatus-divah {
  display: flex;
   flex-direction: row;
   height: 5vh;

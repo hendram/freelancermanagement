@@ -112,25 +112,25 @@ const enrichedFreelancers = resumes.map((resume) => ({
     if (loading) return <div className="homecontainer">Loading freelancers...</div>;
 
     return (
-      <div className="homecontainer">
-        <div className="hometop-menu">
+      <div className="homecontainerah">
+        <div className="hometop-menuah">
         {(role === "admin" || role === "manager") && (
   <>
-    <div className="homemenu-btn-wrapper">
-      <button className="resume-btn">Resume ▼</button>
-      <div className="addupdateresume-div">
-        <button className="addresume-btn" onClick={() => switchPage("addResume")}>Add Resume</button>
-        <button className="updateresume-btn" onClick={() => switchPage("updateResume")}>Update Resume</button>
+    <div className="homemenu-btn-wrapperah">
+      <button className="resume-btnah">Resume ▼</button>
+      <div className="addupdateresume-divah">
+        <button className="addresume-btnah" onClick={() => switchPage("addResume")}>Add Resume</button>
+        <button className="updateresume-btnah" onClick={() => switchPage("updateResume")}>Update Resume</button>
       </div>
     </div>
 
-    <div className="homemenu-btn-wrapper">
-      <button className="reputation-btn">Reputation ▼</button>
-      <div className="reputationcatassign-div">
-        <button className="reputationcatalog-btn" onClick={() => switchPage("reputationCatalog")}>
+    <div className="homemenu-btn-wrapperah">
+      <button className="reputation-btnah">Reputation ▼</button>
+      <div className="reputationcatassign-divah">
+        <button className="reputationcatalog-btnah" onClick={() => switchPage("reputationCatalog")}>
           Reputation Catalog
         </button>
-        <button className="assignreputation-btn" onClick={() => switchPage("assignReputation")}>
+        <button className="assignreputation-btnah" onClick={() => switchPage("assignReputation")}>
           Assign Reputation
         </button>
       </div>
@@ -138,41 +138,41 @@ const enrichedFreelancers = resumes.map((resume) => ({
   </>
 )}
 
-<div className="homemenu-btn-wrapper">
-  <button className="referrer-btn">Referrer ▼</button>
-  <div className="addreferrer-div">
-    <button className="addreferrer-btn" onClick={() => switchPage("addReferrer")}>Add Referrer</button>
+<div className="homemenu-btn-wrapperah">
+  <button className="referrer-btnah">Referrer ▼</button>
+  <div className="addreferrer-divah">
+    <button className="addreferrer-btnah" onClick={() => switchPage("addReferrer")}>Add Referrer</button>
   </div>
 </div>
 
 
-          <div className="homemenu-btn-wrapper">
-            <button className="myinvitation-btn" onClick={() => switchPage("myInvitation")}>
+          <div className="homemenu-btn-wrapperah">
+            <button className="myinvitation-btnah" onClick={() => switchPage("myInvitation")}>
               My Invitation
             </button>
           </div>
         </div>
 
-        <div className="homelist">
+        <div className="homelistah">
           {freelancers.map((item) => (
-            <div key={item.id} className="homecard">
-              <div className="homeimginfo">
-              <img src={item.photo} className="homephoto" alt="avatar" />
-              <div className="homeinfo">
-                <div className="homefreelancername">{item.name}</div>
-                <div className="homeskills">{item.skills}</div>
+            <div key={item.id} className="homecardah">
+              <div className="homeimginfoah">
+              <img src={item.photo} className="homephotoah" alt="avatar" />
+              <div className="homeinfoah">
+                <div className="homefreelancernameah">{item.name}</div>
+                <div className="homeskillsah">{item.skills}</div>
                </div>
                  </div>
 
                 {item.issues.length > 0 && (
-                  <div className="homeissues">
+                  <div className="homeissuesah">
                       {item.issues.map((iss, idx) => (
-                        <div className="issuekeysummary-div"  key={idx}>
-                         <div className="issuekey-div">
+                        <div className="issuekeysummary-divah"  key={idx}>
+                         <div className="issuekey-divah">
                             {iss.issue_key}  </div>:
-                          <div className="issuesummary-div" >
+                          <div className="issuesummary-divah" >
                                  {iss.summary} </div>
-                          <div className="issuestatus-div">
+                          <div className="issuestatus-divah">
  {(() => {
     const invited = iss.invite_status === "yes";
     const deal = iss.deal === "yes";

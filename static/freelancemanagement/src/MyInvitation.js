@@ -133,17 +133,18 @@ setUiAlert({
 // -----------------------------------------
 const handlePass = async (inv) => {
   try {
-  const refereesPayload = (inv.refereesEdited ?? inv.referees ?? []).map(r => ({
+  const referees = (inv.refereesEdited ?? inv.referees ?? []).map(r => ({
   first_name: r.first_name ?? r.referrer_first_name,
   last_name:  r.last_name  ?? r.referrer_last_name,
 }));
 
+console.log("refereeshandlepass", referees);
 
     await invoke("passsend", {
       issueKey: inv.issue_key,
       issueId: inv.issue_id,
       resumeId: inv.resume_id,
-      referees: refereesPayload,
+      referees: referees,
     });
 
     invitationsRef.current = invitationsRef.current.filter(
@@ -212,6 +213,16 @@ const handlePass = async (inv) => {
       )}
 
       {invitationsRef.current.map((inv) => {
+           // 🔴 CRITICAL: initialize refereesEdited ONCE
+if (!inv.refereesEdited) {
+  inv.refereesEdited = Array.isArray(inv.referees)
+    ? inv.referees.map(r => ({
+        first_name: r.first_name ?? r.referrer_first_name,
+        last_name:  r.last_name  ?? r.referrer_last_name,
+      }))
+    : [];
+}
+   
         const hasNegotiation =
           Array.isArray(inv.negotiation) && inv.negotiation.length > 0;
 

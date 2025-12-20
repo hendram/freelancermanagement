@@ -9,27 +9,32 @@ export default async function passsend({ payload, sql }) {
 
   console.log("payload passsend", payload);
 
-  /* -----------------------------
-     1. Get rfp_prop_id + deal
-  ----------------------------- */
-  const invRes = await sql
-    .prepare(`
-      SELECT rfp_prop_id, deal
-      FROM myinvitation
-      WHERE issue_id = ? AND resume_id = ?
-    `)
-    .bindParams(issueId, resumeId)
-    .execute();
+/* -----------------------------
+   1. Get rfp_prop_id, deal, issue_summary
+----------------------------- */
+const invRes = await sql
+  .prepare(`
+    SELECT
+      mi.rfp_prop_id,
+      mi.deal,
+      i.issue_summary
+    FROM myinvitation mi
+    JOIN issues i ON i.id = mi.issue_id
+    WHERE mi.issue_id = ? AND mi.resume_id = ?
+  `)
+  .bindParams(issueId, resumeId)
+  .execute();
 
-  if (invRes.rows.length === 0) {
-    return { success: true };
-  }
+if (invRes.rows.length === 0) {
+  return { success: true };
+}
 
-  if (invRes.rows[0].deal === "yes") {
-    throw new Error("Cannot pass when deal is already yes");
-  }
+if (invRes.rows[0].deal === "yes") {
+  throw new Error("Cannot pass when deal is already yes");
+}
 
-  const rfpPropId = invRes.rows[0].rfp_prop_id;
+const rfpPropId   = invRes.rows[0].rfp_prop_id;
+const issueSummary = invRes.rows[0].issue_summary;
 
   /* -----------------------------
      2. Delete negotiations
@@ -166,7 +171,7 @@ export default async function passsend({ payload, sql }) {
             (resume_id, first_name, last_name,
              referrer_first_name, referrer_last_name,
              issue_key, issue_summary)
-          VALUES (?, ?, ?, ?, ?, ?, '')
+          VALUES (?, ?, ?, ?, ?, ?, ?)
         `)
         .bindParams(
           r.resume_id,
@@ -174,7 +179,8 @@ export default async function passsend({ payload, sql }) {
           r.last_name,
           freelancerFirstName,
           freelancerLastName,
-          issueKey
+          issueKey,
+          issueSummary
         )
         .execute();
     }

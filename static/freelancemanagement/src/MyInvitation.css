@@ -170,7 +170,7 @@ font-size: calc(1.5vw + 0.01vh);
   display: flex;
   flex-direction: row;
   width: 100vw;
-   min-height: 8vh;
+  min-height: 15vh;
   justify-content: flex-start;
   align-items: center;
 }
@@ -179,7 +179,7 @@ font-size: calc(1.5vw + 0.01vh);
   display: flex;
   flex-direction: row;
   width: 8vw;
-  height: 5vh;
+  min-height: 5vh;
   justify-content: center;
   align-items: center;
  font-size: calc(1.5vw + 0.01vh);
