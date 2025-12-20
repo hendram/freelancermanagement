@@ -161,6 +161,34 @@ console.log("refereeshandlepass", referees);
 };
 
 
+function normalizeNegotiation(negotiation) {
+  let rfpIndex = 0;
+  let proposalIndex = 0;
+  const blocks = [];
+
+  negotiation.forEach(round => {
+    if (Array.isArray(round.rfp) && round.rfp.length > 0) {
+      rfpIndex++;
+      blocks.push({
+        type: "RFP",
+        index: rfpIndex,
+        messages: round.rfp.filter(Boolean),
+      });
+    }
+
+    if (Array.isArray(round.proposals) && round.proposals.length > 0) {
+      proposalIndex++;
+      blocks.push({
+        type: "Proposal",
+        index: proposalIndex,
+        messages: round.proposals.filter(Boolean),
+      });
+    }
+  });
+
+  return blocks;
+}
+
   // -----------------------------------------
   // EMAIL PAGE
   // -----------------------------------------
@@ -202,6 +230,7 @@ console.log("refereeshandlepass", referees);
       </div>
     );
   }
+
 
   // -----------------------------------------
   // INVITATION PAGE
@@ -297,29 +326,17 @@ if (!inv.refereesEdited) {
                  <div className="rfptextarea-div">
                 <textarea
                   className="rfp-textarea"
-  value={
-    (() => {
-      let rfpCount = 0;
-      let proposalCount = 0;
+value={
+  (() => {
+    const blocks = normalizeNegotiation(inv.negotiation);
 
-      return inv.negotiation
-        .map((round) => {
-          const rfps = round.rfp.map((r) => {
-            rfpCount++;
-            return `RFP${rfpCount}: ${r}`;
-          });
-
-          const proposals = round.proposals.map((p) => {
-            proposalCount++;
-            return `Proposal${proposalCount}: ${p}`;
-          });
-
-          return [...rfps, ...proposals].join("\n");
-        })
-        .join("\n\n\n");
-    })()   
-  }
-
+    return blocks
+      .map(b =>
+        `${b.type}${b.index}:\n${b.messages.join("\n")}`
+      )
+      .join("\n\n");
+  })()
+}
                   rows="8"
                   readOnly
                 />
