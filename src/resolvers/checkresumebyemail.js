@@ -8,7 +8,6 @@ export default async function checkresumebyemail({ payload, sql }) {
       .prepare(`SELECT id FROM resumes WHERE email = ?`)
       .bindParams(email)
       .execute();
-     console.log("result from checkrsumebyemail", result);
 
     if (result.rows.length > 0) {
       return { success: true, exists: true, resumeId: result.rows[0].id };

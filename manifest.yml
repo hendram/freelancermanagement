@@ -10,12 +10,13 @@ modules:
         function: resume
       title: Freelancer Management
       layout: blank
+      icon: static/logo.png
   jira:issuePanel:
     - key: freelancerbidding-panel
       title: Freelancer Bidding
       layout: blank
       resource: bidder-frontend
-      icon: "issues"
+      icon: static/logo.png
       resolver:
         function: resume
 
@@ -47,4 +48,3 @@ app:
     memoryMB: 256
     architecture: arm64
   id: ari:cloud:ecosystem::app/31af772d-638f-4d73-9366-1c590d4604bc
-

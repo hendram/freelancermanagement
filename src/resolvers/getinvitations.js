@@ -2,8 +2,6 @@
 export default async function getinvitations({ payload, sql }) {
   const { resumeId, fullName } = payload;
 
-  console.log("▶ getinvitations() INPUT payload =", payload);
-
   if (!resumeId && !fullName) {
     console.log("❌ Missing resumeId and fullName");
     return { success: false, error: "resumeId or fullName is required" };
@@ -23,7 +21,6 @@ export default async function getinvitations({ payload, sql }) {
     // ------------------------------------
     if (!resumeId && fullName) {
       const { first: fFirst, last: fLast } = splitFullName(fullName);
-      console.log("🔎 splitFullName(fullName) =", { fFirst, fLast });
 
       const resumeRow = await sql
         .prepare(`
@@ -35,7 +32,6 @@ export default async function getinvitations({ payload, sql }) {
         .bindParams(fFirst, fLast)
         .execute();
 
-      console.log("📄 resumeRow =", resumeRow.rows);
 
       if (resumeRow.rows.length === 0) {
         console.log("⚠ No resume found for fullname");
@@ -43,7 +39,6 @@ export default async function getinvitations({ payload, sql }) {
       }
 
       payload.resumeId = resumeRow.rows[0].id;
-      console.log("✅ Resolved resumeId =", payload.resumeId);
     }
 
     // ------------------------------------
@@ -75,12 +70,10 @@ export default async function getinvitations({ payload, sql }) {
       .bindParams(payload.resumeId)
       .execute();
 
-    console.log("📦 Invitations loaded:", invs.rows.length);
 
     const out = [];
 
     for (const inv of invs.rows) {
-      console.log(`\n--- Processing invitation ${inv.invitation_id} ---`);
 
       const invited = inv.invite_status === "yes";
 
@@ -136,7 +129,6 @@ if (inv.rfp_prop_id) {
         .bindParams(inv.resume_id, inv.issue_key)
         .execute();
 
-      console.log(`📘 refsWhoReferred for invitation ${inv.invitation_id}:`, refsWhoReferred.rows.length);
       for (const r of refsWhoReferred.rows) {
         referrers.push({
           referrer_first_name: r.ref_first || "",
@@ -168,7 +160,6 @@ if (inv.rfp_prop_id) {
         .bindParams(inv.first_name, inv.last_name, inv.issue_key)
         .execute();
 
-      console.log(`📙 refsTargetDidRefer for invitation ${inv.invitation_id}:`, refsTargetDidRefer.rows.length);
       for (const r of refsTargetDidRefer.rows) {
         referees.push({
           referrer_first_name: r.refed_first || "",
@@ -207,11 +198,9 @@ if (inv.rfp_prop_id) {
         created_at: inv.created_at
       };
 
-      console.log("📤 Output invitation record =", record);
       out.push(record);
     }
 
-    console.log("✅ FINAL OUTPUT count =", out.length);
     return { success: true, data: out };
   } catch (err) {
     console.error("❌ ERROR getinvitations:", err);

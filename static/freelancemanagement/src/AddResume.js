@@ -83,7 +83,6 @@ setUiAlert({
   const base64 = reader.result.split(",")[1]; // store only Base64
 
       updateBio("photoBase64", base64); 
-      console.log("Photo loaded, size:", reader.result.length);
     };
     reader.readAsDataURL(file);
   };

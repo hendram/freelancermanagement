@@ -3,7 +3,6 @@ import api, { route } from "@forge/api";
 
 export default async function searchskills({ payload, sql }) {
   const { skills, issueKey } = payload;
-  console.log("payloadissue", payload);
 
   if (!skills || !skills.trim()) {
     return { success: false, error: "No skills provided" };
@@ -13,7 +12,6 @@ export default async function searchskills({ payload, sql }) {
   }
 
   const skillQuery = skills.toLowerCase().replace(/\s+/g, "");
-  console.log(">>> searchskills normalized =", skillQuery);
 
   try {
     //-------------------------------------
@@ -38,7 +36,6 @@ export default async function searchskills({ payload, sql }) {
     }
 
     const storyPointsFieldId = storyPointsField.id;
-    console.log(">>> Story Points field ID:", storyPointsFieldId);
 
     //-------------------------------------
     // 2. FETCH JIRA ISSUE
@@ -52,7 +49,6 @@ export default async function searchskills({ payload, sql }) {
     }
 
     const jiraIssue = await res.json();
-    console.log("jiraIssue", jiraIssue);
 
     const storyPoints = jiraIssue.fields?.[storyPointsFieldId] || 0;
 
@@ -70,9 +66,6 @@ export default async function searchskills({ payload, sql }) {
     const minimumRequiredScore =
       storyPoints > 0 ? storyPoints * 10 : priorityPoints;
 
-    console.log(">>> Jira storyPoints:", storyPoints);
-    console.log(">>> Jira priority:", priorityName, "points:", priorityPoints);
-    console.log(">>> minimumRequiredScore:", minimumRequiredScore);
 
     //-------------------------------------
     // 3. RESOLVE issue_key → issue_id
@@ -205,7 +198,6 @@ export default async function searchskills({ payload, sql }) {
       .sort((a, b) => b.total_score - a.total_score)
       .slice(0, 5);
 
-    console.log(">>> topCandidates", topCandidates);
     return { success: true, candidates: topCandidates };
 
   } catch (e) {

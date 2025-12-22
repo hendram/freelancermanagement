@@ -1,6 +1,5 @@
 // src/resolvers/sendpriceproposal.js
 export default async function sendpriceproposal({ payload, sql }) {
-  console.log(">>> DEBUG: Incoming payload:", JSON.stringify(payload, null, 2));
 
   const {
     issueId,
@@ -19,7 +18,6 @@ export default async function sendpriceproposal({ payload, sql }) {
     // ---------------------------------------------------
     // 1) Find latest myinvitation row
     // ---------------------------------------------------
-    console.log(">>> DEBUG: Fetching invitation for:", { issueId, resumeId });
 
     const invRes = await sql
       .prepare(`
@@ -39,7 +37,6 @@ export default async function sendpriceproposal({ payload, sql }) {
       .bindParams(issueId, resumeId)
       .execute();
 
-    console.log(">>> DEBUG: Invitation result:", invRes.rows);
 
     if (invRes.rows.length === 0)
       return { success: false, error: "Invitation not found" };
@@ -52,14 +49,12 @@ export default async function sendpriceproposal({ payload, sql }) {
     // ---------------------------------------------------
     if (newProposal && String(newProposal).trim() !== "") {
       if (!invite.rfp_prop_id) {
-        console.log(">>> DEBUG: No RFP found on myinvitation row");
         return {
           success: false,
           error: "No RFP exists; manager must send RFP first."
         };
       }
 
-      console.log(">>> DEBUG: Loading RFP row for id:", invite.rfp_prop_id);
  
 const rfpRes = await sql
   .prepare(`
@@ -72,7 +67,6 @@ const rfpRes = await sql
   .bindParams(invite.rfp_prop_id)
   .execute();
 
-      console.log(">>> DEBUG: RFP row:", rfpRes.rows);
 
       if (rfpRes.rows.length === 0)
         return { success: false, error: "RFP row missing" };
@@ -80,7 +74,6 @@ const rfpRes = await sql
       const rfpRow = rfpRes.rows[0];
       const trimmed = String(newProposal).trim();
 
-      console.log(">>> DEBUG: Appending proposal text");
 
       if (!rfpRow.proposals || String(rfpRow.proposals).trim() === "") {
         await sql
@@ -105,7 +98,6 @@ const rfpRes = await sql
     // ---------------------------------------------------
     // 3) Update price (always)
     // ---------------------------------------------------
-    console.log(">>> DEBUG: Updating price:", { price });
 
     await sql
       .prepare(
@@ -120,7 +112,6 @@ const rfpRes = await sql
     // ---------------------------------------------------
     // 4) REFERRERS TABLE LOGIC
     // ---------------------------------------------------
-    console.log(">>> DEBUG: Processing referees[]:", referees);
 
     const referrerFirst = invite.first_name || "";
     const referrerLast = invite.last_name || "";
@@ -130,16 +121,13 @@ const rfpRes = await sql
 
     if (Array.isArray(referees) && referees.length > 0) {
       for (const full of referees) {
-        console.log(">>> DEBUG: Handling referee name:", full);
 
         if (typeof full !== "string") {
-          console.log(">>> DEBUG: Non-string referee skipped:", full);
           continue;
         }
 
         const clean = full.trim();
         if (!clean) {
-          console.log(">>> DEBUG: Empty string after trim, skipped");
           continue;
         }
 
@@ -159,19 +147,10 @@ const rfpRes = await sql
           .execute();
 
         if (found.rows.length === 0) {
-          console.log(">>> DEBUG: No resume match found, skipping");
           continue;
         }
 
         const target = found.rows[0];
-
-        console.log(">>> DEBUG: Inserting referrer row using issue_key + issue_summary:", {
-          referee_resume_id: target.resume_id,
-          referrer_first: referrerFirst,
-          referrer_last: referrerLast,
-          issueKey,
-          issueSummary
-        });
 
         await sql
           .prepare(
@@ -205,7 +184,6 @@ const rfpRes = await sql
     // ---------------------------------------------------
     // DONE
     // ---------------------------------------------------
-    console.log(">>> DEBUG: Finished sendpriceproposal OK");
 
     return { success: true, rfpPropId: invite.rfp_prop_id || null };
   } catch (e) {

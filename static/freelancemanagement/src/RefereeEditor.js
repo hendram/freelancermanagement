@@ -6,8 +6,6 @@ export default function RefereeEditor({ initialReferees = [], onChange }) {
   const [referees, setReferees] = useState(initialReferees);
   const inputRef = useRef(null);
 
-console.log("referees", referees);
-
   useEffect(() => {
     setReferees(initialReferees); // 🔥 sync when invitation changes
   }, [initialReferees]);

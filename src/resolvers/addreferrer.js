@@ -46,7 +46,6 @@ export default async function addreferrer({ payload, sql }) {
     )
     .execute();
 
-    console.log("existing:", existing.rows);
 
     if (!existing.rows.length) {
       await sql.prepare(`

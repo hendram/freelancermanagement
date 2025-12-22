@@ -49,7 +49,6 @@ export default function MyInvitation({ goBackMI }) {
 
     try {
       const resumeCheck = await invoke("checkresumebyemail", { email });
-      console.log("resumeCheck", resumeCheck);
 
       if (!resumeCheck?.exists || !resumeCheck.resumeId) {
         errorRef.current = "No resume found for this email.";
@@ -62,7 +61,6 @@ export default function MyInvitation({ goBackMI }) {
         resumeId: resumeCheck.resumeId,
       });
 
-      console.log("inv", inv);
 
       invitationsRef.current = Array.isArray(inv?.data) ? inv.data : [];
       verifiedRef.current = true;
@@ -138,7 +136,6 @@ const handlePass = async (inv) => {
   last_name:  r.last_name  ?? r.referrer_last_name,
 }));
 
-console.log("refereeshandlepass", referees);
 
     await invoke("passsend", {
       issueKey: inv.issue_key,

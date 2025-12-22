@@ -5,7 +5,6 @@ export default async function addresume({ payload, sql }) {
   const { bio, experience, skills } = payload;
   const resumeId = crypto.randomUUID();
 
-  console.log("photobase64addresume", bio.photoBase64);
   try {
     // Insert resume bio
     await sql
@@ -32,14 +31,6 @@ export default async function addresume({ payload, sql }) {
       )
       .execute();
 
-    console.log(
-      ">>> RESUME INSERT OK",
-      "resumeId:",
-      resumeId,
-      "photo_size:",
-      bio.photoBase64 ? bio.photoBase64.length : 0
-    );
-
     // Insert experience rows
     for (const exp of experience) {
       await sql
@@ -58,14 +49,6 @@ export default async function addresume({ payload, sql }) {
         )
         .execute();
     }
-
-    console.log(
-      ">>> EXPERIENCE INSERT OK",
-      "resumeId:",
-      resumeId,
-      "count:",
-      experience.length
-    );
 
     return { success: true, resumeId };
 

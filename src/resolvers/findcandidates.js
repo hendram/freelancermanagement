@@ -19,7 +19,6 @@ export default async function findcandidates({ payload, sql }) {
       return { success: false, error: "No valid skills provided." };
     }
 
-    console.log("findcandidates: tokens=", inputTokens);
 
     // --- fetch resumes using same pattern as your other resolvers ---
     const resumeQuery = await sql.prepare(`
@@ -32,7 +31,6 @@ export default async function findcandidates({ payload, sql }) {
     `).execute();
 
     const resumes = resumeQuery.rows || [];
-    console.log("findcandidates: resumes fetched=", resumes.length);
 
     // score resumes
     const candidates = resumes.map(r => {
@@ -56,8 +54,6 @@ export default async function findcandidates({ payload, sql }) {
     const filtered = candidates
       .filter(c => c.score > 0)
       .sort((a, b) => b.score - a.score);
-
-    console.log("findcandidates: matches=", filtered.length);
 
     return { success: true, candidates: filtered };
   } catch (err) {

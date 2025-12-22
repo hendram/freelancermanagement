@@ -20,7 +20,6 @@ const [uialert, setUiAlert] = useState(null);
     const loadData = async () => {
       try {
         const res = await invoke("getuserstories");
-        console.log("res", res);
 
         if (!res || !res.success || !Array.isArray(res.list)) {
           setLoading(false);

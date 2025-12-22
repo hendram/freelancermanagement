@@ -16,7 +16,6 @@ export default function AssignReputation({ goBackAR }) {
     const load = async () => {
       try {
         const res = await invoke("getreputation");
-        console.log("res", res);
 
         if (res.success && res.list) {
           const mapped = res.list.map(r => ({

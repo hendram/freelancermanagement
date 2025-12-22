@@ -1,6 +1,5 @@
 export default async function getalldatafrontend({ sql }) {
   try {
-    console.log("▶ getalldatafrontend()");
 
     const result = await sql
       .prepare(`
@@ -31,7 +30,6 @@ export default async function getalldatafrontend({ sql }) {
       `)
       .execute();
 
-    console.log("📦 rows =", result.rows.length);
 
     const map = {};
 
@@ -59,7 +57,6 @@ export default async function getalldatafrontend({ sql }) {
 
     const out = Object.values(map);
 
-    console.log("✅ getalldatafrontend output =", out.length);
     return out;
 
   } catch (err) {

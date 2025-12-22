@@ -1,7 +1,6 @@
 import crypto from "crypto";
 
 export default async function invitation({ payload, sql }) {
-  console.log("payload", payload);
 
   let {
     issueType,

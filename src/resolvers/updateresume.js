@@ -70,7 +70,6 @@ export default async function updateresume({ sql }) {
       });
     }
 
-    console.log("✅ updateresume fetched resumes:", finalList.length);
 
     return {
       totalCount,

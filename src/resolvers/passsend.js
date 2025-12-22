@@ -7,7 +7,6 @@ export default async function passsend({ payload, sql }) {
     referees = [], // [{ first_name, last_name }] ← frontend sends ONLY this
   } = payload;
 
-  console.log("payload passsend", payload);
 
 /* -----------------------------
    1. Get rfp_prop_id, deal, issue_summary

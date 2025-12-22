@@ -4,7 +4,6 @@ import api, { route } from "@forge/api";
 export default async function getcurrentissue({ context }) {
   try {
     const issue = context?.extension?.issue;
-    console.log("issue", issue);
 
     if (!issue?.key) {
       return { success: false, error: "Issue context not found" };
@@ -15,14 +14,12 @@ export default async function getcurrentissue({ context }) {
       route`/rest/api/3/issue/${issue.key}`
     );
     
-    console.log("res", res);
     if (!res.ok) {
       const txt = await res.text();
       return { success: false, error: "Jira API failed: " + txt };
     }
 
     const data = await res.json();
-    console.log("data", data);
 
     return {
       success: true,
