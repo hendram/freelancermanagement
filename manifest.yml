@@ -10,7 +10,7 @@ modules:
         function: resume
       title: Freelancer Management
       layout: blank
-      icon: static/logo.png
+      icon: resource:logo;logo.png
   jira:issuePanel:
     - key: freelancerbidding-panel
       title: Freelancer Bidding
@@ -41,6 +41,8 @@ resources:
     path: static/freelancemanagement/build
   - key: bidder-frontend
     path: static/freelancerbidding/build
+  - key: logo
+    path: static/freelancemanagement/build
 
 app:
   runtime:
