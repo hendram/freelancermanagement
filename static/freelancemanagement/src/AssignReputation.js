@@ -7,6 +7,7 @@ export default function AssignReputation({ goBackAR }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uialert, setUiAlert] = useState(null);
+const [isSubmitting, setIsSubmitting] = useState(false);
 
 
   // -------------------------------------------------------
@@ -64,7 +65,11 @@ export default function AssignReputation({ goBackAR }) {
   // SUBMIT TO BACKEND
   // -------------------------------------------------------
   const submit = async () => {
-    try {
+ if (isSubmitting) return; // HARD STOP
+
+  setIsSubmitting(true);
+
+try {
       for (const r of rows) {
         if (r.posInput === "" && r.negInput === "") {
           continue; // ignore if nothing entered
@@ -90,7 +95,11 @@ setUiAlert({
   title: "Assign Failed",
   message: "Assign reputation failed",
 });
+    setIsSubmitting(false); // allow retry
+
       console.error("assignreputation failed:", err);
+
+
     }
   };
 
@@ -151,7 +160,9 @@ setUiAlert({
       </table>
 
       <div className="arbuttons-div">
-        <button className="btn-submitar" onClick={submit}>Submit</button>
+        <button className="btn-submitar" onClick={submit} disabled={isSubmitting}>
+  {isSubmitting ? "Submitting..." : "Submit"}
+</button>
         <button className="btn-resetar" onClick={reset}>Reset</button>
         {goBackAR && (
           <button className="btn-closear" onClick={goBackAR}>Close</button>

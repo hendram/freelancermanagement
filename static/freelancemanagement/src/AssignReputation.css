@@ -207,3 +207,8 @@
   border-radius: 5vw;
   cursor: pointer;
 }
+
+.btn-submitar {
+min-width: 10vw;
+}
+

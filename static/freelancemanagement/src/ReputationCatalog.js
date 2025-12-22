@@ -11,6 +11,8 @@ export default function ReputationCatalog({ goBackRC }) {
   const [positiveReps, setPositiveReps] = useState([]);
   const [negativeReps, setNegativeReps] = useState([]);
   const [uialert, setUiAlert] = useState(null);
+const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   // -------------------------------------------------------
   // LOAD REPUTATION CATALOG FROM DB
@@ -121,7 +123,11 @@ setNegativeReps(neg);
   // SUBMIT TO BACKEND
   // -------------------------------------------------------
   const submit = async () => {
-    const payload = {
+   if (isSubmitting) return; // HARD STOP double click
+
+  setIsSubmitting(true);
+ 
+   const payload = {
       positiveReps,
       negativeReps,
       posRange: {
@@ -151,6 +157,8 @@ setUiAlert({
   title: "Save failed",
   message: "Failed to save catalog"
 });
+      setIsSubmitting(false); // allow retry
+
       }
     } catch (err) {
       console.error(err);
@@ -159,6 +167,9 @@ setUiAlert({
   title: "Save failed",
   message: "Failed to save catalog"
 });
+
+      setIsSubmitting(false); // allow retry
+
     }
   };
 
@@ -377,8 +388,8 @@ onChange={(e) => {
 
     {/* ---------------- SUBMIT ---------------- */}
     <div className="submitrc-div">
-      <button className="btn_submitrc" onClick={submit}>
-        Submit Catalog
+      <button className="btn_submitrc" onClick={submit} disabled={isSubmitting}>
+          {isSubmitting ? "Submitting..." : "Submit Catalog"}
       </button>
       {goBackRC && (
         <button className="btn_closerc" onClick={goBackRC}>
