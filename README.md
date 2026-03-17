@@ -1,4 +1,3 @@
-```markdown
 # Project Name
 
 A brief description of the project, its purpose, and core functionality.
