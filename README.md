@@ -10,13 +10,11 @@ This project leverages modern web development technologies to ensure a robust, s
 
 - **JavaScript**: Core programming language for both frontend and backend logic.
 - **Node.js**: Runtime environment for server-side code execution.
-- **Express.js** (assumed from typical backend setup): Web framework to handle API routing and middleware.
-- **React** (inferred from `src/` components): Frontend library for building user interfaces.
+- **Express.js**  Web framework to handle API routing and middleware.
+- **React** Frontend library for building user interfaces.
 - **SQL**: Data persistence handled via `schema.sql`, indicating relational database usage.
 - **Version Control**: Git for source code management, with `.gitignore` files to exclude sensitive or unnecessary files.
 - **Package Management**: `npm` with `package.json` and `package-lock.json` for dependency management.
-
-*Note: Specific libraries or frameworks like Express or React are inferred from directory structure and filenames; confirm with your actual codebase.*
 
 ---
 
