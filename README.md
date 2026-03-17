@@ -18,20 +18,6 @@ This project leverages modern web development technologies to ensure a robust, s
 
 ---
 
-## Architecture Overview
-
-This project follows a modular, layered architecture that separates concerns for clarity and maintainability:
-
-
-
-```mermaid
-graph TD
-    A[Client (React App)] -->|API Calls| B[Backend API (Node.js/Express)]
-    B -->|Resolvers| D[Resolvers Layer]
-    D -->|Business Logic| E[Services Layer]
-    E -->|Database Queries| C[(SQL Database)]
-```
-
 ### Components:
 
 - **Frontend**: Located in `static/freelancemanagement/src/`, handles user interactions and displays data.
