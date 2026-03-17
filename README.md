@@ -25,10 +25,9 @@ This project follows a modular, layered architecture that separates concerns for
 ```mermaid
 graph TD
     A[Client (React App)] -->|API Calls| B[Backend API (Node.js/Express)]
-    B -->|Database Queries| C[(SQL Database)]
     B -->|Resolvers| D[Resolvers Layer]
     D -->|Business Logic| E[Services Layer]
-    C -->|Data Storage| C
+    E -->|Database Queries| C[(SQL Database)]
 ```
 
 ### Components:
